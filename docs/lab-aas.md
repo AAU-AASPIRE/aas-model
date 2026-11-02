@@ -138,3 +138,9 @@ The lab's reference instances, written out in full, are in iec61499-mgmt-py: the
 (`cell/examples/products`), the processes (`cell/examples/processes`), and the modules, the line, the
 planar table and its shuttles built from their specs by `modreg` (`cell/examples/example_line.py`,
 which writes every AAS and can publish them to an AAS server).
+
+Examples of the Production Sequence 4.0 (proposed) are kept here, in aas-model: an EV battery pack
+taken apart and closed again, its four modules and their cell type (`aas_model.product_instances`),
+and the 2 mL vial with a flip-off seal; with their process AASs (`aas_model.process_instances`).
+`scripts/export_precedence_examples.py` writes them as AAS JSON and checks them
+([Production Sequence 4.0](lab-submodels/ProductionSequence4.md)).

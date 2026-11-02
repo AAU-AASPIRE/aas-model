@@ -106,3 +106,21 @@ python scripts/lab_docs.py
 
 `tests/test_lab_templates.py` fails when the checked-in modules are not a regeneration, or a table
 is not that of its template.
+
+# Production Sequence 4.0 examples
+
+`export_precedence_examples.py` builds the example AASs of the Production Sequence 4.0 (proposed):
+the battery case (`aas_model.product_instances.battery_pack`, its modules and cell, and the process
+AAS in a simulated disassembly cell) and the pharma case (the 2 mL vial, its flip-off seal and the
+seal's aluminium part, and the process AAS on the filling line). It writes one AAS JSON environment
+per AAS and one per case, and checks the references, the partial blocks, the joints and the
+bindings. Nothing is sent to a server.
+
+```bash
+PYTHONPATH=src python scripts/export_precedence_examples.py --out /tmp/precedence
+PYTHONPATH=src python scripts/export_precedence_examples.py --out /tmp/precedence --against <folder of AAS JSON>
+```
+
+`--against` is a folder of AAS JSON environments the references may point into, such as a copy of
+the lab's server with the filling line. It exits with 1 when a check finds a fault;
+`tests/test_precedence_examples.py` runs the same checks.
