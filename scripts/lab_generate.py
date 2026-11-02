@@ -63,7 +63,15 @@ RENAMED = {"skills": {"Condition": "FlowCondition", "Conditions": "FlowCondition
 # Classes the generator names after their semantic id's namespace because the template has another
 # element of the same idShort: a readable name instead (these names occur nowhere else).
 READABLE = {"bindings": {"Bindings_production_sequence": "InputBindings"},
-            "process_parameters": {"ProcessParameters_process_parameters": "ProcessParameterGroup"}}
+            "process_parameters": {"ProcessParameters_process_parameters": "ProcessParameterGroup"},
+            # Elements of the same idShort and semantic id in several places of the 4.0 sequence.
+            "production_sequence_4": {"Name_production_sequence_2": "OutputName",
+                                      "Name_production_sequence_3": "BranchName",
+                                      "Name_production_sequence": "StepName",
+                                      "Order_production_sequence": "BranchOrder",
+                                      "Unit_production_sequence": "ConditionUnit",
+                                      "DataType_production_sequence": "ExpectedDataType",
+                                      "OutputId_production_sequence": "OperandOutputId"}}
 
 ALIAS = re.compile(r"(?:^# alias [^\n]*\n)?^(\w+)_t: TypeAlias = \1\n", re.MULTILINE)
 REBUILD = "# ── Resolve forward references"

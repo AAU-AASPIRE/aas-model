@@ -45,7 +45,7 @@ class Kind(Property):
     description: str = "step, call, partial, parallel, conditional or decision."
     value_type: str = "xs:string"
 
-class Name_production_sequence(Property):
+class StepName(Property):
     id_short: AasIdString = "Name"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0"
     description: str = "The name shown for the node."
@@ -121,7 +121,7 @@ class OutputId(Property):
     description: str = "Identifies the output within its step."
     value_type: str = "xs:string"
 
-class Name_production_sequence_2(Property):
+class OutputName(Property):
     id_short: AasIdString = "Name"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0"
     description: str = "The name shown for the output."
@@ -143,7 +143,7 @@ class Output(SubmodelElementCollection):
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Output/1/0"
     description: str = "One value the step reports."
     OutputId: OutputId_t
-    Name: Union[Name_production_sequence_2, Name]
+    Name: Union[OutputName, Name]
     DataType: DataType_t
     Unit: Optional[Unit_t] = None
 
@@ -212,13 +212,13 @@ class Operator(Property):
     description: str = "comparison: lessThan, lessOrEqual, equal, greaterOrEqual, greaterThan."
     value_type: str = "xs:string"
 
-class Unit_production_sequence(Property):
+class ConditionUnit(Property):
     id_short: AasIdString = "Unit"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Unit/1/0"
     description: str = "comparison: the unit of Expected."
     value_type: str = "xs:string"
 
-class DataType_production_sequence(Property):
+class ExpectedDataType(Property):
     id_short: AasIdString = "DataType"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/DataType/1/0"
     description: str = "The type of the value."
@@ -234,7 +234,7 @@ class Expected(SubmodelElementCollection):
     id_short: AasIdString = "Expected"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Expected/1/0"
     description: str = "comparison: the value the output is compared with."
-    DataType: Union[DataType_production_sequence, DataType]
+    DataType: Union[ExpectedDataType, DataType]
     Value: Value_t
 
 class OperandType(Property):
@@ -249,7 +249,7 @@ class StepId(Property):
     description: str = "The NodeId of the step."
     value_type: str = "xs:string"
 
-class OutputId_production_sequence(Property):
+class OperandOutputId(Property):
     id_short: AasIdString = "OutputId"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/OutputId/1/0"
     description: str = "The OutputId of its output."
@@ -261,7 +261,7 @@ class Operand(SubmodelElementCollection):
     description: str = "comparison: the output compared."
     OperandType: OperandType_t
     StepId: StepId_t
-    OutputId: Union[OutputId_production_sequence, OutputId]
+    OutputId: Union[OperandOutputId, OutputId]
 
 class Condition(SubmodelElementCollection):
     id_short: AasIdString = "Condition"
@@ -271,7 +271,7 @@ class Condition(SubmodelElementCollection):
     EveryNProducts: Optional[EveryNProducts_t] = None
     CounterScope: Optional[CounterScope_t] = None
     Operator: Optional[Operator_t] = None
-    Unit: Optional[Union[Unit_production_sequence, Unit]] = None
+    Unit: Optional[Union[ConditionUnit, Unit]] = None
     Expected: Optional[Expected_t] = None
     Operand: Optional[Operand_t] = None
 
@@ -281,13 +281,13 @@ class BranchId(Property):
     description: str = "Identifies the branch."
     value_type: str = "xs:string"
 
-class Name_production_sequence_3(Property):
+class BranchName(Property):
     id_short: AasIdString = "Name"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0"
     description: str = "The name shown for the branch."
     value_type: str = "xs:string"
 
-class Order_production_sequence(Property):
+class BranchOrder(Property):
     id_short: AasIdString = "Order"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Order/1/0"
     description: str = "Position among the branches."
@@ -297,8 +297,8 @@ class Branch(SubmodelElementCollection):
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Branch/1/0"
     description: str = "One branch."
     BranchId: BranchId_t
-    Name: Union[Name_production_sequence_3, Name]
-    Order: Union[Order_production_sequence, Order]
+    Name: Union[BranchName, Name]
+    Order: Union[BranchOrder, Order]
     Steps: Optional[Steps_t] = None
 
 class Branches(SubmodelElementCollection):
@@ -312,7 +312,7 @@ class Step(SubmodelElementCollection):
     description: str = "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their After allows. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
     NodeId: NodeId_t
     Kind: Kind_t
-    Name: Union[Name_production_sequence, Name]
+    Name: Union[StepName, Name]
     Order: Order_t
     After: Optional[After_t] = None
     ProcessOwner: Optional[ProcessOwner_t] = None
@@ -438,7 +438,7 @@ Name.model_rebuild()
 Subject.model_rebuild()
 NodeId.model_rebuild()
 Kind.model_rebuild()
-Name_production_sequence.model_rebuild()
+StepName.model_rebuild()
 Order.model_rebuild()
 After.model_rebuild()
 ProcessOwner.model_rebuild()
@@ -451,7 +451,7 @@ Joint.model_rebuild()
 JointReference.model_rebuild()
 Joints.model_rebuild()
 OutputId.model_rebuild()
-Name_production_sequence_2.model_rebuild()
+OutputName.model_rebuild()
 DataType.model_rebuild()
 Unit.model_rebuild()
 Output.model_rebuild()
@@ -466,18 +466,18 @@ ConditionType.model_rebuild()
 EveryNProducts.model_rebuild()
 CounterScope.model_rebuild()
 Operator.model_rebuild()
-Unit_production_sequence.model_rebuild()
-DataType_production_sequence.model_rebuild()
+ConditionUnit.model_rebuild()
+ExpectedDataType.model_rebuild()
 Value.model_rebuild()
 Expected.model_rebuild()
 OperandType.model_rebuild()
 StepId.model_rebuild()
-OutputId_production_sequence.model_rebuild()
+OperandOutputId.model_rebuild()
 Operand.model_rebuild()
 Condition.model_rebuild()
 BranchId.model_rebuild()
-Name_production_sequence_3.model_rebuild()
-Order_production_sequence.model_rebuild()
+BranchName.model_rebuild()
+BranchOrder.model_rebuild()
 Branch.model_rebuild()
 Branches.model_rebuild()
 Step.model_rebuild()
