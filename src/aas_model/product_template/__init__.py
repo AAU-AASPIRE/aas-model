@@ -2,8 +2,8 @@
 
 from .asset import (
     PLANS, BillOfMaterial, ProductPart, PartQuantity, PartQuantityUnit, Product, ProductEntry, bill_of_material,
-    plan_id, product_nameplate,
+    plan_id, product_nameplate, sequence_id,
 )
 
 __all__ = ["PLANS", "BillOfMaterial", "ProductPart", "PartQuantity", "PartQuantityUnit", "Product", "ProductEntry",
-           "bill_of_material", "plan_id", "product_nameplate"]
+           "bill_of_material", "plan_id", "product_nameplate", "sequence_id"]

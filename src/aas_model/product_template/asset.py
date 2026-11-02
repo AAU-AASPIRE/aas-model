@@ -6,6 +6,9 @@
   each with the product's values, the materials it uses and the capability it requires.
 - **Capability Description** (IDTA 02020, role Required): those capabilities with their values.
 - **Production Sequence** (the process sequence planner's): the recipe, its steps in order.
+- **Production Sequence 4.0** (proposed): the recipe as a partial order, each step after the steps it
+  needs, with the joints it makes or breaks; one for putting the product together (Assembly) and one
+  for taking it apart (Disassembly), at most.
 
 One per product type: an order of many items uses the same one, and a part with a recipe of its own
 has one too. The recipe bound to a line is a process AAS (``aas_model.process_template``).
@@ -26,6 +29,7 @@ from aas_model.constants import BASE_URL
 from aas_model.resource_template.modules.submodels import lab_nameplate
 from aas_model.submodel_templates.product.process_parameters import Processes, ProcessParameters
 from aas_model.submodel_templates.product.production_sequence import ProductionSequence
+from aas_model.submodel_templates.product import production_sequence_4 as ps4
 
 PLANS = f"{BASE_URL}/sm/process-plan"
 QUANTITY = f"{BASE_URL}/semantics/Quantity"
@@ -35,6 +39,12 @@ QUANTITY_UNIT = f"{BASE_URL}/semantics/QuantityUnit"
 def plan_id(aas_id: str) -> str:
     """The identifier of a product's own Production Sequence: the planner finds the recipe by it."""
     return f"{PLANS}/{base64.urlsafe_b64encode(aas_id.encode()).decode().rstrip('=')}"
+
+
+def sequence_id(aas_id: str, arche_type: str) -> str:
+    """The identifier of a product's Production Sequence 4.0 of an archetype (Assembly,
+    Disassembly): its plan's identifier and the archetype."""
+    return f"{plan_id(aas_id)}/{arche_type}"
 
 
 class PartQuantity(Property):
@@ -94,12 +104,28 @@ class Product(AAS):
     process_parameters: ProcessParameters = ProcessParameters(id_short="ProcessParameters", Processes=Processes())
     capability_description: Optional[cd.CapabilityDescription] = None
     production_sequence: Optional[ProductionSequence] = None
+    assembly_sequence: Optional[ps4.ProductionSequence] = None
+    disassembly_sequence: Optional[ps4.ProductionSequence] = None
 
     @model_validator(mode="after")
     def the_recipe_has_the_planners_identifier(self):
         recipe = self.production_sequence
         if recipe is not None and recipe.id == recipe.id_short:          # no identifier given
             recipe.id = plan_id(self.id)
+        return self
+
+    @model_validator(mode="after")
+    def one_sequence_of_each_archetype(self):
+        """A 4.0 sequence is the one of its field's archetype; without an identifier of its own it
+        gets ``sequence_id``."""
+        for arche_type, recipe in (("Assembly", self.assembly_sequence), ("Disassembly", self.disassembly_sequence)):
+            if recipe is None:
+                continue
+            if recipe.ArcheType.value != arche_type:
+                raise ValueError(f"the {arche_type.lower()} sequence of {self.id_short} is of the archetype "
+                                 f"{recipe.ArcheType.value!r}")
+            if recipe.id == recipe.id_short:
+                recipe.id = sequence_id(self.id, arche_type)
         return self
 
 
