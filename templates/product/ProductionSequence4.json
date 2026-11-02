@@ -1,0 +1,2009 @@
+{
+ "assetAdministrationShells": [],
+ "submodels": [
+  {
+   "modelType": "Submodel",
+   "kind": "Template",
+   "idShort": "ProductionSequence",
+   "id": "https://smartproductionlab.aau.dk/SubmodelTemplate/ProductionSequence/4/0",
+   "semanticId": {
+    "type": "ExternalReference",
+    "keys": [
+     {
+      "type": "GlobalReference",
+      "value": "https://smartproductionlab.aau.dk/SubmodelTemplate/ProductionSequence/4/0"
+     }
+    ]
+   },
+   "administration": {
+    "version": "4",
+    "revision": "0"
+   },
+   "description": [
+    {
+     "language": "en",
+     "text": "A product's recipe as a partial order (proposed): the steps that make (Assembly) or take apart (Disassembly) the product, each step after the steps it needs, with the joints it makes or breaks. An AAS holds at most one sequence of each archetype. The recipe names no equipment."
+    }
+   ],
+   "submodelElements": [
+    {
+     "modelType": "Property",
+     "idShort": "ArcheType",
+     "semanticId": {
+      "type": "ExternalReference",
+      "keys": [
+       {
+        "type": "GlobalReference",
+        "value": "https://smartproductionlab.aau.dk/ProductionSequence/ArcheType/1/0"
+       }
+      ]
+     },
+     "description": [
+      {
+       "language": "en",
+       "text": "Assembly or Disassembly: what the sequence does with its subject."
+      }
+     ],
+     "qualifiers": [
+      {
+       "type": "SMT/Cardinality",
+       "valueType": "xs:string",
+       "kind": "TemplateQualifier",
+       "value": "One",
+       "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+         {
+          "type": "GlobalReference",
+          "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+         }
+        ]
+       }
+      }
+     ],
+     "valueType": "xs:string"
+    },
+    {
+     "modelType": "Property",
+     "idShort": "Revision",
+     "semanticId": {
+      "type": "ExternalReference",
+      "keys": [
+       {
+        "type": "GlobalReference",
+        "value": "https://smartproductionlab.aau.dk/ProductionSequence/Revision/1/0"
+       }
+      ]
+     },
+     "description": [
+      {
+       "language": "en",
+       "text": "Counts the saved changes of the sequence."
+      }
+     ],
+     "qualifiers": [
+      {
+       "type": "SMT/Cardinality",
+       "valueType": "xs:string",
+       "kind": "TemplateQualifier",
+       "value": "One",
+       "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+         {
+          "type": "GlobalReference",
+          "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+         }
+        ]
+       }
+      }
+     ],
+     "valueType": "xs:nonNegativeInteger"
+    },
+    {
+     "modelType": "Property",
+     "idShort": "Name",
+     "semanticId": {
+      "type": "ExternalReference",
+      "keys": [
+       {
+        "type": "GlobalReference",
+        "value": "https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0"
+       }
+      ]
+     },
+     "description": [
+      {
+       "language": "en",
+       "text": "The name shown for the sequence."
+      }
+     ],
+     "qualifiers": [
+      {
+       "type": "SMT/Cardinality",
+       "valueType": "xs:string",
+       "kind": "TemplateQualifier",
+       "value": "One",
+       "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+         {
+          "type": "GlobalReference",
+          "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+         }
+        ]
+       }
+      }
+     ],
+     "valueType": "xs:string"
+    },
+    {
+     "modelType": "ReferenceElement",
+     "idShort": "Subject",
+     "semanticId": {
+      "type": "ExternalReference",
+      "keys": [
+       {
+        "type": "GlobalReference",
+        "value": "https://smartproductionlab.aau.dk/ProductionSequence/Subject/1/0"
+       }
+      ]
+     },
+     "description": [
+      {
+       "language": "en",
+       "text": "The AAS of the product the sequence plans."
+      }
+     ],
+     "qualifiers": [
+      {
+       "type": "SMT/Cardinality",
+       "valueType": "xs:string",
+       "kind": "TemplateQualifier",
+       "value": "One",
+       "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+         {
+          "type": "GlobalReference",
+          "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "modelType": "SubmodelElementCollection",
+     "idShort": "Steps",
+     "semanticId": {
+      "type": "ExternalReference",
+      "keys": [
+       {
+        "type": "GlobalReference",
+        "value": "https://smartproductionlab.aau.dk/ProductionSequence/Steps/1/0"
+       }
+      ]
+     },
+     "description": [
+      {
+       "language": "en",
+       "text": "The nodes of the sequence."
+      }
+     ],
+     "qualifiers": [
+      {
+       "type": "SMT/Cardinality",
+       "valueType": "xs:string",
+       "kind": "TemplateQualifier",
+       "value": "One",
+       "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+         {
+          "type": "GlobalReference",
+          "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+         }
+        ]
+       }
+      }
+     ],
+     "value": [
+      {
+       "modelType": "SubmodelElementCollection",
+       "idShort": "Step__00__",
+       "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+         {
+          "type": "GlobalReference",
+          "value": "https://smartproductionlab.aau.dk/ProductionSequence/Step/1/0"
+         }
+        ]
+       },
+       "description": [
+        {
+         "language": "en",
+         "text": "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their After allows. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
+        }
+       ],
+       "qualifiers": [
+        {
+         "type": "SMT/Cardinality",
+         "valueType": "xs:string",
+         "kind": "TemplateQualifier",
+         "value": "ZeroToMany",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+           }
+          ]
+         }
+        }
+       ],
+       "value": [
+        {
+         "modelType": "Property",
+         "idShort": "NodeId",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/NodeId/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Identifies the node within its sequence."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "One",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "valueType": "xs:string"
+        },
+        {
+         "modelType": "Property",
+         "idShort": "Kind",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Kind/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "step, call, partial, parallel, conditional or decision."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "One",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "valueType": "xs:string"
+        },
+        {
+         "modelType": "Property",
+         "idShort": "Name",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "The name shown for the node."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "One",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "valueType": "xs:string"
+        },
+        {
+         "modelType": "Property",
+         "idShort": "Order",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Order/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Position among the nodes beside it. In a partial block, an order that respects After: the default the steps run in."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "One",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "valueType": "xs:nonNegativeInteger"
+        },
+        {
+         "modelType": "SubmodelElementList",
+         "idShort": "After",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/After/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "In a partial block: the steps beside this one that must be done before it starts. None: it is ready when the block starts."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "typeValueListElement": "ReferenceElement",
+         "orderRelevant": false,
+         "value": [
+          {
+           "modelType": "ReferenceElement",
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToMany",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "description": [
+            {
+             "language": "en",
+             "text": "A step of the same block (its collection in this submodel)."
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "modelType": "ReferenceElement",
+         "idShort": "ProcessOwner",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/ProcessOwner/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind step: the AAS whose process the step runs, where it is not the Subject."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "modelType": "ReferenceElement",
+         "idShort": "ProcessReference",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/ProcessReference/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind step: the process, in the owner's Process Parameters."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "RequiredCapabilities",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/RequiredCapabilities/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind step: the capabilities the step requires, where they differ from those of its process."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": [
+          {
+           "modelType": "ReferenceElement",
+           "idShort": "RequiredCapability__00__",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/RequiredCapability/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "A Required capability in a Capability Description."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToMany",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "Joints",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Joints/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind step: the joints the step makes (Assembly) or breaks (Disassembly)."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": [
+          {
+           "modelType": "AnnotatedRelationshipElement",
+           "idShort": "Joint__00__",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/JointConnection/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "A joint between two parts of the bill of material (first and second, entities of the Hierarchical Structures of the AAS that holds the step). What kind of joint it is, is also its supplemental semantic id."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToMany",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "first": {
+            "type": "ModelReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "EMPTY"
+             }
+            ]
+           },
+           "second": {
+            "type": "ModelReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "EMPTY"
+             }
+            ]
+           },
+           "annotations": [
+            {
+             "modelType": "Property",
+             "idShort": "JointType",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/JointType/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The kind of joint, as the joint tools name it: Screw, Plug, Bolt, Clip, PressFit, Crimp."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "JointStandard",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/JointStandard/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The standard the joint is made to, e.g. DIN 8593-3."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "ZeroToOne",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            }
+           ]
+          },
+          {
+           "modelType": "ReferenceElement",
+           "idShort": "JointReference__00__",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/JointReference/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "A joint defined in the product's sequence of the other archetype."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToMany",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "Outputs",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Outputs/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind step: what the step reports when done, for a decision to compare."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": [
+          {
+           "modelType": "SubmodelElementCollection",
+           "idShort": "Output__00__",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/Output/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "One value the step reports."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToMany",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "value": [
+            {
+             "modelType": "Property",
+             "idShort": "OutputId",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/OutputId/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "Identifies the output within its step."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "Name",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The name shown for the output."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "DataType",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/DataType/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The type of the value, e.g. xs:double, xs:boolean."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "Unit",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/Unit/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The unit of the value."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "ZeroToOne",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "modelType": "ReferenceElement",
+         "idShort": "SequenceReference",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/SequenceReference/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind call: the sequence that is run (a submodel)."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "modelType": "Property",
+         "idShort": "OccurrenceId",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/OccurrenceId/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind call: identifies this use of the called sequence."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "valueType": "xs:string"
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "Component",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Component/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind call: the part the called sequence makes."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": [
+          {
+           "modelType": "Property",
+           "idShort": "GlobalAssetId",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/GlobalAssetId/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "The part's global asset id."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "One",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "valueType": "xs:string"
+          },
+          {
+           "modelType": "ReferenceElement",
+           "idShort": "SourceAas",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/SourceAas/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "The AAS the part comes from."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "modelType": "ReferenceElement",
+           "idShort": "SourceElement",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/SourceElement/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "The element the part comes from."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "Condition",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Condition/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind conditional and decision: when the guarded steps run, or which branch is taken."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": [
+          {
+           "modelType": "Property",
+           "idShort": "ConditionType",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/ConditionType/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "everyNthProduct, or comparison (an output against Expected)."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "One",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "valueType": "xs:string"
+          },
+          {
+           "modelType": "Property",
+           "idShort": "EveryNProducts",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/EveryNProducts/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "everyNthProduct: every how many products."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "valueType": "xs:positiveInteger"
+          },
+          {
+           "modelType": "Property",
+           "idShort": "CounterScope",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/CounterScope/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "everyNthProduct: what the count runs over, e.g. productionRun."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "valueType": "xs:string"
+          },
+          {
+           "modelType": "Property",
+           "idShort": "Operator",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/Operator/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "comparison: lessThan, lessOrEqual, equal, greaterOrEqual, greaterThan."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "valueType": "xs:string"
+          },
+          {
+           "modelType": "Property",
+           "idShort": "Unit",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/Unit/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "comparison: the unit of Expected."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "valueType": "xs:string"
+          },
+          {
+           "modelType": "SubmodelElementCollection",
+           "idShort": "Expected",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/Expected/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "comparison: the value the output is compared with."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "value": [
+            {
+             "modelType": "Property",
+             "idShort": "DataType",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/DataType/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The type of the value."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "Value",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/Value/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The value."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:double"
+            }
+           ]
+          },
+          {
+           "modelType": "SubmodelElementCollection",
+           "idShort": "Operand",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/Operand/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "comparison: the output compared."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToOne",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "value": [
+            {
+             "modelType": "Property",
+             "idShort": "OperandType",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/OperandType/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "output: the output of a step done before."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "StepId",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/StepId/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The NodeId of the step."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "OutputId",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/OutputId/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The OutputId of its output."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "Steps",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Steps/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind partial and conditional: the steps inside, each a Step as described here."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": []
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "Branches",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Branches/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind parallel and decision: the branches. A decision has two: Order 0 when the condition holds, Order 1 when not."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": [
+          {
+           "modelType": "SubmodelElementCollection",
+           "idShort": "Branch__00__",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/Branch/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "One branch."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToMany",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "value": [
+            {
+             "modelType": "Property",
+             "idShort": "BranchId",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/BranchId/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "Identifies the branch."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "Name",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The name shown for the branch."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            },
+            {
+             "modelType": "Property",
+             "idShort": "Order",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/Order/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "Position among the branches."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:nonNegativeInteger"
+            },
+            {
+             "modelType": "SubmodelElementCollection",
+             "idShort": "Steps",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/Steps/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "The steps of the branch, each a Step as described here."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "One",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "value": []
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "conceptDescriptions": []
+}

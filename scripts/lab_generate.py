@@ -6,8 +6,9 @@ The templates in ``templates/`` are not IDTA's:
 - ``arso/``: the submodels of the resource ontology ARSO (https://w3id.org/2025/arso): Skills,
   Parameters and Control Configuration. They are written from the ontology by ``modreg generate``
   in iec61499-mgmt-py; do not edit them here.
-- ``product/``: Process Parameters (IDTA 02031-1 with the lab's extension) and Production Sequence
-  (the process sequence planner's recipe).
+- ``product/``: Process Parameters (IDTA 02031-1 with the lab's extension), Production Sequence
+  (the process sequence planner's recipe) and Production Sequence 4.0 (the recipe as a partial order
+  with joints, proposed).
 - ``process/``: the process AAS's Process Information, Bindings and Validation.
 
 ``idta_generate.py`` makes their classes as it makes the IDTA ones; this script runs it on each
@@ -27,6 +28,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -41,10 +43,15 @@ TEMPLATES = {
     "arso/ControlConfiguration.json": "arso",
     "product/ProcessParameters.json": "product",
     "product/ProductionSequence.json": "product",
+    "product/ProductionSequence4.json": "product",
     "process/ProcessInformation.json": "process",
     "process/Bindings.json": "process",
     "process/Validation.json": "process",
 }
+
+# Modules not named after the submodel's idShort: two versions of the Production Sequence, both
+# ``ProductionSequence``, live side by side.
+MODULES = {"product/ProductionSequence4.json": "production_sequence_4"}
 
 # Classes the generator names like classes of another template that has other fields. aas_pydantic
 # reads an element back as the class its dump names, so these get names of their own (the idShort
@@ -108,12 +115,16 @@ def generate(templates: dict[str, str] = TEMPLATES, out: Path = PACKAGE, root: P
     made = []
     for template, package in templates.items():
         source = root / "templates" / template
-        folder = out / package
-        idta_generate.gen_template(str(source), str(folder))
-        # The generator names the module after the submodel's idShort.
+        # The generator names the module after the submodel's idShort; it writes into a folder of its
+        # own, so a module of ``MODULES`` does not overwrite one of the same idShort.
         id_short = json.loads(source.read_text(encoding="utf-8"))["submodels"][0]["idShort"]
-        path = folder / f"{idta_generate.snake(idta_generate.safe_name(id_short))}.py"
-        path.write_text(finished(path.read_text(encoding="utf-8"), path.stem), encoding="utf-8", newline="\n")
+        written = f"{idta_generate.snake(idta_generate.safe_name(id_short))}.py"
+        path = out / package / f"{MODULES.get(template, written[:-3])}.py"
+        with tempfile.TemporaryDirectory() as scratch:
+            idta_generate.gen_template(str(source), scratch)
+            generated = (Path(scratch) / written).read_text(encoding="utf-8")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(finished(generated, path.stem), encoding="utf-8", newline="\n")
         made.append(path)
     return made
 

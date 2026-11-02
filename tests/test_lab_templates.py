@@ -28,7 +28,7 @@ def test_every_template_is_a_template_with_cardinalities(template):
     assert submodel["kind"] == "Template" and submodel["semanticId"]["keys"][0]["value"]
 
     def elements(element):
-        for child in element.get("submodelElements") or (element["value"] if isinstance(element.get("value"), list) else []):
+        for child in element.get("submodelElements") or element.get("annotations") or (element["value"] if isinstance(element.get("value"), list) else []):
             if "modelType" in child:                        # not the texts of a multi-language value
                 yield child
                 yield from elements(child)

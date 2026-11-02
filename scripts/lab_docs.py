@@ -27,7 +27,7 @@ from lab_generate import TEMPLATES  # noqa: E402
 DOCS = ROOT / "docs" / "lab-submodels"
 ELEMENTS = "<!-- The table below is written by scripts/lab_docs.py from the template; do not edit it. -->"
 KIND = {"SubmodelElementCollection": "SMC", "SubmodelElementList": "SML", "ReferenceElement": "Ref",
-        "RelationshipElement": "Rel", "MultiLanguageProperty": "MLP"}
+        "RelationshipElement": "Rel", "AnnotatedRelationshipElement": "ARE", "MultiLanguageProperty": "MLP"}
 
 
 def cardinality(element: dict) -> str:
@@ -50,8 +50,11 @@ def code(value: str) -> str:
 
 
 def name(element: dict) -> str:
-    """The idShort; one a user names (``Step__00__``) as ``{Step}``."""
+    """The idShort; one a user names (``Step__00__``) as ``{Step}``; an item of a list, which has
+    none, as ``[]``."""
     id_short = element.get("idShort", "")
+    if not id_short:
+        return "[]"
     return f"{{{id_short.split('__')[0]}}}" if "__" in id_short else id_short
 
 
@@ -73,8 +76,9 @@ def rows(elements: list[dict], path: str = "", seen: dict | None = None) -> list
         if "modelType" not in element:
             continue
         here = f"{path}/{name(element)}" if path else name(element)
-        inside = [c for c in element.get("value") or [] if isinstance(c, dict) and "modelType" in c] \
-            if isinstance(element.get("value"), list) else []
+        # The children of a collection or list; the annotations of an annotated relationship.
+        children = element.get("annotations") or (element.get("value") if isinstance(element.get("value"), list) else [])
+        inside = [c for c in children if isinstance(c, dict) and "modelType" in c]
         key = json.dumps({k: v for k, v in element.items() if k != "qualifiers"}, sort_keys=True)
         if inside and key in seen:
             made.append(f"| `{here}` | {kind(element)} | {cardinality(element)} | {code(semantic(element))} | "
