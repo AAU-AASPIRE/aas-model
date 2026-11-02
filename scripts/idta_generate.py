@@ -327,10 +327,14 @@ def children_of(el: dict) -> list:
     return [
         c
         for c in (el.get("submodelElements") or el.get("value")
-                  or el.get("statements") or [])
+                  or el.get("statements") or el.get("annotations") or [])
         if isinstance(c, dict)
     ]
 
+
+# Elements generated as a class with named fields: a collection's children, an
+# entity's statements, an annotated relationship's annotations.
+CONTAINERS = ("SubmodelElementCollection", "Entity", "AnnotatedRelationshipElement")
 
 _RESERVED_FIELDS = {
     "id", "id_short", "description", "display_name", "semantic_id",
@@ -378,6 +382,7 @@ def gen_template(template_path: str, output_dir: str):
         nm = safe_name(el.get("idShort", ""))
         if nm and el.get("modelType") in (
             "Submodel", "SubmodelElementCollection", "Entity", "SubmodelElementList",
+            "AnnotatedRelationshipElement",
         ):
             s = extract_semantic_id(el)
             if s and nm not in primary_sid:
@@ -418,6 +423,9 @@ def gen_template(template_path: str, output_dir: str):
     order = []
     entity_classes = set()
     sml_classes = set()
+    # An AnnotatedRelationshipElement is generated as a container: its
+    # annotations are its named fields, as a collection's children.
+    relationship_classes = set()
     leaf_bases = {}  # dedicated leaf element class name → base (leaf) class name
     leaf_identities = {}  # full definition (including metadata) → class name
     base_aliases = set()
@@ -426,10 +434,11 @@ def gen_template(template_path: str, output_dir: str):
         "SubmodelElementList",
     }
 
-    def register(name, meta, body, is_entity=False, is_sml=False):
+    def register(name, meta, body, is_entity=False, is_sml=False, is_relationship=False):
         if name in leaf_bases or (
             name in classes and (is_entity != (name in entity_classes) or
-                                 is_sml != (name in sml_classes))
+                                 is_sml != (name in sml_classes) or
+                                 is_relationship != (name in relationship_classes))
         ):
             raise ValueError(f"Conflicting element types for generated class {name}")
         if name not in classes:
@@ -452,6 +461,8 @@ def gen_template(template_path: str, output_dir: str):
             entity_classes.add(name)
         if is_sml:
             sml_classes.add(name)
+        if is_relationship:
+            relationship_classes.add(name)
 
     def _disambiguated_leaf_name(base_name: str, sid: str, leaf_cls: str) -> str:
         """Unique class name for a leaf whose plain CamelCase name is owned by
@@ -589,9 +600,7 @@ def gen_template(template_path: str, output_dir: str):
                 raise ValueError(f"Duplicate or colliding idShorts in {cname}: {raw_name!r} and {field_id_shorts[skey]!r}")
             field_id_shorts[skey] = raw_name
             mt = c.get("modelType", "")
-            if mt not in ELEMENT_MAP and mt not in (
-                "SubmodelElementCollection", "Entity", "SubmodelElementList"
-            ):
+            if mt not in ELEMENT_MAP and mt not in CONTAINERS + ("SubmodelElementList",):
                 raise ValueError(f"Unsupported modelType {mt!r} for {cname}.{skey}")
             if mt == "Operation" and any(c.get(k) for k in (
                 "inputVariables", "outputVariables", "inoutputVariables", "inOutputVariables"
@@ -612,7 +621,7 @@ def gen_template(template_path: str, output_dir: str):
                 # with ``semantic_id``) — back-conversion groups by the
                 # resolved element class, so no ``_multi_cardinality`` ClassVar
                 # is needed.
-                if mt in ("SubmodelElementCollection", "Entity"):
+                if mt in CONTAINERS:
                     if (child_name, child_sid) in stack_map:
                         # recursive child (e.g. HSEM Node in Node) — an empty
                         # Dict[str, <container>] map; no instantiation, so the
@@ -636,7 +645,7 @@ def gen_template(template_path: str, output_dir: str):
                     fields.append(element_field(skey, raw_name, (elem_cls,),
                                                 shape="map", minimum=minimum))
                 continue
-            if mt in ("SubmodelElementCollection", "Entity"):
+            if mt in CONTAINERS:
                 if (child_name, child_sid) in stack_map:
                     # Recursive single-cardinality child (AID object schema:
                     # ``property_name → properties → property_name``).  These
@@ -673,7 +682,10 @@ def gen_template(template_path: str, output_dir: str):
             gid = el.get("globalAssetId")
             if gid:
                 meta.append(f'    global_asset_id: str = {json.dumps(gid)}')
-        register(cname, meta, fields, is_entity=is_entity)
+        is_relationship = mt_el == "AnnotatedRelationshipElement"
+        if is_relationship:
+            _used_leaf_types.add("AnnotatedRelationshipElement")
+        register(cname, meta, fields, is_entity=is_entity, is_relationship=is_relationship)
         return fields
 
     def _walk_sml(c: dict, stack: tuple):
@@ -772,13 +784,16 @@ def gen_template(template_path: str, output_dir: str):
             base = "Entity"
         elif name in sml_classes:
             base = "SubmodelElementList"
+        elif name in relationship_classes:
+            base = "AnnotatedRelationshipElement"
         elif name in leaf_bases:
             base = leaf_bases[name]
         else:
             base = "SubmodelElementCollection"
         body.append(f"class {name}({base}):")
         body.extend(meta)
-        if not cbody and base in ("Submodel", "Entity", "SubmodelElementCollection"):
+        if not cbody and base in ("Submodel", "Entity", "SubmodelElementCollection",
+                                  "AnnotatedRelationshipElement"):
             body.append('    pass')
         for field in cbody:
             # Pydantic resolves a same-named annotation to the field itself.
@@ -832,7 +847,7 @@ def gen_template(template_path: str, output_dir: str):
     lines.append(f"from typing import {', '.join(typing_names)}")
     lines.append('from aas_pydantic import (')
     aas_types = {"Submodel", "SubmodelElement", "SubmodelElementCollection",
-                 "SubmodelElementList", "Entity", "Qualifier",
+                 "SubmodelElementList", "Entity", "AnnotatedRelationshipElement", "Qualifier",
                  "ExternalReference", "ModelReference", "Key"}
     aas_types |= set(ELEMENT_MAP.values())
     imports = sorted(t for t in _used_leaf_types if t in aas_types)

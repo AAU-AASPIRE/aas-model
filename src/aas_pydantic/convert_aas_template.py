@@ -120,6 +120,8 @@ def get_submodel_element_type(
         return convert_submodel_list_to_pydantic_model(sm_element, immutable)
     elif isinstance(sm_element, model.ReferenceElement):
         return convert_reference_element_to_pydantic_model(sm_element)
+    elif isinstance(sm_element, model.AnnotatedRelationshipElement):
+        return aas_model.AnnotatedRelationshipElement
     elif isinstance(sm_element, model.RelationshipElement):
         return convert_relationship_element_to_pydantic_model(sm_element)
     elif isinstance(sm_element, model.Property):

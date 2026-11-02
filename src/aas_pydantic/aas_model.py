@@ -763,11 +763,21 @@ class Blob(SubmodelElement):
     value: Optional[bytes] = None
 
 
+class AnnotatedRelationshipElement(RelationshipElement):
+    """A RelationshipElement with annotations: data elements (Property, Range,
+    File, Blob, ReferenceElement, MultiLanguageProperty) that say more about
+    the relationship.  A subclass declares its annotations as DIRECT named
+    fields, as a collection its children; any other annotation lands in
+    ``annotations``, keyed by its id_short."""
+    id_short: AasIdString = "AnnotatedRelationshipElement"
+    annotations: Dict[str, Union[Property, MultiLanguageProperty, Range, ReferenceElement, File, Blob]] = {}
+
+
 # All concrete SubmodelElement types.  Used by ``is_valid_submodel_element``
 # to validate serialized (dict) elements under ``extra="forbid"``.
 _CONCRETE_ELEMENT_TYPES: tuple = (
     Property, MultiLanguageProperty, Range, ReferenceElement, RelationshipElement,
-    SubmodelElementCollection, SubmodelElementList, File, Blob, Entity,
+    AnnotatedRelationshipElement, SubmodelElementCollection, SubmodelElementList, File, Blob, Entity,
     Operation, Capability,
 )
 
@@ -793,6 +803,7 @@ _ELEMENT_TYPE_BY_MODELTYPE = {
     "Range": Range,
     "ReferenceElement": ReferenceElement,
     "RelationshipElement": RelationshipElement,
+    "AnnotatedRelationshipElement": AnnotatedRelationshipElement,
     "File": File,
     "Blob": Blob,
     "Capability": Capability,

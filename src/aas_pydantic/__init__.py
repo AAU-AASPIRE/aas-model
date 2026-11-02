@@ -1,7 +1,7 @@
 from aas_pydantic.aas_model import (
     AAS, Blob, Capability, Entity, ExternalReference, File, Key,
     ModelReference, MultiLanguageProperty, Operation,
-    Property, Qualifier, Range, Reference, ReferenceElement, RelationshipElement,
+    Property, Qualifier, Range, Reference, ReferenceElement, RelationshipElement, AnnotatedRelationshipElement,
     Submodel, SubmodelElement, SubmodelElementCollection, SubmodelElementList,
     Cardinality, DynamicSubmodelElementCollection, validate_idta_cardinality,
 )

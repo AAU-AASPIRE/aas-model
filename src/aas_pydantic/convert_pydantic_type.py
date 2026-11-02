@@ -316,7 +316,12 @@ def create_submodel_element_template(
                 ),
             )
         )
-        return model.RelationshipElement(
+        relationship = (
+            model.AnnotatedRelationshipElement
+            if issubclass(attribute_type, aas_model.AnnotatedRelationshipElement)
+            else model.RelationshipElement
+        )
+        return relationship(
             id_short=attribute_name, first=empty_ref, second=empty_ref
         )
     elif issubclass(attribute_type, aas_model.File):

@@ -155,6 +155,10 @@ def get_submodel_element_value(
         return convert_multi_language_property_to_pydantic_model(sm_element)
     elif isinstance(sm_element, model.Range):
         return convert_range_to_pydantic_model(sm_element)
+    elif isinstance(sm_element, model.AnnotatedRelationshipElement):
+        return convert_annotated_relationship_element_to_pydantic_model(
+            sm_element, attribute_type
+        )
     elif isinstance(sm_element, model.RelationshipElement):
         return convert_relationship_element_to_pydantic_model(sm_element)
     elif isinstance(sm_element, model.Capability):
@@ -272,6 +276,8 @@ def _resolve_element_cls(
         return aas_model.SubmodelElementCollection
     if isinstance(basyx_el, model.SubmodelElementList):
         return aas_model.SubmodelElementList
+    if isinstance(basyx_el, model.AnnotatedRelationshipElement):
+        return aas_model.AnnotatedRelationshipElement
     return None
 
 
@@ -715,6 +721,8 @@ def _container_element_to_pydantic(
         return get_submodel_element_value(basyx_el, None)
     if isinstance(basyx_el, (model.Entity, model.SubmodelElementCollection)):
         data = _container_data_for(basyx_el, cls)
+    elif isinstance(basyx_el, model.AnnotatedRelationshipElement):
+        data = _annotated_relationship_data(basyx_el, cls)
     elif isinstance(basyx_el, model.SubmodelElementList):
         items = []
         item_cls = getattr(cls, "item_type", None)
@@ -1174,6 +1182,29 @@ def convert_relationship_element_to_pydantic_model(
         first=_convert_basyx_reference_to_pydantic(sm_element.first),
         second=_convert_basyx_reference_to_pydantic(sm_element.second),
     )
+
+
+def _annotated_relationship_data(basyx_el, cls) -> typing.Dict[str, typing.Any]:
+    """Pydantic data for an AnnotatedRelationshipElement *cls*: its endpoints,
+    and its annotations routed as the children of a collection (to the named
+    fields, else to the ``annotations`` map)."""
+    return {
+        **_element_meta(basyx_el),
+        "first": _convert_basyx_reference_to_pydantic(basyx_el.first),
+        "second": _convert_basyx_reference_to_pydantic(basyx_el.second),
+        **_container_named_field_data(cls, basyx_el.annotation),
+    }
+
+
+def convert_annotated_relationship_element_to_pydantic_model(
+    sm_element: model.AnnotatedRelationshipElement,
+    model_type: type = None,
+) -> aas_model.AnnotatedRelationshipElement:
+    """
+    Converts a basyx AnnotatedRelationshipElement to an aas_pydantic one.
+    """
+    cls = model_type or aas_model.AnnotatedRelationshipElement
+    return cls(**_annotated_relationship_data(sm_element, cls))
 
 
 def convert_capability_to_pydantic_model(

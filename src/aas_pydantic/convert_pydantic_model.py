@@ -390,6 +390,33 @@ def create_submodel_element(
             semantic_id=sid or get_semantic_id(attribute_value),
             qualifier=q, supplemental_semantic_id=s, description=d, display_name=dn)
 
+    if isinstance(attribute_value, aas_model.AnnotatedRelationshipElement):
+        q, s, d, dn = _model_metadata(attribute_value)
+        if not attribute_value.first or not attribute_value.second:
+            return None
+        # The annotations are the named fields (and the ``annotations`` map),
+        # converted as the children of a collection.
+        annotations = []
+        for attribute_info in get_attribute_infos(attribute_value):
+            if attribute_info.name in ("first", "second"):
+                continue
+            if isinstance(attribute_info.value, dict):
+                annotations.extend(_inline_dict_children(
+                    attribute_info.value, field_info=attribute_info.field_info))
+                continue
+            sme = create_submodel_element(
+                _aas_attribute_name(attribute_info), attribute_info.value,
+                field_info=attribute_info.field_info)
+            if sme:
+                annotations.append(sme)
+        return model.AnnotatedRelationshipElement(
+            id_short=attribute_name,
+            first=_make_basyx_reference(attribute_value.first),
+            second=_make_basyx_reference(attribute_value.second),
+            annotation=annotations,
+            semantic_id=sid or get_semantic_id(attribute_value),
+            qualifier=q, supplemental_semantic_id=s, description=d, display_name=dn)
+
     if isinstance(attribute_value, aas_model.RelationshipElement):
         q, s, d, dn = _model_metadata(attribute_value)
         first = (
@@ -600,6 +627,7 @@ _AAS_TO_BASYX_ELEMENT = (
     (aas_model.MultiLanguageProperty, model.MultiLanguageProperty),
     (aas_model.Range, model.Range),
     (aas_model.ReferenceElement, model.ReferenceElement),
+    (aas_model.AnnotatedRelationshipElement, model.AnnotatedRelationshipElement),
     (aas_model.RelationshipElement, model.RelationshipElement),
     (aas_model.File, model.File),
     (aas_model.Blob, model.Blob),
