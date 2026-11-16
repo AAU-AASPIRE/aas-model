@@ -1,5 +1,5 @@
 """TimeSeries - generated from IDTA template.
-Source: Time Series Data/1/1/2/IDTA 02008-1-1-2_Template_TimeSeriesData_forAASMetamodelV3.1.json
+Source: Time Series Data/1/1/3/IDTA 02008-1-1-3_Template_TimeSeriesData.json
 """
 
 from __future__ import annotations

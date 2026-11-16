@@ -1,5 +1,5 @@
 """HierarchicalStructures - generated from IDTA template.
-Source: Hierarchical Structures enabling Bills of Material/1/1/2/IDTA 02011-1-1-2_Template_HSEBoM_forAASMetamodelV3.1.json
+Source: Hierarchical Structures enabling Bills of Material/1/1/4/IDTA 02011-1-1-4_Template_HSEBoM.json
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ class BulkCount(Property):
 class Node(Entity):
     id_short: AasIdString = "Node"
     semantic_id: str = "https://admin-shell.io/idta/HierarchicalStructures/Node/1/0"
-    description: str = "Base entry point for the Entity tree in this Submodel, this must be a Self-managed Entity reflecting the Assets administrated in the Asset Administration Shell this Submodel is part of. The idShort of the EntryNode can be picked freely and may reflect a name of the asset."
+    description: str = "Can be a Co-managed or Self-managed entity. A Node reflects an element in the hierarchical model is set into relation with one or more defined relations. The name of a node can be picked freely but it must be unique in its hierarchical (sub-)level."
     entity_type: str = "SelfManagedEntity"
     Node: Dict[str, Node_t] = {}
     SameAs: Dict[str, SameAs_t] = {}

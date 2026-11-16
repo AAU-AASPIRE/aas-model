@@ -84,14 +84,14 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_ROOT = os.path.join(_ROOT, "submodel-templates", "published")
 OUTPUT_ROOT = os.path.join(_ROOT, "src", "aas_pydantic", "submodel_templates")
 TEMPLATES = (
-    "Capability Description/1/0/1/IDTA 02020_Template_Capability_Description.json",
-    "Control Component Instance/2/0/1/IDTA 02016-2-0-1 _Template_ControlComponentInstance_forAASMetamodelV3.1.json",
-    "Control Component Type/2/0/2/IDTA 02015-2-0-2 _Template_ControlComponentType_forAASMetamodelV3.1.json",
-    "Hierarchical Structures enabling Bills of Material/1/1/2/IDTA 02011-1-1-2_Template_HSEBoM_forAASMetamodelV3.1.json",
-    "Digital nameplate/3/0/2/IDTA 02006-3-0-2_Template_Digital Nameplate.json",
-    "Asset Interfaces Mapping Configuration/2/1/IDTA 02027_Template_AIMC.json",
-    "Asset Interfaces Description/1/2/IDTA 02017_Template_Asset Interfaces Description.json",
-    "Time Series Data/1/1/2/IDTA 02008-1-1-2_Template_TimeSeriesData_forAASMetamodelV3.1.json",
+    "Capability Description/1/0/2/IDTA 02020_Template_Capability_Description.json",
+    "Control Component Instance/2/0/2/IDTA 02016-2-0-2 _Template_ControlComponentInstance.json",
+    "Control Component Type/2/0/3/IDTA 02015-2-0-3 _Template_ControlComponentType.json",
+    "Hierarchical Structures enabling Bills of Material/1/1/4/IDTA 02011-1-1-4_Template_HSEBoM.json",
+    "Digital nameplate/3/0/3/IDTA 02006-3-0-3_Template_Digital Nameplate.json",
+    "Asset Interfaces Mapping Configuration/2/0/1/IDTA 02027_Template_AIMC.json",
+    "Asset Interfaces Description/1/2/1/IDTA 02017_Template_Asset Interfaces Description.json",
+    "Time Series Data/1/1/3/IDTA 02008-1-1-3_Template_TimeSeriesData.json",
 )
 
 

@@ -1,5 +1,5 @@
 """AssetInterfacesMappingConfiguration - generated from IDTA template.
-Source: Asset Interfaces Mapping Configuration/2/1/IDTA 02027_Template_AIMC.json
+Source: Asset Interfaces Mapping Configuration/2/0/1/IDTA 02027_Template_AIMC.json
 """
 
 from __future__ import annotations

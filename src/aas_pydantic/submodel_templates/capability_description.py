@@ -1,5 +1,5 @@
 """CapabilityDescription - generated from IDTA template.
-Source: Capability Description/1/0/1/IDTA 02020_Template_Capability_Description.json
+Source: Capability Description/1/0/2/IDTA 02020_Template_Capability_Description.json
 """
 
 from __future__ import annotations

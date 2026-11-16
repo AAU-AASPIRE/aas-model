@@ -1,5 +1,5 @@
 """Nameplate - generated from IDTA template.
-Source: Digital nameplate/3/0/2/IDTA 02006-3-0-2_Template_Digital Nameplate.json
+Source: Digital nameplate/3/0/3/IDTA 02006-3-0-3_Template_Digital Nameplate.json
 """
 
 from __future__ import annotations
@@ -196,6 +196,7 @@ class Markings(SubmodelElementList):
     description: str = "Note: CE marking is declared as mandatory according to EU Blue Guide"
     supplemental_semantic_ids: List[str] = ["0173-1#02-ABI563#003/0173-1#01-AHF849#003"]
     type_value_list_element: str = "SubmodelElementCollection"
+    order_relevant: bool = False
     ITEM_CARDINALITY: ClassVar[str] = 'OneToMany'
     item_type: ClassVar = MarkingsItem
     value: List[MarkingsItem] = []

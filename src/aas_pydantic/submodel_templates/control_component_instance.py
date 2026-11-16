@@ -1,5 +1,5 @@
 """ControlComponentInstance - generated from IDTA template.
-Source: Control Component Instance/2/0/1/IDTA 02016-2-0-1 _Template_ControlComponentInstance_forAASMetamodelV3.1.json
+Source: Control Component Instance/2/0/2/IDTA 02016-2-0-2 _Template_ControlComponentInstance.json
 """
 
 from __future__ import annotations

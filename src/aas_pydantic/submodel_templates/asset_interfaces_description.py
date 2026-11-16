@@ -1,5 +1,5 @@
 """AssetInterfacesDescription - generated from IDTA template.
-Source: Asset Interfaces Description/1/2/IDTA 02017_Template_Asset Interfaces Description.json
+Source: Asset Interfaces Description/1/2/1/IDTA 02017_Template_Asset Interfaces Description.json
 """
 
 from __future__ import annotations
