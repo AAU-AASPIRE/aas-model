@@ -17,6 +17,8 @@ write their rows into a series' LinkedSegment, so the AAS describes the
 history rather than holding the current value. Data that is not a time
 series (the latest camera image) is a plain ``VariableProp`` in its group,
 or a ``VariableItem`` when several values belong together.
+``Measurements`` also holds the asset's ``Coordinates`` (``coordinates.py``): where it
+and its points are, each relative to another coordinate by reference.
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from aas_pydantic import Property, Submodel, SubmodelElementCollection
 from aas_pydantic.aas_model import AasIdString
 
 from aas_model.constants import BASE_URL
+from aas_model.submodel_templates.coordinates import Coordinates
 from aas_model.submodel_templates.time_series import TimeSeriesCollection
 
 SM_VARIABLES = f"{BASE_URL}/submodels/Variables/1/0"
@@ -59,6 +62,9 @@ class VariableItem(SubmodelElementCollection):
 # A group entry is a time series, or a plain element for data that is not one.
 GroupEntry = Union[TimeSeriesCollection, VariableProp, VariableItem]
 
+# Measurements also hold where the asset and its points are.
+MeasurementsEntry = Union[TimeSeriesCollection, VariableProp, VariableItem, Coordinates]
+
 
 class StateGroup(SubmodelElementCollection):
     """Discrete status that changes on events (PackML state, occupation)."""
@@ -68,10 +74,10 @@ class StateGroup(SubmodelElementCollection):
 
 
 class MeasurementsGroup(SubmodelElementCollection):
-    """Values sampled from the asset (weight, position, inspection results)."""
+    """Values sampled from the asset (weight, position, inspection results), and its Coordinates."""
     id_short: AasIdString = "Measurements"
     semantic_id: str = VAR_MEASUREMENTS
-    value: Dict[str, GroupEntry] = {}
+    value: Dict[str, MeasurementsEntry] = {}
 
 
 class LogGroup(SubmodelElementCollection):

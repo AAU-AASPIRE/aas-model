@@ -98,3 +98,22 @@ in (a data schema in a data schema) without its children. `tests/test_template_e
 checks that every pinned IDTA template exports from its generated class as the
 template it was generated from (the known differences are listed there), and
 that our extensions generate back to the same classes.
+
+# The lab's own submodels
+
+`lab_generate.py` regenerates the classes of the submodel templates in `templates/` that are not
+IDTA's: ARSO's Skills, Parameters and Control Configuration (`templates/arso`, written from the
+ontology by `modreg generate` in iec61499-mgmt-py), the product's Process Parameters and Production
+Sequence (`templates/product`) and the process AAS's Process Information, Bindings and Validation
+(`templates/process`). It runs `idta_generate.py` on each and writes the modules into
+`src/aas_model/submodel_templates/{arso,product,process}`, with three changes listed in the script.
+`docs/lab-submodels/` describes each submodel: what it is for and why, written by hand, then a
+table of its elements that `lab_docs.py` writes from the template. `docs/lab-aas.md` is the overview.
+
+```bash
+python scripts/lab_generate.py
+python scripts/lab_docs.py
+```
+
+`tests/test_lab_templates.py` fails when the checked-in modules are not a regeneration, or a table
+is not that of its template.

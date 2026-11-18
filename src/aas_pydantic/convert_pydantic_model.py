@@ -50,7 +50,9 @@ def convert_model_to_aas(
     asset_type = getattr(model_aas, "asset_type", "") or None
     asset_information = model.AssetInformation(
         global_asset_id=model.Identifier(model_aas.id),
-        asset_kind=model.AssetKind.INSTANCE,
+        # A model of a kind of asset (a product type) states it: ``ASSET_KIND = "Type"``.
+        asset_kind=(model.AssetKind.TYPE if getattr(type(model_aas), "ASSET_KIND", "Instance") == "Type"
+                    else model.AssetKind.INSTANCE),
         asset_type=model.Identifier(asset_type) if asset_type else None,
     )
     specific_ids = getattr(model_aas, "specific_asset_ids", {}) or {}

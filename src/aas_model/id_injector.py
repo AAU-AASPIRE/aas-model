@@ -1,8 +1,8 @@
 """Give an authored AAS its ids, and resolve what was written against them.
 
 A resource is authored without ids: the shell's id follows from its idShort (``{BASE_URL}/aas/<idShort>``) and
-each submodel's from the shell's (``{aas_id}/submodels/<idShort>``, see ``constants``). References and values
-written against those (``{aas_id}``, ``{aas_id_short}``) are resolved once the ids are known. idShorts need no
+each submodel's from the shell's (``{aas_id}/submodels/<idShort>``, see ``constants``). References, values and
+entities' asset ids written against those (``{aas_id}``, ``{aas_id_short}``) are resolved once the ids are known. idShorts need no
 injection: a child's idShort is its map key or field name (``aas_pydantic``).
 """
 
@@ -56,6 +56,9 @@ def _resolve_macros(model: Any, aas_id: str, aas_id_short: str) -> None:
         if isinstance(model.value, str) and any(macro in model.value for macro in _MACROS):
             model.value = _resolve(model.value, aas_id, aas_id_short)
     elif isinstance(model, BaseModel):
+        asset = getattr(model, "global_asset_id", None)       # an Entity's asset, the AAS's own as an entry node
+        if isinstance(asset, str) and any(macro in asset for macro in _MACROS):
+            model.global_asset_id = _resolve(asset, aas_id, aas_id_short)
         for field_name in type(model).model_fields:
             _resolve_macros(getattr(model, field_name, None), aas_id, aas_id_short)
     elif isinstance(model, dict):
