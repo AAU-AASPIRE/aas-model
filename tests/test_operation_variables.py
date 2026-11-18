@@ -71,7 +71,7 @@ def test_operation_aimc_uses_explicit_input_and_output_variable_references():
     declared_inputs = {variable.id_short for variable in (
         *operation.input_variable, *operation.in_output_variable,
     )}
-    assert set(source_ids) == declared_inputs == {"Uuid", "Volume"}
+    assert set(source_ids) == declared_inputs == {"Uuid", "Volume", "Unit"}
     for source, variable in zip(mapping.Sources.value, source_ids):
         assert [(key.type_, key.value) for key in source.Source.value.key[-2:]] == [
             ("Operation", "operation"), ("Property", variable),

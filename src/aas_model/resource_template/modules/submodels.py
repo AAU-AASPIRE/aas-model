@@ -5,9 +5,8 @@ here is what they leave open, and the changes to IDTA templates a module needs:
 
 - **Skills**: a skill under a name of its own (``ModuleSkill``), so it is not read back as the
   Control Component Instance's ``Skill``.
-- **Capability Description** (IDTA 02020): a capability is realized by a skill of the same AAS or of
-  a component's (a model reference, where IDTA leaves an external one); a property is the variable
-  of the module it is (``SameAs``); a constraint is a ``BasicConstraint`` expression.
+- **Capability Description** (IDTA 02020): the lab's extension, shared with the stations
+  (``aas_model.submodel_templates.capability_description``).
 - **Asset Interfaces Description**: one OPC UA server, no MQTT.
 - **Hierarchical Structures**: parts that have parts in turn.
 """
@@ -16,8 +15,7 @@ from __future__ import annotations
 
 from typing import Dict, Optional
 
-from aas_pydantic import ModelReference, Property
-from aas_pydantic.submodel_templates import capability_description as cd
+from aas_pydantic import Property
 from aas_pydantic.submodel_templates.hierarchical_structures import (
     ArcheType, ArcheType_t, EntryNode, HierarchicalStructures, Node,
 )
@@ -32,6 +30,12 @@ from aas_model.resource_template.resources import ResourceNameplate
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription, DmpOpcuaInterface, MqttInterface
 from aas_model.submodel_templates.arso import skills
 from aas_model.submodel_templates.arso.control_configuration import ControlConfiguration
+# The Capability Description as the modules state it is the lab's extension of IDTA 02020, which the stations
+# use too; imported here, where modreg finds it.
+from aas_model.submodel_templates.capability_description import (  # noqa: F401
+    BasicConstraintContainer, ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations,
+    ModuleCapabilitySet, ModuleConstraintSet, RealizedBySkill, SameAs, StatedProperty, StatedPropertySet,
+)
 
 
 class LabNameplate(ResourceNameplate):
@@ -58,62 +62,6 @@ class ModuleSkills(skills.Skills):
     """The Skills submodel: the skills, the module's own commands (``Module``) and the errors."""
     Skill: Dict[str, ModuleSkill] = {}
     Errors: skills.Errors = skills.Errors()
-
-
-# ── Capability Description ───────────────────────────────────────────────────
-
-class RealizedBySkill(cd.CapabilityRealizedBy):
-    """IDTA 02020 leaves the skill open (an external reference); ARSO wants a skill of the same AAS
-    or of a component's (its primitive), so here it is a model reference to it."""
-    second: ModelReference = ModelReference()
-
-
-class SameAs(cd.SameProperty):
-    """IDTA 02020 leaves both ends open; here the property (first) names the variable of the module
-    it is (second), so that the capabilities naming it talk of one state."""
-    first: ModelReference = ModelReference()
-    second: ModelReference = ModelReference()
-
-
-class StatedProperty(cd.PropertyContainer):
-    SameProperty: Dict[str, SameAs] = {}
-
-
-class StatedPropertySet(cd.PropertySet):
-    PropertyContainer: Dict[str, StatedProperty] = {}
-
-
-class BasicConstraintContainer(cd.PropertyConstraintContainer):
-    """A property constraint in the form a resource states it (ARSO 0.11): a BasicConstraint, an
-    expression over the capability's properties. IDTA 02020 has exactly one of four forms; the
-    generated class asks for all four."""
-    CustomConstraint: Optional[cd.CustomConstraint] = None
-    OCLConstraint: Optional[cd.OCLConstraint] = None
-    OperationConstraint: Optional[cd.OperationConstraint] = None
-
-
-class ModuleConstraintSet(cd.ConstraintSet):
-    PropertyConstraintContainer: Dict[str, BasicConstraintContainer] = {}
-
-
-class ModuleCapabilityRelations(cd.CapabilityRelations):
-    CapabilityRealizedBy: Dict[str, RealizedBySkill] = {}
-    ConstraintSet: Dict[str, ModuleConstraintSet] = {}
-
-
-class ModuleCapabilityContainer(cd.CapabilityContainer):
-    PropertySet: Dict[str, StatedPropertySet] = {}
-    CapabilityRelations: Optional[ModuleCapabilityRelations] = None
-
-
-class ModuleCapabilitySet(cd.CapabilitySet):
-    CapabilityContainer: Dict[str, ModuleCapabilityContainer] = {}
-
-
-class ModuleCapabilityDescription(cd.CapabilityDescription):
-    """The capabilities a module offers, each realized by one of its skills, and in a set per
-    component the capabilities of its components, each realized by a primitive (ARSO 0.11)."""
-    CapabilitySet: Dict[str, ModuleCapabilitySet] = {}
 
 
 # ── Control Configuration ────────────────────────────────────────────────────

@@ -32,7 +32,10 @@ from aas_pydantic.submodel_templates.control_component_instance import (
     ControlComponentInstance, Type_instance,
 )
 
-from aas_model.constants import BASE_URL, CONTROL_COMPONENT_TYPE_SUBMODEL_ID, CSSX, INVOCATION_URL_TEMPLATE
+from aas_model.constants import (
+    BASE_URL, CONTROL_COMPONENT_TYPE_SUBMODEL_ID, CSSX, INVOCATION_URL_TEMPLATE, OPERATION_VARIABLE_PARAMETER,
+    OPERATION_VARIABLE_SUBJECT,
+)
 
 
 EXECUTION_MODEL = f"{BASE_URL}/ExectionModel"
@@ -102,6 +105,21 @@ class OptionalVariable(Qualifier):
     value_type: str = "xs:boolean"
     kind: str = "ConceptQualifier"
     semantic_id: str = OPERATION_VARIABLE_OPTIONAL
+
+
+class SubjectVariable(Property):
+    """An Operation variable that carries a subject only known at run time (the unit a station fills, the unit a
+    shuttle carries), as an IRI. The DMP grounds the capability's effects on it; it never enters the payload.
+    Optional, so a manual call still works: effects about a subject that was not passed leave it unknown."""
+    semantic_id: str = OPERATION_VARIABLE_SUBJECT
+    description: str = "The subject this call acts on, as an IRI."
+    qualifiers: List[Qualifier] = [OptionalVariable()]
+
+
+class ParameterVariable(Property):
+    """An Operation variable the payload is built from; what it means rides as a supplemental semantic id (the
+    lab vocabulary), its unit is the meaning's."""
+    semantic_id: str = OPERATION_VARIABLE_PARAMETER
 
 
 class InvocationDelegation(Qualifier):

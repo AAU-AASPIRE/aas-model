@@ -19,7 +19,7 @@ from aas_model.resource_template.references import (
 from aas_model.submodel_templates.control_component_instance import (
     ExtendedSkill, SkillOperation, SkillInterfaceRelationship, OptionalVariable,
 )
-from aas_pydantic.submodel_templates.capability_description import CapabilityRelations, CapabilityRealizedBy
+from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_model.submodel_templates.variables import MeasurementsGroup, VariableProp
 from aas_model.submodel_templates.time_series import (
@@ -114,9 +114,9 @@ def omron_camera() -> InspectionStation:
                        for member in ("Uuid", "State", "Outcome")],
     ))
     container = resource.capability_description.CapabilitySet["Inspection"].CapabilityContainer[name]
-    container.CapabilityRelations = CapabilityRelations(
+    container.CapabilityRelations = ModuleCapabilityRelations(
         CapabilityRealizedBy={
-            f"RealizedBy_{name}": CapabilityRealizedBy(first=capability_ref("Inspection", name), second=skill_ref(name))
+            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Inspection", name), second=skill_ref(name))
         }
     )
 

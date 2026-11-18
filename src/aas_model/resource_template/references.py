@@ -70,3 +70,17 @@ def capability_ref(capability_set: str, name: str) -> ModelReference:
     """The Capability ``name`` of a CapabilitySet in the CapabilityDescription."""
     return ModelReference(key=(Key(type_="Submodel", value=CAPABILITIES_SUBMODEL_ID),
                                *_collections(capability_set, name), Key(type_="Capability", value="Capability")))
+
+
+def capability_property_ref(capability_set: str, name: str, prop: str) -> ModelReference:
+    """The Property ``prop`` of a capability, in its PropertyContainer of the same name
+    (``.../<name>/PropertySet/<prop>/<prop>``): a named value or a characteristic an Execution term uses."""
+    return ModelReference(key=(Key(type_="Submodel", value=CAPABILITIES_SUBMODEL_ID),
+                               *_collections(capability_set, name, "PropertySet", prop),
+                               Key(type_="Property", value=prop)))
+
+
+def execution_subject_ref(capability_set: str, name: str, subject: str) -> ModelReference:
+    """A Subject of a capability's Execution: what a Condition or Effect is about, or the value it compares with."""
+    return ModelReference(key=(Key(type_="Submodel", value=CAPABILITIES_SUBMODEL_ID),
+                               *_collections(capability_set, name, "Execution", "Subjects", subject)))

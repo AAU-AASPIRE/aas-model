@@ -3,25 +3,26 @@
 from aas_pydantic import Property
 from aas_pydantic.submodel_templates.asset_interfaces_description import Title
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SinksItem, SourcesItem
-from aas_pydantic.submodel_templates.capability_description import CapabilityRealizedBy, CapabilityRelations
+from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
 from aas_model.resource_template import ResourceNameplate
 from aas_pydantic.submodel_templates.time_series import Name
 
-from aas_model.constants import BASE_URL, BROKER, SCHEMA_BASE, SITE
+from aas_model.constants import BASE_URL, BROKER, LAB, SCHEMA_BASE, SITE
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_model.resource_template.operational import COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL
 from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
     skill_ref,
 )
+from aas_model.submodel_templates.execution import SubjectBinding
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 from aas_model.resource_template.resources import PlanarShuttle
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm, MqttForm
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, OptionalVariable, SkillInterfaceRelationship, SkillOperation,
+    ExtendedSkill, OptionalVariable, ParameterVariable, SkillInterfaceRelationship, SkillOperation, SubjectVariable,
 )
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, TimeSeriesCollection, TimeSeriesMetadata, TimeSeriesRecord,
@@ -93,11 +94,12 @@ def _planar_shuttle(number: int, x: float) -> PlanarShuttle:
             # ProductID is not sent to the device; the reply echoes the caller's value.
             in_output_variable=[
                 Property(id_short="Uuid", description="The UUID of the command"),
-                Property(id_short="ProductID", description="The product the shuttle carries",
-                         qualifiers=[OptionalVariable()]),
+                SubjectVariable(id_short="ProductID", description="The product the shuttle carries"),
             ],
             input_variable=[
-                Property(id_short=axis, value_type="xs:double", value="0.0") for axis in ("X", "Y", "Theta")
+                ParameterVariable(id_short=axis, value_type="xs:double", value="0.0",
+                                  supplemental_semantic_ids=[f"{LAB}{meaning}"])
+                for axis, meaning in (("X", "TargetX"), ("Y", "TargetY"), ("Theta", "TargetRz"))
             ],
             output_variable=[
                 Property(id_short="State", description="The state of the command being executed"),
@@ -129,10 +131,14 @@ end
                        for member in ("Uuid", "State", "Outcome", "ProductID")],
     ))
     container = resource.capability_description.CapabilitySet["Transport"].CapabilityContainer[name]
-    container.CapabilityRelations = CapabilityRelations(
+    container.CapabilityRelations = ModuleCapabilityRelations(
         CapabilityRealizedBy={
-            f"RealizedBy_{name}": CapabilityRealizedBy(first=capability_ref("Transport", name), second=skill_ref(name))
+            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Transport", name), second=skill_ref(name))
         }
+    )
+    # The unit the move takes along arrives in the Operation's ProductID.
+    container.Execution.Subjects.subject["Unit"].Binding = SubjectBinding(
+        value=operation_variable_ref(name, "ProductID"),
     )
 
     # Location: the reported position, as Properties and, one row per report, into Variables/Measurements/Location.

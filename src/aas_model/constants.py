@@ -37,6 +37,72 @@ CSSX = "http://www.w3id.org/aau-ra/cssx"
 STATE_OPERATIONAL = "https://w3id.org/2026/apex/semantic/state/operational"
 STATE_OCCUPIED = "https://w3id.org/2026/apex/semantic/state/occupied"
 
+# The lab vocabulary (iec61499-mgmt-py, ontology/Vocabulary): what capabilities, properties and skill types mean.
+# Elements carry these as supplemental semantic ids; their semantic id names the AAS structure.
+LAB = f"{BASE_URL}/semantics/"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Execution semantics — what a capability needs and changes (plans/kg-planning-execution-PLAN.md, 4.2)
+# ═══════════════════════════════════════════════════════════════════════════════
+# A term's kind is its semantic id; the property it is about rides as a supplemental semantic id (LAB).
+
+EXECUTION = f"{BASE_URL}/execution/Execution/1/0"
+EXECUTION_SUBJECTS = f"{BASE_URL}/execution/Subjects/1/0"
+EXECUTION_SUBJECT = f"{BASE_URL}/execution/Subject/1/0"
+EXECUTION_SUBJECT_ROLE = f"{BASE_URL}/execution/Subject/Role/1/0"
+EXECUTION_SUBJECT_BINDING = f"{BASE_URL}/execution/Subject/Binding/1/0"
+EXECUTION_CONDITIONS = f"{BASE_URL}/execution/Conditions/1/0"
+EXECUTION_PRE = f"{BASE_URL}/execution/Conditions/Pre/1/0"
+EXECUTION_INVARIANT = f"{BASE_URL}/execution/Conditions/Invariant/1/0"
+EXECUTION_POST = f"{BASE_URL}/execution/Conditions/Post/1/0"
+EXECUTION_EFFECTS = f"{BASE_URL}/execution/Effects/1/0"
+EXECUTION_START = f"{BASE_URL}/execution/Effects/Start/1/0"
+EXECUTION_DURING = f"{BASE_URL}/execution/Effects/During/1/0"
+EXECUTION_END = f"{BASE_URL}/execution/Effects/End/1/0"
+EXECUTION_CONDITION = f"{BASE_URL}/execution/Condition/1/0"
+EXECUTION_EFFECT = f"{BASE_URL}/execution/Effect/1/0"
+EXECUTION_TERM_SUBJECT = f"{BASE_URL}/execution/Term/Subject/1/0"
+EXECUTION_CONDITION_OPERATOR = f"{BASE_URL}/execution/Condition/Operator/1/0"
+EXECUTION_EFFECT_OPERATOR = f"{BASE_URL}/execution/Effect/Operator/1/0"
+EXECUTION_TERM_VALUE = f"{BASE_URL}/execution/Term/Value/1/0"
+EXECUTION_TERM_VALUE_REFERENCE = f"{BASE_URL}/execution/Term/ValueReference/1/0"
+EXECUTION_TERM_FORMULA = f"{BASE_URL}/execution/Term/Formula/1/0"
+EXECUTION_FORMULA_USES = f"{BASE_URL}/execution/Term/Uses/1/0"
+EXECUTION_FORMULA_USE = f"{BASE_URL}/execution/Term/Use/1/0"
+EXECUTION_RATE = f"{BASE_URL}/execution/Effect/Rate/1/0"
+EXECUTION_AND = f"{BASE_URL}/execution/And/1/0"
+EXECUTION_OR = f"{BASE_URL}/execution/Or/1/0"
+EXECUTION_NOT = f"{BASE_URL}/execution/Not/1/0"
+EXECUTION_EXISTS = f"{BASE_URL}/execution/Exists/1/0"
+EXECUTION_FOR_ALL = f"{BASE_URL}/execution/ForAll/1/0"
+EXECUTION_BODY = f"{BASE_URL}/execution/Body/1/0"
+EXECUTION_WHEN = f"{BASE_URL}/execution/When/1/0"
+EXECUTION_WHEN_CONDITION = f"{BASE_URL}/execution/When/Condition/1/0"
+EXECUTION_WHEN_THEN = f"{BASE_URL}/execution/When/Then/1/0"
+EXECUTION_ONE_OF = f"{BASE_URL}/execution/OneOf/1/0"
+EXECUTION_OUTCOME = f"{BASE_URL}/execution/OneOf/Outcome/1/0"
+EXECUTION_PROVENANCE = f"{BASE_URL}/execution/Provenance/1/0"
+EXECUTION_DERIVED_FROM = f"{BASE_URL}/execution/Provenance/DerivedFrom/1/0"
+EXECUTION_FINGERPRINT = f"{BASE_URL}/execution/Provenance/Fingerprint/1/0"
+
+# The role of an Operation variable (D27): a subject only known at run time, used to ground effects, or a
+# parameter the payload is built from.
+OPERATION_VARIABLE_SUBJECT = f"{BASE_URL}/aas/OperationVariable/Subject/1/0"
+OPERATION_VARIABLE_PARAMETER = f"{BASE_URL}/aas/OperationVariable/Parameter/1/0"
+
+# The StateDeclaration submodel: the state variables of a subject that are not observed, and where they are kept.
+SM_STATE_DECLARATION = f"{BASE_URL}/submodels/StateDeclaration/1/0"
+STATE_VARIABLE = f"{BASE_URL}/state/StateVariable/1/0"
+STATE_VARIABLE_INITIAL = f"{BASE_URL}/state/StateVariable/Initial/1/0"
+STATE_VARIABLE_OBSERVED = f"{BASE_URL}/state/StateVariable/Observed/1/0"
+STATE_SPARQL_TARGET = f"{BASE_URL}/state/SparqlTarget/1/0"
+STATE_SPARQL_TARGET_ENDPOINT = f"{BASE_URL}/state/SparqlTarget/Endpoint/1/0"
+STATE_SPARQL_TARGET_GRAPH = f"{BASE_URL}/state/SparqlTarget/Graph/1/0"
+
+# The state store every StateDeclaration of this workspace points at (plans/kg-planning-execution-PLAN.md, 4.1).
+STATE_STORE_ORIGIN = "http://state-store:7878"
+STATE_STORE_GRAPH = f"{BASE_URL}/state"
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Submodel ids
 # ═══════════════════════════════════════════════════════════════════════════════

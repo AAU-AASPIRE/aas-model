@@ -2,7 +2,7 @@
 with a configurable volume and the scale's live weight, all over OPC UA."""
 
 from aas_pydantic import Property
-from aas_model.constants import BASE_URL, CSSX, SCHEMA_BASE
+from aas_model.constants import BASE_URL, CSSX, LAB, SCHEMA_BASE
 from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
 from aas_model.resource_template import ResourceNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
@@ -14,13 +14,16 @@ from aas_model.resource_template.resources import DispensingStation
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.resource_template.references import (
     OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
-    skill_ref,
+    execution_subject_ref, skill_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, SkillOperation, SkillInterfaceRelationship, OptionalVariable,
+    ExtendedSkill, OptionalVariable, ParameterVariable, SkillInterfaceRelationship, SkillOperation, SubjectVariable,
+)
+from aas_model.submodel_templates.execution import (
+    EffectOperator, EndTerms, ExecutionEffects, StateEffect, SubjectBinding, TermSubject, TermValueReference,
 )
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
-from aas_pydantic.submodel_templates.capability_description import CapabilityRelations, CapabilityRealizedBy
+from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_model.submodel_templates.variables import MeasurementsGroup
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, DmpForm, OpcuaAction, OpcuaActionForm
@@ -100,9 +103,13 @@ def ima_dispensing() -> DispensingStation:
         interface_reference=affordance_ref(OPCUA_INTERFACE, "actions", name),
         operation=SkillOperation(
             input_variable=[
-                Property(
-                    id_short="Volume", value="1.0", value_type="xs:double", description="The volume to dispense in ml"
-                )
+                ParameterVariable(
+                    id_short="Volume", value="1.0", value_type="xs:double", description="The volume to dispense in ml",
+                    supplemental_semantic_ids=[f"{LAB}Volume"],
+                ),
+                # Not sent to the station: the DMP grounds the capability's effects on it.
+                SubjectVariable(id_short="Unit", description="The unit being filled",
+                                supplemental_semantic_ids=[f"{LAB}ContentVolume"]),
             ],
             in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
             output_variable=[
@@ -122,7 +129,9 @@ def ima_dispensing() -> DispensingStation:
     reply = ("Uuid", "State", "Outcome")
     mappings.append(AimcMappingConfiguration(
         id_short=name, DefaultPollingInterval="0.0",
-        Sources=[SourcesItem(SourceId=member, Source=operation_variable_ref(name, member)) for member in command],
+        # Every input is a Source; the Unit is not sent (the transformation leaves it out).
+        Sources=[SourcesItem(SourceId=member, Source=operation_variable_ref(name, member))
+                 for member in (*command, "Unit")],
         Sinks=[SinksItem(SinkId=member,
             Sink=action_member_ref(OPCUA_INTERFACE, name, "input", member),
         ) for member in command],
@@ -143,11 +152,23 @@ def ima_dispensing() -> DispensingStation:
         ],
     ))
     container = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer[name]
-    container.CapabilityRelations = CapabilityRelations(
+    container.CapabilityRelations = ModuleCapabilityRelations(
         CapabilityRealizedBy={
-            f"RealizedBy_{name}": CapabilityRealizedBy(first=capability_ref("Processing", name), second=skill_ref(name))
+            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Processing", name), second=skill_ref(name))
         }
     )
+    # The type says Filling needs the unit empty; this station's call says which unit and how much: the unit is the
+    # Operation's Unit, and it ends holding the Volume it was given.
+    execution = container.Execution
+    execution.Subjects.subject["Unit"].Binding = SubjectBinding(value=operation_variable_ref(name, "Unit"))
+    execution.Effects = ExecutionEffects(End=EndTerms(term={
+        "Term_00": StateEffect(
+            supplemental_semantic_ids=[f"{LAB}ContentVolume"],
+            Subject=TermSubject(value=execution_subject_ref("Processing", name, "Unit")),
+            Operator=EffectOperator(value="increase"),
+            ValueReference=TermValueReference(value=operation_variable_ref(name, "Volume")),
+        ),
+    }))
 
     # Weight: the scale's reading, sampled every 100 ms while it changes.
     weight = load_schema(f"{SCHEMA_BASE}/weight.schema.json")["properties"]["Weight"]

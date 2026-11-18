@@ -13,7 +13,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-from aas_pydantic.submodel_templates import capability_description as cd
 from aas_pydantic.submodel_templates.nameplate import Nameplate
 
 from aas_model.constants import BASE_URL
@@ -39,7 +38,7 @@ class ArsoResource(Resource):
     nameplate: Optional[Nameplate] = None
     asset_interfaces_description: Optional[DmpAssetInterfacesDescription] = None
     control_component_instance: Optional[ResourceControlComponentInstance] = None     # Skills instead
-    capability_description: Optional[cd.CapabilityDescription] = None
+    capability_description: Optional[ModuleCapabilityDescription] = None
     variables: Optional[Variables] = None
     parameters: Optional[ResourceParameters] = None
     asset_interfaces_mapping_configuration: Optional[Aimc] = None

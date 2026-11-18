@@ -19,7 +19,7 @@ from aas_model.submodel_templates.control_component_instance import (
     ExtendedSkill, SkillOperation, SkillInterfaceRelationship, OptionalVariable,
 )
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
-from aas_pydantic.submodel_templates.capability_description import CapabilityRelations, CapabilityRealizedBy
+from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 
@@ -105,9 +105,9 @@ def optima_unloading() -> UnloadingStation:
                            for member in ("Uuid", "State", "Outcome")],
         ))
         container = resource.capability_description.CapabilitySet["Handling"].CapabilityContainer[name]
-        container.CapabilityRelations = CapabilityRelations(
+        container.CapabilityRelations = ModuleCapabilityRelations(
             CapabilityRealizedBy={
-                f"RealizedBy_{name}": CapabilityRealizedBy(
+                f"RealizedBy_{name}": RealizedBySkill(
                     first=capability_ref("Handling", name), second=skill_ref(name)
                 )
             }

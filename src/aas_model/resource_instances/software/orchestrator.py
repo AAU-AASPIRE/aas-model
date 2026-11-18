@@ -8,8 +8,8 @@ from aas_pydantic.submodel_templates.asset_interfaces_description import (
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import (
     Source as SourceReference, Sink as SinkReference, SourcesItem, SinksItem,
 )
-from aas_pydantic.submodel_templates.capability_description import (
-    CapabilityContainer, CapabilitySet, CapabilityRelations, CapabilityRealizedBy,
+from aas_model.submodel_templates.capability_description import (
+    ModuleCapabilityContainer, ModuleCapabilityRelations, ModuleCapabilitySet, RealizedBySkill,
 )
 
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema, populate_datapoint
@@ -115,15 +115,15 @@ def orchestrator() -> MqttSoftwareResource:
         )
         mappings.append(mapping)
     resource.capability_description.CapabilitySet = {
-        "Coordination": CapabilitySet(
+        "Coordination": ModuleCapabilitySet(
             id_short="Coordination",
             CapabilityContainer={
-                "Orchestrate": CapabilityContainer(
+                "Orchestrate": ModuleCapabilityContainer(
                     id_short="Orchestrate",
                     Capability=Capability(id_short="Capability", semantic_id=f"{CSSX}#Orchestrate"),
-                    CapabilityRelations=CapabilityRelations(
+                    CapabilityRelations=ModuleCapabilityRelations(
                         CapabilityRealizedBy={
-                            "RealizedBy_Start": CapabilityRealizedBy(
+                            "RealizedBy_Start": RealizedBySkill(
                                 first=capability_ref("Coordination", "Orchestrate"),
                                 second=skill_ref("Start"),
                             ),

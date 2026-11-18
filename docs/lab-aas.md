@@ -25,18 +25,23 @@ too (`cell/examples/example_line.py`).
 | `Module` | Instance, `.../Resource/Module` | Nameplate, Hierarchical Structures (its components), Asset Interfaces Description (one OPC UA server), Asset Interfaces Mapping Configuration, [Skills](lab-submodels/Skills.md), [Variables](#variables-and-coordinates), Capability Description (offered; optional); optional [Control Configuration](lab-submodels/ControlConfiguration.md) and [Parameters](lab-submodels/Parameters.md) |
 | `Component` | Instance, `.../Resource/Component/<Kind>` | [Skills](lab-submodels/Skills.md): its primitives, which its module carries out |
 | `ProductionSystem` | Instance, `.../Resource/System` | Hierarchical Structures (its modules, each by its asset id); optional [Variables](#variables-and-coordinates) with the coordinates of its own points |
-| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md) |
+| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md); optional State Declaration (the state of its units that effects change) |
 | `Process` | Type, `.../Process` | [Process Information](lab-submodels/ProcessInformation.md), [Bindings](lab-submodels/Bindings.md), [Validation](lab-submodels/Validation.md) |
 
 `Module`, `Component` and `ProductionSystem` are `Resource`s (through `ArsoResource`); a submodel of
 `Resource` a kind does not have is left out (`None`). What changes from IDTA's templates
 (`resource_template/modules/submodels.py`):
 
-- **Capability Description (IDTA 02020):** a capability is realized by a skill of the same AAS or a
+- **Capability Description (IDTA 02020):** the lab's extension, shared with the stations
+  (`submodel_templates.capability_description`): a capability is realized by a skill of the same AAS or a
   component's (`RealizedBySkill`, a model reference where IDTA leaves an external one); a property is
   the variable of the module it is (`SameAs`); a constraint is a `BasicConstraint` expression. A
   property may list the values a module takes (IDTA's `SubmodelElementList` kind: the containers
-  vial, syringe, cartridge).
+  vial, syringe, cartridge). A capability may also hold its `Execution`
+  (`submodel_templates.execution`): the subjects taking part, the conditions on their state (Pre,
+  Invariant, Post) and the effects to it (Start, During, End), as a tree of terms whose kind is their
+  semantic id. The ConstraintSet stays for matching; the Execution is what the planners, the behaviour
+  tree and the DMP read.
 - **Asset Interfaces Description:** one OPC UA interface (`ModuleInterfaces`).
 - **Hierarchical Structures:** parts that have parts in turn (`LocatedNode`). Where a part is, is a
   coordinate, not a statement of the node.
@@ -54,6 +59,7 @@ too (`cell/examples/example_line.py`).
 | Process Information | `https://smartproductionlab.aau.dk/ProcessInformation/1/0/Submodel` | `templates/process/ProcessInformation.json` | `submodel_templates.process.process_information` | [Process Information](lab-submodels/ProcessInformation.md) |
 | Bindings | `https://smartproductionlab.aau.dk/ProcessBindings/1/0/Submodel` | `templates/process/Bindings.json` | `submodel_templates.process.bindings` | [Bindings](lab-submodels/Bindings.md) |
 | Validation | `https://smartproductionlab.aau.dk/ProcessValidation/1/0/Submodel` | `templates/process/Validation.json` | `submodel_templates.process.validation` | [Validation](lab-submodels/Validation.md) |
+| State Declaration | `https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0` | none (hand-written classes) | `submodel_templates.state_declaration` | the state of a subject that effects change, its initial values and the store it is kept in |
 | Variables, with Coordinates | `https://smartproductionlab.aau.dk/submodels/Variables/1/0` | none (hand-written classes) | `submodel_templates.variables`, `submodel_templates.coordinates` | [below](#variables-and-coordinates) |
 
 **How they are made:**

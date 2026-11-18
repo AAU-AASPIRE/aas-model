@@ -2,7 +2,9 @@
 
 ``Resource`` declares the typed submodels without claiming a location, interface, skill or observation. Its
 subtypes add what holds for their kind: a physical resource has a Location parameter, a station speaks the
-PackML contract over its protocol (``operational``) and declares its capabilities (``capabilities``). An
+PackML contract over its protocol (``operational``) and declares its capabilities (``capability_description``):
+what each means (the lab vocabulary, as a supplemental semantic id) and, where its type alone says it, what it
+needs and changes (``Execution``). An
 instance (``aas_model.resource_instances``) binds its own skills and observations. A full JSON export restores
 through ``Resource.model_validate_json()``.
 """
@@ -12,26 +14,33 @@ from __future__ import annotations
 from typing import Optional
 
 from aas_pydantic import AAS, Capability
-from aas_pydantic.submodel_templates.capability_description import (
-    CapabilityContainer, CapabilityDescription, CapabilitySet,
-)
 from aas_pydantic.submodel_templates.hierarchical_structures import HierarchicalStructures
 from aas_pydantic.submodel_templates.nameplate import (
     AddressInformation, AddressInformation_t, CityTown, ManufacturerName, ManufacturerProductDesignation, Nameplate,
     NationalCode, OrderCodeOfManufacturer, Street, URIOfTheProduct, Zipcode,
 )
 
-from aas_model.constants import BASE_URL, CSSX
+from aas_model.constants import BASE_URL, CSSX, LAB
 from aas_model.submodel_templates import Aimc, AimcMappingConfigurations
+from aas_model.submodel_templates.capability_description import (
+    ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilitySet,
+)
+from aas_model.submodel_templates.execution import (
+    ConditionOperator, EffectOperator, EndTerms, Execution, ExecutionConditions, ExecutionEffects, ExecutionSubject,
+    PreTerms, StateCondition, StateEffect, SubjectRole, Subjects, TermSubject, TermValue,
+)
+from aas_model.submodel_templates.state_declaration import StateDeclaration
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription
 from aas_model.submodel_templates.control_component_instance import ResourceControlComponentInstance
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 from aas_model.submodel_templates.parameters import Position, ResourceParameters
 from aas_model.submodel_templates.variables import Variables
 from aas_model.resource_template.operational import (
-    MqttInterfaces, OperationalMqttControlComponent, OperationalMqttInterfaces, OperationalMqttMappings,
-    OperationalOpcuaControlComponent, OperationalOpcuaInterfaces, OperationalOpcuaMappings, OperationalVariables,
+    MqttInterfaces, OperationalCapabilityDescription, OperationalMqttControlComponent, OperationalMqttInterfaces,
+    OperationalMqttMappings, OperationalOpcuaControlComponent, OperationalOpcuaInterfaces, OperationalOpcuaMappings,
+    OperationalVariables,
 )
+from aas_model.resource_template.references import execution_subject_ref
 
 
 # ── Nameplate ────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -85,7 +94,7 @@ class Resource(AAS):
     )
 
     # ── Capability Description (included unless explicitly omitted) ──────────
-    capability_description: Optional[CapabilityDescription] = CapabilityDescription(
+    capability_description: Optional[ModuleCapabilityDescription] = ModuleCapabilityDescription(
         id_short="CapabilityDescription",
     )
 
@@ -103,6 +112,8 @@ class Resource(AAS):
     )
     # ── Optional submodels (no defaults — stations opt in) ────────────────
     hierarchical_structures: Optional[ResourceHierarchicalStructures] = None
+    # The state of this resource that effects change and no data point reports.
+    state_declaration: Optional[StateDeclaration] = None
 
 
 # Existing registration-service consumers import this name.
@@ -171,11 +182,13 @@ class HandlingStation(Station):
 
 class StopperingStation(ProcessingStation):
     asset_type: str = f"{CSSX}#StopperingSystem"
-    capability_description: CapabilityDescription = CapabilityDescription(
+    capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Processing": CapabilitySet(CapabilityContainer={
-                "Stoppering": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Stoppering")),
+            "Processing": ModuleCapabilitySet(CapabilityContainer={
+                "Stoppering": ModuleCapabilityContainer(Capability=Capability(
+                    semantic_id=f"{CSSX}#Stoppering", supplemental_semantic_ids=[f"{LAB}Stoppering"],
+                )),
             }),
         },
     )
@@ -183,23 +196,45 @@ class StopperingStation(ProcessingStation):
 
 class CappingStation(ProcessingStation):
     asset_type: str = f"{CSSX}#CappingSystem"
-    capability_description: CapabilityDescription = CapabilityDescription(
+    capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Processing": CapabilitySet(CapabilityContainer={
-                "Capping": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Capping")),
+            "Processing": ModuleCapabilitySet(CapabilityContainer={
+                "Capping": ModuleCapabilityContainer(Capability=Capability(
+                    semantic_id=f"{CSSX}#Capping", supplemental_semantic_ids=[f"{LAB}Capping"],
+                )),
             }),
         },
     )
 
 
 class DispensingStation(ProcessingStation):
+    """Fills a unit (the lab's Filling): it needs the unit empty and leaves the volume it was given in it. Which
+    Operation variables carry the unit and the volume is the instance's (the Subject's Binding, the End effect)."""
     asset_type: str = f"{CSSX}#DispensingSystem"
-    capability_description: CapabilityDescription = CapabilityDescription(
+    capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Processing": CapabilitySet(CapabilityContainer={
-                "Dispensing": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Dispensing")),
+            "Processing": ModuleCapabilitySet(CapabilityContainer={
+                "Dispensing": ModuleCapabilityContainer(
+                    Capability=Capability(
+                        semantic_id=f"{CSSX}#Dispensing", supplemental_semantic_ids=[f"{LAB}Filling"],
+                    ),
+                    Execution=Execution(
+                        Subjects=Subjects(subject={
+                            "Self": ExecutionSubject(Role=SubjectRole(value="Self")),
+                            "Unit": ExecutionSubject(Role=SubjectRole(value="Product")),
+                        }),
+                        Conditions=ExecutionConditions(Pre=PreTerms(term={
+                            "Term_00": StateCondition(
+                                supplemental_semantic_ids=[f"{LAB}ContentVolume"],
+                                Subject=TermSubject(value=execution_subject_ref("Processing", "Dispensing", "Unit")),
+                                Operator=ConditionOperator(value="equal"),
+                                Value=TermValue(value="0.0", value_type="xs:double"),
+                            ),
+                        })),
+                    ),
+                ),
             }),
         },
     )
@@ -207,11 +242,13 @@ class DispensingStation(ProcessingStation):
 
 class LoadingStation(HandlingStation):
     asset_type: str = f"{CSSX}#LoadingSystem"
-    capability_description: CapabilityDescription = CapabilityDescription(
+    capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Handling": CapabilitySet(CapabilityContainer={
-                "Loading": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Loading")),
+            "Handling": ModuleCapabilitySet(CapabilityContainer={
+                "Loading": ModuleCapabilityContainer(Capability=Capability(
+                    semantic_id=f"{CSSX}#Loading", supplemental_semantic_ids=[f"{LAB}Loading"],
+                )),
             }),
         },
     )
@@ -219,12 +256,15 @@ class LoadingStation(HandlingStation):
 
 class UnloadingStation(HandlingStation):
     asset_type: str = f"{CSSX}#UnloadingSystem"
-    capability_description: CapabilityDescription = CapabilityDescription(
+    # Scrap has no meaning in the lab vocabulary yet.
+    capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Handling": CapabilitySet(CapabilityContainer={
-                "Unloading": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Unloading")),
-                "Scrap": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Scrap")),
+            "Handling": ModuleCapabilitySet(CapabilityContainer={
+                "Unloading": ModuleCapabilityContainer(Capability=Capability(
+                    semantic_id=f"{CSSX}#Unloading", supplemental_semantic_ids=[f"{LAB}Unloading"],
+                )),
+                "Scrap": ModuleCapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Scrap")),
             }),
         },
     )
@@ -232,11 +272,13 @@ class UnloadingStation(HandlingStation):
 
 class InspectionStation(Station):
     asset_type: str = f"{CSSX}#QualityControlSystem"
-    capability_description: CapabilityDescription = CapabilityDescription(
+    capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Inspection": CapabilitySet(CapabilityContainer={
-                "Capture": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#Capture")),
+            "Inspection": ModuleCapabilitySet(CapabilityContainer={
+                "Capture": ModuleCapabilityContainer(Capability=Capability(
+                    semantic_id=f"{CSSX}#Capture", supplemental_semantic_ids=[f"{LAB}Inspection"],
+                )),
             }),
         },
     )
@@ -270,11 +312,30 @@ class PlanarShuttle(Shuttle):
     control_component_instance: ResourceControlComponentInstance = OperationalMqttControlComponent(
         id_short="ControlComponentInstance",
     )
-    capability_description: CapabilityDescription = CapabilityDescription(
+    # A move takes the shuttle and the unit it carries; where it ends is known once its position is reported
+    # again: the move is given a pose, not a place, so its position is measured, not assigned.
+    capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Transport": CapabilitySet(CapabilityContainer={
-                "MoveToPosition": CapabilityContainer(Capability=Capability(semantic_id=f"{CSSX}#MoveToPosition")),
+            "Transport": ModuleCapabilitySet(CapabilityContainer={
+                "MoveToPosition": ModuleCapabilityContainer(
+                    Capability=Capability(
+                        semantic_id=f"{CSSX}#MoveToPosition", supplemental_semantic_ids=[f"{LAB}Transporting"],
+                    ),
+                    Execution=Execution(
+                        Subjects=Subjects(subject={
+                            "Self": ExecutionSubject(Role=SubjectRole(value="Self")),
+                            "Unit": ExecutionSubject(Role=SubjectRole(value="Product")),
+                        }),
+                        Effects=ExecutionEffects(End=EndTerms(term={
+                            "Term_00": StateEffect(
+                                supplemental_semantic_ids=[f"{LAB}Position"],
+                                Subject=TermSubject(value=execution_subject_ref("Transport", "MoveToPosition", "Self")),
+                                Operator=EffectOperator(value="measured"),
+                            ),
+                        })),
+                    ),
+                ),
             }),
         },
     )

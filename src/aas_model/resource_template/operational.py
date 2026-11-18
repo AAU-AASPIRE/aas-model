@@ -13,6 +13,11 @@ Halt only invokes (``CMD/Halt`` is not answered, ``Station.Halt`` has no
 OutputArguments). Occupy and Release answer with the commandResponse; their
 mappings name it as ResponseSource and the Operation as ResponseSink.
 
+Module control: Occupy and Release are also capabilities of the device
+(``CapabilityDescription/ModuleControl``, the lab's Receiving and Releasing),
+with what they need and change: occupying needs room (Occupancy below the
+Capacity) and takes one place, releasing gives it back.
+
 State: ``Variables/State/Station`` records the PackML state and the process
 queue over time (measurement ``station_state``); the AAS holds the series, not
 the current value.
@@ -27,13 +32,20 @@ of a protocol-neutral station type picks them for the protocol its asset
 speaks. Pydantic deep-copies defaults per constructed model.
 """
 
-from aas_pydantic import Property
+from typing import Dict
+
+from aas_pydantic import Capability, Property
+from aas_pydantic.submodel_templates.capability_description import PropertyProperty
+from aas_model.submodel_templates.capability_description import (
+    ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
+    RealizedBySkill, StatedProperty, StatedPropertySet,
+)
 from aas_pydantic.submodel_templates.asset_interfaces_description import (
     Base, ContentType, EndpointMetadata, Title, securityDefinitions, security_t,
 )
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SinksItem, SourcesItem
 
-from aas_model.constants import BROKER, SCHEMA_BASE, SITE, STATE_OCCUPIED, STATE_OPERATIONAL
+from aas_model.constants import BROKER, LAB, SCHEMA_BASE, SITE, STATE_OCCUPIED, STATE_OPERATIONAL
 from aas_model.submodel_templates import (
     Aimc, AimcMappingConfiguration, AimcMappingConfigurations, DmpResponseSink, DmpResponseSource,
 )
@@ -47,14 +59,18 @@ from aas_model.submodel_templates.control_component_instance import (
     SkillOperation,
 )
 from aas_model.submodel_templates.variables import LogGroup, StateGroup, Variables
+from aas_model.submodel_templates.execution import (
+    ConditionOperator, EffectOperator, EndTerms, Execution, ExecutionConditions, ExecutionEffects, ExecutionSubject,
+    PreTerms, StateCondition, StateEffect, SubjectRole, Subjects, TermSubject, TermValue, TermValueReference,
+)
 from aas_pydantic.submodel_templates.time_series import Name
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, RecordReference, TimeSeriesCollection, TimeSeriesMetadata,
     TimeSeriesRecord, TimeSeriesSegments,
 )
 from aas_model.resource_template.references import (
-    MQTT_INTERFACE, OPCUA_INTERFACE, action_member_ref, affordance_ref, operation_ref, operation_variable_ref,
-    series_segment_ref, skill_ref,
+    MQTT_INTERFACE, OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_property_ref, capability_ref,
+    execution_subject_ref, operation_ref, operation_variable_ref, series_segment_ref, skill_ref,
 )
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_pydantic.aas_model import AasIdString
@@ -70,6 +86,9 @@ INVOKE_ONLY_SKILLS = ("Halt",)
 
 # The skills whose calls are logged: those that answer.
 LOGGED_SKILLS = tuple(name for name in PACKML_SKILLS if name not in INVOKE_ONLY_SKILLS)
+
+# The CapabilitySet of the capabilities the PackML contract gives every operational device.
+MODULE_CONTROL = "ModuleControl"
 
 # The OPC UA Object owning the PackML Methods and variables.
 OPCUA_STATION = "ns=2;s=Station"
@@ -125,6 +144,90 @@ class OperationalVariables(Variables):
                     "Live": DmpLinkedSegment(InfluxDb2Target=InfluxDb2Target(Measurement=f"operation_{name.lower()}")),
                 }),
             ) for name in LOGGED_SKILLS})
+        return self
+
+
+# ── Capabilities: what Occupy and Release need and change ───────────────────
+
+class ModuleControlCapabilities(ModuleCapabilitySet):
+    """Occupying (Occupy, the lab's Receiving) and Releasing (Release, Releasing). The Capacity is the device's:
+    an instance that holds more than one product at a time sets it."""
+    CapabilityContainer: Dict[str, ModuleCapabilityContainer] = {
+        "Occupying": ModuleCapabilityContainer(
+            Capability=Capability(supplemental_semantic_ids=[f"{LAB}Receiving"]),
+            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={"Capacity": StatedProperty(
+                PropertyProperty={"Capacity": PropertyProperty(
+                    value="1", value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Capacity"],
+                    description="How many products the device holds at a time.",
+                )},
+            )})},
+            CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={
+                "RealizedBy_Occupy": RealizedBySkill(
+                    first=capability_ref(MODULE_CONTROL, "Occupying"), second=skill_ref("Occupy"),
+                ),
+            }),
+            Execution=Execution(
+                Subjects=Subjects(subject={"Self": ExecutionSubject(Role=SubjectRole(value="Self"))}),
+                Conditions=ExecutionConditions(Pre=PreTerms(term={
+                    "Term_00": StateCondition(
+                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Occupying", "Self")),
+                        Operator=ConditionOperator(value="less"),
+                        ValueReference=TermValueReference(
+                            value=capability_property_ref(MODULE_CONTROL, "Occupying", "Capacity"),
+                        ),
+                    ),
+                })),
+                Effects=ExecutionEffects(End=EndTerms(term={
+                    "Term_00": StateEffect(
+                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Occupying", "Self")),
+                        Operator=EffectOperator(value="increase"),
+                        Value=TermValue(value="1", value_type="xs:int"),
+                    ),
+                })),
+            ),
+        ),
+        "Releasing": ModuleCapabilityContainer(
+            Capability=Capability(supplemental_semantic_ids=[f"{LAB}Releasing"]),
+            CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={
+                "RealizedBy_Release": RealizedBySkill(
+                    first=capability_ref(MODULE_CONTROL, "Releasing"), second=skill_ref("Release"),
+                ),
+            }),
+            Execution=Execution(
+                Subjects=Subjects(subject={"Self": ExecutionSubject(Role=SubjectRole(value="Self"))}),
+                Conditions=ExecutionConditions(Pre=PreTerms(term={
+                    "Term_00": StateCondition(
+                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Releasing", "Self")),
+                        Operator=ConditionOperator(value="greater"),
+                        Value=TermValue(value="0", value_type="xs:int"),
+                    ),
+                })),
+                Effects=ExecutionEffects(End=EndTerms(term={
+                    "Term_00": StateEffect(
+                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Releasing", "Self")),
+                        Operator=EffectOperator(value="decrease"),
+                        Value=TermValue(value="1", value_type="xs:int"),
+                    ),
+                })),
+            ),
+        ),
+    }
+
+
+class OperationalCapabilityDescription(ModuleCapabilityDescription):
+    """An operational device's capabilities: its own, and the module control every one of them has.
+
+    Module control is added unless authored, not a class default, as the series of ``OperationalVariables``."""
+    id_short: AasIdString = "CapabilityDescription"
+
+    @model_validator(mode="after")
+    def _module_control_follows_from_the_contract(self):
+        if MODULE_CONTROL not in self.CapabilitySet:
+            self.CapabilitySet[MODULE_CONTROL] = ModuleControlCapabilities(id_short=MODULE_CONTROL)
         return self
 
 

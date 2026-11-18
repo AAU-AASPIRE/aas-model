@@ -7,11 +7,13 @@ These models follow the same pattern as aas_pydantic generated templates:
 - Typed leaf elements (Property, ReferenceElement, File, etc.) with defaults
 
 Modules:
-    aid                — DMP-extended AID (MQTT + generic WoT action layer)
-    execution_model    — Skills ExecutionModel (parameters, conditions, effects)
-    skills             — Extended CCI Skill with ExecutionModel
-    variables          — Variables submodel (custom, not yet IDTA)
-    parameters         — Parameters submodel (custom, not yet IDTA)
+    aid                    — DMP-extended AID (MQTT + generic WoT action layer)
+    capability_description — IDTA Capability Description with each capability's Execution
+    execution              — Execution: what a capability needs and changes (subjects, conditions, effects)
+    state_declaration      — StateDeclaration submodel: state no data point reports, and its store
+    control_component_instance — Extended CCI Skill; Operation variable roles (subject, parameter)
+    variables              — Variables submodel (custom, not yet IDTA)
+    parameters             — Parameters submodel (custom, not yet IDTA)
 
 The AIMC (AssetInterfacesMappingConfiguration) is extended here (DmpAimc):
 the DMP mapping extension adds the OPTIONAL ``ResponseTransformation`` blob
@@ -96,6 +98,14 @@ from .control_component_instance import (
     SkillInterfaceRelationship,
     ResourceEndpoints,
 )
+from .capability_description import (
+    ModuleCapabilityContainer,
+    ModuleCapabilityDescription,
+    ModuleCapabilitySet,
+)
+from .execution import Execution
+from .state_declaration import StateDeclaration, StateVariable
+from .control_component_instance import ParameterVariable, SubjectVariable
 from .variables import Variables
 from .parameters import Parameters
 # The AIMC submodel is the GENERATED IDTA template + the DMP extension
@@ -148,7 +158,16 @@ __all__ = [
     "OpcuaEventField",
     "UavEventType",
     "UavEventField",
-    # Execution model
+    # Capability Description with Execution, StateDeclaration, Operation variable roles
+    "ModuleCapabilityContainer",
+    "ModuleCapabilityDescription",
+    "ModuleCapabilitySet",
+    "Execution",
+    "StateDeclaration",
+    "StateVariable",
+    "ParameterVariable",
+    "SubjectVariable",
+    # Execution model (old, on skills; superseded by Execution)
     "ExecutionModel",
     "ExecutionModelParameter",
     "Fluent",

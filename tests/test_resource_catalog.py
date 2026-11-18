@@ -405,7 +405,7 @@ def test_related_stations_share_their_type_and_capability_group(names, template,
     for name in names:
         resource = RESOURCE_FACTORIES[name]()
         assert isinstance(resource, template)
-        assert set(resource.capability_description.CapabilitySet) == {group}
+        assert set(resource.capability_description.CapabilitySet) == {group, "ModuleControl"}
 
 
 def test_capability_realization_is_explicit_and_not_a_skill_naming_rule():

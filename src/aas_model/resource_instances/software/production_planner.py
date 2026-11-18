@@ -18,8 +18,8 @@ from aas_pydantic import Capability, Property
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import (
     Source as SourceReference, Sink as SinkReference, SourcesItem, SinksItem,
 )
-from aas_pydantic.submodel_templates.capability_description import (
-    CapabilityContainer, CapabilitySet, CapabilityRelations, CapabilityRealizedBy,
+from aas_model.submodel_templates.capability_description import (
+    ModuleCapabilityContainer, ModuleCapabilityRelations, ModuleCapabilitySet, RealizedBySkill,
 )
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema, without
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm, MqttForm
@@ -134,15 +134,15 @@ end
         )
     )
     resource.capability_description.CapabilitySet = {
-        "Planning": CapabilitySet(
+        "Planning": ModuleCapabilitySet(
             id_short="Planning",
             CapabilityContainer={
-                "Plan": CapabilityContainer(
+                "Plan": ModuleCapabilityContainer(
                     id_short="Plan",
                     Capability=Capability(id_short="Capability", semantic_id=f"{CSSX}#Plan"),
-                    CapabilityRelations=CapabilityRelations(
+                    CapabilityRelations=ModuleCapabilityRelations(
                         CapabilityRealizedBy={
-                            "RealizedBy_Plan": CapabilityRealizedBy(
+                            "RealizedBy_Plan": RealizedBySkill(
                                 first=capability_ref("Planning", "Plan"),
                                 second=skill_ref("Plan"),
                             )
