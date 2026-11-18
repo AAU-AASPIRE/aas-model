@@ -166,7 +166,9 @@ TermFormula_t: TypeAlias = TermFormula  # a field may share the class's id_short
 
 
 class FormulaUse(ReferenceElement):
-    """One name of the formula (its idShort) and the element it stands for."""
+    """One name of the formula (its idShort) and what it stands for: an element (a named value, a parameter),
+    or a property of a subject, referenced as the entry of Subjects with the property's meaning as supplemental
+    semantic id (the unit's ``lab:InnerBottomHeight``)."""
     semantic_id: str = EXECUTION_FORMULA_USE
 
 
