@@ -88,10 +88,6 @@ from aas_model.submodel_templates.aimc import (
     DmpSources,
 )
 from .control_component_instance import (
-    ExecutionModel,
-    ExecutionModelParameter,
-    Fluent,
-    Term,
     ExtendedSkill,
     ExtendedSkills,
     SkillOperation,
@@ -167,11 +163,6 @@ __all__ = [
     "StateVariable",
     "ParameterVariable",
     "SubjectVariable",
-    # Execution model (old, on skills; superseded by Execution)
-    "ExecutionModel",
-    "ExecutionModelParameter",
-    "Fluent",
-    "Term",
     # Skills
     "ExtendedSkill",
     "ExtendedSkills",
