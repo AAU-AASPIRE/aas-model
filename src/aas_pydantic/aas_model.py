@@ -241,13 +241,16 @@ def validate_idta_cardinality(model: BaseModel) -> None:
 
 
 # Every concrete element class registers itself here (via
-# ``SubmodelElement.__init_subclass__``) so dumps can carry a ``modelType``
-# discriminator and revalidation resolves the concrete type directly instead
-# of relying on fragile key inference.
+# ``SubmodelElement.__init_subclass__``) under its qualified name (``module:Class``), which a dump's
+# ``modelType`` discriminator carries: revalidation resolves exactly that class instead of relying on fragile
+# key inference or on a class name that other templates repeat.
 _ELEMENT_CLASS_REGISTRY: dict = {}
-# Every element class by its name: names repeat across templates (AID's and CCI's ``Type``), and a dump's
-# ``modelType`` names a class only by its name.
+# Every element class by its bare name, for dumps written before the qualified names: names repeat across
+# templates (AID's and CCI's ``Type``), so a bare name is resolved only where it is unambiguous.
 _ELEMENT_CLASSES_BY_NAME: dict = {}
+# Every element class's default semanticId (empty when it has none): what tells two classes of one bare name
+# apart in an older dump.
+_ELEMENT_SEMANTIC_IDS: dict = {}
 
 # semanticId value → list of concrete element classes carrying it.  Populated
 # alongside the class registry.  Resolution only uses a semanticId when it is
@@ -287,10 +290,15 @@ def _dump_container(container: Any) -> Any:
     return container
 
 
+def _qualified_name(cls: type) -> str:
+    """The name a class is registered and tagged under: its module and its name (``aas_model.x:Start``)."""
+    return f"{cls.__module__}:{cls.__qualname__}"
+
+
 def _tag_dump(model: BaseModel) -> dict:
-    """Dump *model* with a ``modelType`` discriminator so revalidation can
-    resolve its concrete class."""
-    return {**model.model_dump(), "modelType": type(model).__name__}
+    """Dump *model* with a ``modelType`` discriminator, its class's qualified name, so revalidation can
+    resolve exactly its concrete class."""
+    return {**model.model_dump(), "modelType": _qualified_name(type(model))}
 
 
 def _declared_element_types(cls: type, field_name: str) -> tuple:
@@ -371,7 +379,7 @@ class SubmodelElement(HasSemantics, Referable):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        _ELEMENT_CLASS_REGISTRY[cls.__name__] = cls
+        _ELEMENT_CLASS_REGISTRY[_qualified_name(cls)] = cls
         _ELEMENT_CLASSES_BY_NAME.setdefault(cls.__name__, []).append(cls)
         # semanticId is read robustly: a value defined in this class's own
         # body wins (``__dict__`` — still a plain attribute at this point);
@@ -386,6 +394,7 @@ class SubmodelElement(HasSemantics, Referable):
             _field = cls.model_fields.get("semantic_id")
             if _field is not None and isinstance(_field.default, str):
                 _sid = _field.default
+        _ELEMENT_SEMANTIC_IDS[cls] = _sid
         if _sid:
             _SEMANTIC_ID_REGISTRY.setdefault(_sid, []).append(cls)
 
@@ -954,12 +963,32 @@ def _concrete_element_targets(target_type: Any) -> list:
     ]
 
 
-def _class_named(name: str, bases) -> Optional[type]:
-    """The element class called ``name`` that is one of ``bases`` or a subclass of one (the last registered,
-    when several fit)."""
-    fitting = [cls for cls in _ELEMENT_CLASSES_BY_NAME.get(name, ())
-               if any(cls is base or issubclass(cls, base) for base in bases)]
-    return fitting[-1] if fitting else None
+class AmbiguousModelTypeError(ValueError):
+    """A dump's bare ``modelType`` names several classes that fit where the element is, and its semanticId does
+    not tell them apart."""
+
+
+def _class_named(name: str, bases, semantic_id: str = "") -> Optional[type]:
+    """The element class a dump's ``modelType`` names, if it is one of ``bases`` or a subclass of one.
+
+    A qualified name (``module:Class``, what ``_tag_dump`` writes) names exactly one class. A bare class name
+    (a dump written before the qualified names) may name several: those that fit ``bases``, and among them,
+    where more than one fits, those whose default semanticId is the element's (``semantic_id``). A bare name
+    still naming several classes is an error, never a guess."""
+    def fits(cls):
+        return any(cls is base or issubclass(cls, base) for base in bases)
+
+    if ":" in name:
+        cls = _ELEMENT_CLASS_REGISTRY.get(name)
+        return cls if cls is not None and fits(cls) else None
+    fitting = list(dict.fromkeys(cls for cls in _ELEMENT_CLASSES_BY_NAME.get(name, ()) if fits(cls)))
+    if len(fitting) > 1 and semantic_id:
+        fitting = [cls for cls in fitting if _ELEMENT_SEMANTIC_IDS.get(cls) == semantic_id] or fitting
+    if len(fitting) > 1:
+        raise AmbiguousModelTypeError(
+            f"modelType {name!r} names {len(fitting)} classes here: "
+            f"{', '.join(_qualified_name(cls) for cls in fitting)}; give its qualified name")
+    return fitting[0] if fitting else None
 
 
 def coerce_submodel_element(
@@ -1008,11 +1037,10 @@ def coerce_submodel_element(
         # The field's declared type is authoritative for typed fields, but a
         # ``modelType`` discriminator naming a *subclass* of it wins (a
         # subclass-specialized override, e.g. ExtendedSkills vs Skills).  A
-        # modelType naming an unrelated same-named class (AID's ``Type`` vs
-        # CCI's ``Type`` — the registry is keyed by bare class name) is
-        # ignored so the declared type is used.
+        # modelType naming a class that does not fit (AAS JSON's metamodel
+        # type, or an unrelated class) is ignored so the declared type is used.
         mt = d.get("modelType")
-        mt_cls = _class_named(mt, concrete) if mt else None
+        mt_cls = _class_named(mt, concrete, d.get("semantic_id") or "") if mt else None
         if mt_cls is not None:
             concrete = [mt_cls]
         if len(concrete) == 1:
@@ -1037,7 +1065,9 @@ def coerce_submodel_element(
     # dicts) resolves the concrete class; otherwise the type is unknown.
     mt = d.get("modelType")
     if mt:
-        cls = _ELEMENT_CLASS_REGISTRY.get(mt) or _ELEMENT_TYPE_BY_MODELTYPE.get(mt)
+        # AAS JSON names the metamodel type (``Property``), a dump its class (qualified, or bare when older).
+        cls = (_ELEMENT_TYPE_BY_MODELTYPE.get(mt) if ":" not in mt else None) \
+            or _class_named(mt, (SubmodelElement,), d.get("semantic_id") or "")
         if cls is not None:
             return _build_element(cls, d)
     sid = d.get("semantic_id")
