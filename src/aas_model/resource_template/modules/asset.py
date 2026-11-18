@@ -26,8 +26,8 @@ from aas_model.submodel_templates.arso.parameters import Parameters
 from aas_model.submodel_templates.variables import Variables
 
 from .submodels import (
-    LocatedStructures, ModuleCapabilityDescription, ModuleControlConfiguration, ModuleInterfaces, ModuleSkills,
-    lab_nameplate, structure,
+    LabNameplate, LocatedStructures, ModuleCapabilityDescription, ModuleControlConfiguration, ModuleInterfaces,
+    ModuleSkills,
 )
 
 RESOURCE = f"{BASE_URL}/Resource"
@@ -53,8 +53,8 @@ class Module(ArsoResource):
     (Asset Interfaces Description and Mapping Configuration) and shows its live values and where it
     is (Variables)."""
     asset_type: str = f"{RESOURCE}/Module"
-    nameplate: Nameplate = lab_nameplate()
-    hierarchical_structures: LocatedStructures = structure()
+    nameplate: Nameplate = LabNameplate()
+    hierarchical_structures: LocatedStructures = LocatedStructures()
     asset_interfaces_description: ModuleInterfaces = ModuleInterfaces(id_short="AssetInterfacesDescription")
     skills: ModuleSkills = ModuleSkills(id_short="Skills")
     variables: Variables = Variables(id_short="Variables")
@@ -79,4 +79,4 @@ class ProductionSystem(ArsoResource):
     """A production system (a line): the modules it is made of, each found by its asset id, and the
     coordinates of its own points (where its robots place and pick)."""
     asset_type: str = f"{RESOURCE}/System"
-    hierarchical_structures: LocatedStructures = structure()
+    hierarchical_structures: LocatedStructures = LocatedStructures()

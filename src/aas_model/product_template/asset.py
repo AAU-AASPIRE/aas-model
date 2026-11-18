@@ -18,12 +18,16 @@ from typing import ClassVar, Dict, Optional
 
 from aas_pydantic import AAS, Property
 from aas_pydantic.submodel_templates import capability_description as cd
-from aas_pydantic.submodel_templates.hierarchical_structures import ArcheType, EntryNode, HierarchicalStructures, Node
-from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation, Nameplate
+from aas_pydantic.submodel_templates.hierarchical_structures import (
+    ArcheType, ArcheType_t, EntryNode, HierarchicalStructures, Node,
+)
+from aas_pydantic.submodel_templates.nameplate import (
+    ManufacturerProductDesignation, ManufacturerProductDesignation_t, Nameplate,
+)
 from pydantic import model_validator
 
 from aas_model.constants import BASE_URL
-from aas_model.resource_template.modules.submodels import lab_nameplate
+from aas_model.resource_template.modules.submodels import LabNameplate
 from aas_model.submodel_templates.product.process_parameters import Processes, ProcessParameters
 from aas_model.submodel_templates.product.production_sequence import ProductionSequence
 
@@ -71,17 +75,14 @@ class ProductEntry(EntryNode):
 
 
 class BillOfMaterial(HierarchicalStructures):
+    """The product as entry node and its direct parts (OneDown)."""
     EntryNode: ProductEntry = ProductEntry()
+    ArcheType: ArcheType_t = ArcheType(value="OneDown")
 
 
-def bill_of_material() -> BillOfMaterial:
-    return BillOfMaterial(id_short="HierarchicalStructures", EntryNode=ProductEntry(), ArcheType=ArcheType(value="OneDown"))
-
-
-def product_nameplate() -> Nameplate:
-    plate = lab_nameplate()
-    plate.ManufacturerProductDesignation = ManufacturerProductDesignation(value={"en": "Product"})
-    return plate
+class ProductNameplate(LabNameplate):
+    ManufacturerProductDesignation: ManufacturerProductDesignation_t = ManufacturerProductDesignation(
+        value={"en": "Product"})
 
 
 class Product(AAS):
@@ -91,8 +92,8 @@ class Product(AAS):
     # A product AAS describes a kind of product, not one item of it.
     ASSET_KIND: ClassVar[str] = "Type"
     asset_type: str = f"{BASE_URL}/Product"
-    nameplate: Nameplate = product_nameplate()
-    hierarchical_structures: BillOfMaterial = bill_of_material()
+    nameplate: Nameplate = ProductNameplate()
+    hierarchical_structures: BillOfMaterial = BillOfMaterial()
     process_parameters: ProcessParameters = ProcessParameters(id_short="ProcessParameters", Processes=Processes())
     capability_description: Optional[cd.CapabilityDescription] = None
     production_sequence: Optional[ProductionSequence] = None

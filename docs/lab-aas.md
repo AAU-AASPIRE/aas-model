@@ -40,7 +40,7 @@ too (`cell/examples/example_line.py`).
 - **Asset Interfaces Description:** one OPC UA interface (`ModuleInterfaces`).
 - **Hierarchical Structures:** parts that have parts in turn (`LocatedNode`). Where a part is, is a
   coordinate, not a statement of the node.
-- **Nameplate:** the lab's (`lab_nameplate`), for each instance to state its own values in.
+- **Nameplate:** the lab's (`LabNameplate`), for each instance to state its own values in.
 
 ## Submodels that are the lab's own
 

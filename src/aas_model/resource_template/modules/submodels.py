@@ -18,32 +18,32 @@ from typing import Dict, Optional
 
 from aas_pydantic import ModelReference, Property
 from aas_pydantic.submodel_templates import capability_description as cd
-from aas_pydantic.submodel_templates.hierarchical_structures import ArcheType, EntryNode, HierarchicalStructures, Node
+from aas_pydantic.submodel_templates.hierarchical_structures import (
+    ArcheType, ArcheType_t, EntryNode, HierarchicalStructures, Node,
+)
 from aas_pydantic.submodel_templates.nameplate import (
-    AddressInformation, CityTown, CountryOfOrigin, ManufacturerName, ManufacturerProductDesignation, Nameplate,
-    NationalCode, OrderCodeOfManufacturer, Street, URIOfTheProduct, YearOfConstruction, Zipcode,
+    CountryOfOrigin, CountryOfOrigin_t, ManufacturerName, ManufacturerName_t, ManufacturerProductDesignation,
+    ManufacturerProductDesignation_t, OrderCodeOfManufacturer, OrderCodeOfManufacturer_t, URIOfTheProduct,
+    URIOfTheProduct_t, YearOfConstruction, YearOfConstruction_t,
 )
 
 from aas_model.constants import BASE_URL
+from aas_model.resource_template.resources import ResourceNameplate
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription, DmpOpcuaInterface, MqttInterface
 from aas_model.submodel_templates.arso import skills
 from aas_model.submodel_templates.arso.control_configuration import ControlConfiguration
 
 
-def lab_nameplate() -> Nameplate:
-    """The nameplate of the lab, which a resource or a product then states its own values in."""
-    return Nameplate(
-        id_short="Nameplate",
-        URIOfTheProduct=URIOfTheProduct(value=f"{BASE_URL}/product/1"),
-        ManufacturerName=ManufacturerName(value={"en": "AAU Smart Production Lab"}),
-        ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Pharmaceutical Processing Resource"}),
-        AddressInformation=AddressInformation(
-            Street=Street(value={"en": "Fibigerstræde 14"}), Zipcode=Zipcode(value={"en": "9220"}),
-            CityTown=CityTown(value={"en": "Aalborg Øst"}), NationalCode=NationalCode(value={"en": "DK"})),
-        OrderCodeOfManufacturer=OrderCodeOfManufacturer(value=""),
-        YearOfConstruction=YearOfConstruction(value="2026"),
-        CountryOfOrigin=CountryOfOrigin(value="DK"),
-    )
+class LabNameplate(ResourceNameplate):
+    """The nameplate of an asset the lab makes itself (its address is ``ResourceNameplate``'s), which a resource
+    or a product then states its own values in."""
+    URIOfTheProduct: URIOfTheProduct_t = URIOfTheProduct(value=f"{BASE_URL}/product/1")
+    ManufacturerName: ManufacturerName_t = ManufacturerName(value={"en": "AAU Smart Production Lab"})
+    ManufacturerProductDesignation: ManufacturerProductDesignation_t = ManufacturerProductDesignation(
+        value={"en": "Pharmaceutical Processing Resource"})
+    OrderCodeOfManufacturer: OrderCodeOfManufacturer_t = OrderCodeOfManufacturer(value="")
+    YearOfConstruction: YearOfConstruction_t = YearOfConstruction(value="2026")
+    CountryOfOrigin: CountryOfOrigin_t = CountryOfOrigin(value="DK")
 
 
 # ── Skills ────────────────────────────────────────────────────────────────────
@@ -145,13 +145,9 @@ class LocatedEntryNode(EntryNode):
 
 
 class LocatedStructures(HierarchicalStructures):
+    """Hierarchical Structures with the resource as entry node and its direct parts (OneDown)."""
     EntryNode: LocatedEntryNode = LocatedEntryNode()
+    ArcheType: ArcheType_t = ArcheType(value="OneDown")
 
 
 LocatedNode.model_rebuild()
-
-
-def structure() -> LocatedStructures:
-    """Hierarchical Structures with the resource as entry node and its direct parts (OneDown)."""
-    return LocatedStructures(id_short="HierarchicalStructures", EntryNode=LocatedEntryNode(),
-                             ArcheType=ArcheType(value="OneDown"))
