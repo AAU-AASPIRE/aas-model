@@ -1,0 +1,546 @@
+{
+  "assetAdministrationShells": [
+    {
+      "assetInformation": {
+        "assetKind": "Instance",
+        "assetType": "https://smartproductionlab.aau.dk/Resource/Component/LinearAxis",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS"
+      },
+      "derivedFrom": {
+        "keys": [
+          {
+            "type": "AssetAdministrationShell",
+            "value": "https://smartproductionlab.aau.dk/aas/templates/resource"
+          }
+        ],
+        "type": "ModelReference"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS",
+      "idShort": "FillingLinearAxisAAS",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/Skills"
+            }
+          ],
+          "type": "ModelReference"
+        },
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/StateDeclaration"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "The Skills submodel (ARSO): a resource's skills with their commands and steps, and the errors they report."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/Skills",
+      "idShort": "Skills",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ARSO/Skills/1/0/Submodel"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A named skill, an element of the Skills submodel itself, recognised by its semanticId (no idShort — the skill name is user-defined)."
+            }
+          ],
+          "idShort": "Home",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/skill"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/skill/Primitive"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "What the skill does, as the short form of older AASs states it."
+                }
+              ],
+              "idShort": "SemanticId",
+              "modelType": "Property",
+              "value": "https://smartproductionlab.aau.dk/skills/Home",
+              "valueType": "xs:string"
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "One command of a skill: the action that calls it, its Operation, and what it runs."
+                }
+              ],
+              "idShort": "Start",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/skill/Start"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Operation — the invocable Operation of a command (named like it), or in the short form of a skill (named like the skill)."
+                    }
+                  ],
+                  "idShort": "Start",
+                  "modelType": "Operation",
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "invocationDelegation",
+                      "value": "http://dmp:8080{operation_path}",
+                      "valueType": "xs:string"
+                    }
+                  ],
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/skill/Start"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  }
+                }
+              ]
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Of a primitive skill: Precondition, Postcondition, Invariant (css:Constraint), expressions over the resource's signals and the skill's parameters, checked as it runs."
+                }
+              ],
+              "idShort": "Conditions",
+              "modelType": "SubmodelElementCollection",
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The skill has succeeded when it holds (a sensor ends it)."
+                    }
+                  ],
+                  "idShort": "Postcondition",
+                  "modelType": "Property",
+                  "value": "AtHome",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Of a primitive skill: how it ends when no Postcondition ends it (After), and the longest it may run (Timeout)."
+                }
+              ],
+              "idShort": "Completion",
+              "modelType": "SubmodelElementCollection",
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The longest the skill may run, a duration."
+                    }
+                  ],
+                  "idShort": "Timeout",
+                  "modelType": "Property",
+                  "value": "60s",
+                  "valueType": "xs:string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A named skill, an element of the Skills submodel itself, recognised by its semanticId (no idShort — the skill name is user-defined)."
+            }
+          ],
+          "idShort": "MoveAxis",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/skill"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/skill/Primitive"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "What the skill does, as the short form of older AASs states it."
+                }
+              ],
+              "idShort": "SemanticId",
+              "modelType": "Property",
+              "value": "https://smartproductionlab.aau.dk/skills/MoveAxis",
+              "valueType": "xs:string"
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "One command of a skill: the action that calls it, its Operation, and what it runs."
+                }
+              ],
+              "idShort": "Start",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/skill/Start"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Operation — the invocable Operation of a command (named like it), or in the short form of a skill (named like the skill)."
+                    }
+                  ],
+                  "idShort": "Start",
+                  "inputVariables": [
+                    {
+                      "value": {
+                        "description": [
+                          {
+                            "language": "en",
+                            "text": "Where to move to, in mm down from the limit switch"
+                          }
+                        ],
+                        "idShort": "Position",
+                        "modelType": "Property",
+                        "semanticId": {
+                          "keys": [
+                            {
+                              "type": "GlobalReference",
+                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Parameter/1/0"
+                            }
+                          ],
+                          "type": "ExternalReference"
+                        },
+                        "supplementalSemanticIds": [
+                          {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/semantics/Position"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        ],
+                        "value": "0.0",
+                        "valueType": "xs:double"
+                      }
+                    }
+                  ],
+                  "modelType": "Operation",
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "invocationDelegation",
+                      "value": "http://dmp:8080{operation_path}",
+                      "valueType": "xs:string"
+                    }
+                  ],
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/skill/Start"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  }
+                }
+              ]
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Of a primitive skill: Precondition, Postcondition, Invariant (css:Constraint), expressions over the resource's signals and the skill's parameters, checked as it runs."
+                }
+              ],
+              "idShort": "Conditions",
+              "modelType": "SubmodelElementCollection",
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "What has to hold when the skill starts."
+                    }
+                  ],
+                  "idShort": "Precondition",
+                  "modelType": "Property",
+                  "value": "Homed",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The skill has succeeded when it holds (a sensor ends it)."
+                    }
+                  ],
+                  "idShort": "Postcondition",
+                  "modelType": "Property",
+                  "value": "NOT Moving AND ABS(ActualPosition - Position) < 0.001",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Of a primitive skill: how it ends when no Postcondition ends it (After), and the longest it may run (Timeout)."
+                }
+              ],
+              "idShort": "Completion",
+              "modelType": "SubmodelElementCollection",
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The longest the skill may run, a duration."
+                    }
+                  ],
+                  "idShort": "Timeout",
+                  "modelType": "Property",
+                  "value": "30s",
+                  "valueType": "xs:string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "What the ErrorID in the answer of an Operation can be: one property per error."
+            }
+          ],
+          "idShort": "Errors",
+          "modelType": "SubmodelElementCollection"
+        }
+      ]
+    },
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "The state variables of this subject that effects change, and the store they are kept in."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/StateDeclaration",
+      "idShort": "StateDeclaration",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "idShort": "Position",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/semantics/Position"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "The data point that reports this variable (a Record field of a Variables series)."
+                }
+              ],
+              "idShort": "Observed",
+              "modelType": "ReferenceElement",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Observed/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": {
+                "keys": [
+                  {
+                    "type": "Submodel",
+                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "Measurements"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "LinearAxis"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "Metadata"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "Record"
+                  },
+                  {
+                    "type": "Property",
+                    "value": "Position"
+                  }
+                ],
+                "type": "ModelReference"
+              }
+            }
+          ]
+        },
+        {
+          "idShort": "Target",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "idShort": "Endpoint",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "http://state-store:7878",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Graph",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "https://smartproductionlab.aau.dk/state",
+              "valueType": "xs:string"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

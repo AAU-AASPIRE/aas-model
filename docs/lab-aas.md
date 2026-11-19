@@ -141,7 +141,8 @@ store = build_from_model(vial)          # a BaSyx object store: the shell and it
 Two of them are written out here too, with the execution model: the filling module and its three components
 (`aas_model.resource_instances.modules`: each component's capability with what it needs and changes, and the
 offered Filling derived from them) and the 2 mL vial (`aas_model.product_instances`, with the State Declaration
-of its units); `tests/test_example_line.py` builds them as one line and resolves every reference across them.
+of its units); `tests/test_example_line.py` builds them as one line and resolves every reference across them. Their AAS JSON is checked in under `examples/aas/`
+(`scripts/export_examples.py`).
 
 The lab's reference instances, written out in full, are in iec61499-mgmt-py: the products
 (`cell/examples/products`), the processes (`cell/examples/processes`), and the modules, the line, the

@@ -119,3 +119,17 @@ def _unit_properties(node) -> set:
         for child in node:
             found |= _unit_properties(child)
     return found
+
+
+def test_the_checked_in_example_files_are_what_the_export_writes():
+    import importlib.util
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("export_examples", root / "scripts" / "export_examples.py")
+    export = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(export)
+    stale = [name for name, text in export.documents().items()
+             if not (root / "examples" / "aas" / name).exists()
+             or (root / "examples" / "aas" / name).read_text(encoding="utf-8") != text]
+    assert not stale, f"run: python scripts/export_examples.py ({', '.join(stale)})"

@@ -99,6 +99,15 @@ checks that every pinned IDTA template exports from its generated class as the
 template it was generated from (the known differences are listed there), and
 that our extensions generate back to the same classes.
 
+# Example AASs
+
+`export_examples.py` writes the example AASs (the filling module, its components and the 2 mL vial) as AAS JSON
+into `examples/aas/`; `tests/test_example_line.py` fails when the checked-in files are stale.
+
+```bash
+python scripts/export_examples.py
+```
+
 # The lab's own submodels
 
 `lab_generate.py` regenerates the classes of the submodel templates in `templates/` that are not

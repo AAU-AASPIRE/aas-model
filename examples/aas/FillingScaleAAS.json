@@ -1,0 +1,326 @@
+{
+  "assetAdministrationShells": [
+    {
+      "assetInformation": {
+        "assetKind": "Instance",
+        "assetType": "https://smartproductionlab.aau.dk/Resource/Component/Scale",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/FillingScaleAAS"
+      },
+      "derivedFrom": {
+        "keys": [
+          {
+            "type": "AssetAdministrationShell",
+            "value": "https://smartproductionlab.aau.dk/aas/templates/resource"
+          }
+        ],
+        "type": "ModelReference"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/FillingScaleAAS",
+      "idShort": "FillingScaleAAS",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/FillingScaleAAS/submodels/Skills"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "The Skills submodel (ARSO): a resource's skills with their commands and steps, and the errors they report."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/FillingScaleAAS/submodels/Skills",
+      "idShort": "Skills",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ARSO/Skills/1/0/Submodel"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A named skill, an element of the Skills submodel itself, recognised by its semanticId (no idShort — the skill name is user-defined)."
+            }
+          ],
+          "idShort": "Tare",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/skill"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/skill/Primitive"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "What the skill does, as the short form of older AASs states it."
+                }
+              ],
+              "idShort": "SemanticId",
+              "modelType": "Property",
+              "value": "https://smartproductionlab.aau.dk/skills/Tare",
+              "valueType": "xs:string"
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "One command of a skill: the action that calls it, its Operation, and what it runs."
+                }
+              ],
+              "idShort": "Start",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/skill/Start"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Operation — the invocable Operation of a command (named like it), or in the short form of a skill (named like the skill)."
+                    }
+                  ],
+                  "idShort": "Start",
+                  "modelType": "Operation",
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "invocationDelegation",
+                      "value": "http://dmp:8080{operation_path}",
+                      "valueType": "xs:string"
+                    }
+                  ],
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/skill/Start"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  }
+                }
+              ]
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Of a primitive skill: how it ends when no Postcondition ends it (After), and the longest it may run (Timeout)."
+                }
+              ],
+              "idShort": "Completion",
+              "modelType": "SubmodelElementCollection",
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The open-loop duration: the skill has succeeded when it has passed, in seconds (a time ends it)."
+                    }
+                  ],
+                  "idShort": "After",
+                  "modelType": "Property",
+                  "value": "2.0",
+                  "valueType": "xs:string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A named skill, an element of the Skills submodel itself, recognised by its semanticId (no idShort — the skill name is user-defined)."
+            }
+          ],
+          "idShort": "Weigh",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/skill"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/skill/Primitive"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "What the skill does, as the short form of older AASs states it."
+                }
+              ],
+              "idShort": "SemanticId",
+              "modelType": "Property",
+              "value": "https://smartproductionlab.aau.dk/skills/Weigh",
+              "valueType": "xs:string"
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "One command of a skill: the action that calls it, its Operation, and what it runs."
+                }
+              ],
+              "idShort": "Start",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/skill/Start"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Operation — the invocable Operation of a command (named like it), or in the short form of a skill (named like the skill)."
+                    }
+                  ],
+                  "idShort": "Start",
+                  "modelType": "Operation",
+                  "outputVariables": [
+                    {
+                      "value": {
+                        "description": [
+                          {
+                            "language": "en",
+                            "text": "What it weighed, g"
+                          }
+                        ],
+                        "idShort": "Weight",
+                        "modelType": "Property",
+                        "supplementalSemanticIds": [
+                          {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/semantics/Weight"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        ],
+                        "valueType": "xs:double"
+                      }
+                    }
+                  ],
+                  "qualifiers": [
+                    {
+                      "kind": "ConceptQualifier",
+                      "type": "invocationDelegation",
+                      "value": "http://dmp:8080{operation_path}",
+                      "valueType": "xs:string"
+                    }
+                  ],
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/skill/Start"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  }
+                }
+              ]
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Of a primitive skill: how it ends when no Postcondition ends it (After), and the longest it may run (Timeout)."
+                }
+              ],
+              "idShort": "Completion",
+              "modelType": "SubmodelElementCollection",
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The open-loop duration: the skill has succeeded when it has passed, in seconds (a time ends it)."
+                    }
+                  ],
+                  "idShort": "After",
+                  "modelType": "Property",
+                  "value": "0.2",
+                  "valueType": "xs:string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "What the ErrorID in the answer of an Operation can be: one property per error."
+            }
+          ],
+          "idShort": "Errors",
+          "modelType": "SubmodelElementCollection"
+        }
+      ]
+    }
+  ]
+}
