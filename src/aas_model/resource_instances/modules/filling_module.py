@@ -1,18 +1,30 @@
 """The filling module of the example line and its components, with what each capability needs and changes.
 
 The module (``cell/modules/filling.yaml`` in iec61499-mgmt-py) fills a liquid into the container under its
-needle and weighs it. It is built from three components, each an AAS of its own with its primitive skills: a
-linear axis that moves the needle (MoveAxis, Home), a pump (Dispense) and a scale (Tare, Weigh). Its composite
-skill Dispensing runs them: needle down to the fill position, dispense the volume, needle up, weigh.
+needle and weighs it. It is built from three components, each an AAS of its own: a linear axis that moves the
+needle (MoveAxis, Home), a pump (Dispense) and a scale (Tare, Weigh). Its composite skill Dispensing runs them:
+needle down to the fill position, dispense the volume, needle up, weigh.
 
-The module's Capability Description holds
+Who says what:
 
-- per component, the component's capability (role NotAssigned), realized by its primitive, with its
-  **Execution**: what it needs of the axis, of the container in the nest and its content, and what it
-  changes. This is what the module's skills are planned from (modplan).
-- the capability the module offers, **Filling**, realized by Dispensing, with an Execution **derived** from the
-  components' and the composite's steps: the net effect, and as preconditions what no step provides. modplan's
-  compose is to write it; here it is written out by hand, its Provenance naming what it follows from.
+- **Each component** offers its capability in its own Capability Description (``AuxiliaryCapabilities``),
+  realized by its primitive, with the Execution that holds wherever it is built in: the axis ends where it was
+  sent, at its speed; the pump adds the volume it was given to the unit, at the flow rate; the scale makes the
+  unit's weight known.
+- **The module** states, per component capability, what holds in this station (its own
+  ``AuxiliaryCapabilities``): each generalized by the component's (``CapabilityGeneralizedBy``, into the
+  component's AAS), with the station's values (fill and nest positions, insert depth, clearance) and the
+  conditions they set: where the needle has to be, how deep it is in the liquid while dosing, and that nothing
+  moves it while the scale weighs. These relate the components to one another and to the container in the
+  nest, which is why they are the module's.
+- **What the module offers**, Filling, realized by Dispensing and composed of the module's three capabilities,
+  with an Execution **derived** from theirs and the composite's steps: the net effect, and as preconditions what
+  no step provides. modplan's compose is to write it; here it is written out by hand, its Provenance naming what
+  it follows from.
+
+IDTA 02020 relations between capabilities (ComposedOf, GeneralizedBy) relate elements of Capability Description
+submodels (§1.8.1); nothing in it keeps them to one submodel, so the module's capabilities name the components'
+across their AASs.
 
 The container is the unit in the module (Subject ``Unit``, role Product): what it holds and how it is shaped
 is declared by its product (``aas_model.product_instances.vial_2ml``, StateDeclaration). Where the needle is,
@@ -24,7 +36,8 @@ measured.
 
 from aas_pydantic import Capability, Key, ModelReference, Property
 from aas_pydantic.submodel_templates.capability_description import (
-    CapabilityComposedOf, ComposedOfContainer, ComposedOfSet, PropertyProperty, PropertyRange, PropertySubmodelList,
+    CapabilityComposedOf, CapabilityGeneralizedBy, ComposedOfContainer, ComposedOfSet, GeneralizedBySet,
+    PropertyProperty, PropertyRange, PropertySubmodelList,
 )
 from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
 from aas_pydantic.submodel_templates.time_series import Name
@@ -55,6 +68,7 @@ from aas_model.submodel_templates.variables import MeasurementsGroup, Variables
 SKILL = f"{BASE_URL}/skill"                 # a skill's commands and kinds (iec61499-mgmt-py, commands.ttl)
 SKILL_TYPE = f"{BASE_URL}/skills"           # what a skill does (skills.ttl)
 SMC = "SubmodelElementCollection"
+AUXILIARY = "AuxiliaryCapabilities"         # the CapabilitySet of the capabilities no product asks for directly
 
 MODULE = f"{BASE_URL}/aas/FillingModuleAAS"
 LINEAR_AXIS = f"{BASE_URL}/aas/FillingLinearAxisAAS"
@@ -67,6 +81,9 @@ MODULE_SKILLS = Key(type_="Submodel", value=f"{MODULE}/submodels/Skills")
 MODULE_CAPABILITIES = Key(type_="Submodel", value=f"{MODULE}/submodels/CapabilityDescription")
 MODULE_STRUCTURE = Key(type_="Submodel", value=f"{MODULE}/submodels/HierarchicalStructures")
 MODULE_VARIABLES = Key(type_="Submodel", value=f"{MODULE}/submodels/Variables")
+CAPABILITY = Key(type_="Capability", value="Capability")
+VALUE = Key(type_="Property", value="Value")          # a property's value in its container
+EXECUTION_SUBJECTS = (Key(type_=SMC, value="Execution"), Key(type_=SMC, value="Subjects"))
 
 # The components' primitives and the inputs of their Start.
 MOVE_AXIS = (Key(type_="Submodel", value=f"{LINEAR_AXIS}/submodels/Skills"), Key(type_=SMC, value="MoveAxis"))
@@ -76,21 +93,26 @@ HOME = (Key(type_="Submodel", value=f"{LINEAR_AXIS}/submodels/Skills"), Key(type
 MOVE_AXIS_START = (*MOVE_AXIS, Key(type_=SMC, value="Start"), Key(type_="Operation", value="Start"))
 DISPENSE_START = (*DISPENSE, Key(type_=SMC, value="Start"), Key(type_="Operation", value="Start"))
 
+# The components' own capabilities, in their AASs.
+AXIS_POSITIONING = (Key(type_="Submodel", value=f"{LINEAR_AXIS}/submodels/CapabilityDescription"),
+                    Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Positioning"))
+PUMP_DOSING = (Key(type_="Submodel", value=f"{PUMP}/submodels/CapabilityDescription"),
+               Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Dosing"))
+SCALE_WEIGHING = (Key(type_="Submodel", value=f"{SCALE}/submodels/CapabilityDescription"),
+                  Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Weighing"))
+
 # The composite, its Operation and its steps.
 DISPENSING = (MODULE_SKILLS, Key(type_=SMC, value="Dispensing"))
 DISPENSING_START = (*DISPENSING, Key(type_=SMC, value="Start"), Key(type_="Operation", value="Start"))
 DISPENSING_STEPS = (*DISPENSING, Key(type_=SMC, value="Start"), Key(type_=SMC, value="Steps"))
 
-# The capabilities: each component's (its set named like it) and the one the module offers.
-POSITIONING = (MODULE_CAPABILITIES, Key(type_=SMC, value="LinearAxis"), Key(type_=SMC, value="Positioning"))
-DOSING = (MODULE_CAPABILITIES, Key(type_=SMC, value="Pump"), Key(type_=SMC, value="Dosing"))
-WEIGHING = (MODULE_CAPABILITIES, Key(type_=SMC, value="Scale"), Key(type_=SMC, value="Weighing"))
+# The module's capabilities: what holds of each component's in this station, and what the module offers.
+POSITIONING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Positioning"))
+DOSING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Dosing"))
+WEIGHING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Weighing"))
 FILLING = (MODULE_CAPABILITIES, Key(type_=SMC, value="OfferedCapabilities"), Key(type_=SMC, value="Filling"))
-EXECUTION_SUBJECTS = (Key(type_=SMC, value="Execution"), Key(type_=SMC, value="Subjects"))
-CAPABILITY = Key(type_="Capability", value="Capability")
 POSITIONING_PROPERTIES = (*POSITIONING, Key(type_=SMC, value="PropertySet"))
 DOSING_PROPERTIES = (*DOSING, Key(type_=SMC, value="PropertySet"))
-VALUE = Key(type_="Property", value="Value")          # a property's value in its container
 
 # The axis as a part of the module, and the record of where it is.
 AXIS_NODE = (MODULE_STRUCTURE, Key(type_="Entity", value="EntryNode"), Key(type_="Entity", value="LinearAxis"))
@@ -98,8 +120,7 @@ AXIS_POSITION_FIELD = (MODULE_VARIABLES, Key(type_=SMC, value="Measurements"), K
                        Key(type_=SMC, value="Metadata"), Key(type_=SMC, value="Record"),
                        Key(type_="Property", value="Position"))
 
-
-# ── The components: their primitives, and the axis's own state ──────────────────────────────────────────────
+# ── The components: their primitives, their own capabilities, and the axis's own state ───────────────────────
 
 def filling_linear_axis() -> Component:
     """The needle lift: a stepper motor with a limit switch at the top. Its position is observed: the module
@@ -138,6 +159,33 @@ def filling_linear_axis() -> Component:
                 Observed=StateVariableObserved(value=ModelReference(key=AXIS_POSITION_FIELD)),
             ),
         }),
+        # What the axis does wherever it is built in: it ends where it was sent, at its speed.
+        capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
+            AUXILIARY: ModuleCapabilitySet(CapabilityContainer={"Positioning": ModuleCapabilityContainer(
+                Capability=Capability(supplemental_semantic_ids=[f"{LAB}Positioning"]),
+                PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
+                    "Position": StatedProperty(PropertyRange={"Value": PropertyRange(
+                        min="0.0", max="60.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}Position"])}),
+                    "Speed": StatedProperty(PropertyProperty={"Value": PropertyProperty(
+                        value="12.5", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}Speed"])}),
+                })},
+                CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={"RealizedBy": RealizedBySkill(
+                    first=ModelReference(key=(*AXIS_POSITIONING, CAPABILITY)), second=ModelReference(key=MOVE_AXIS))}),
+                Execution=Execution(
+                    Subjects=Subjects(subject={"Self": ExecutionSubject(Role=SubjectRole(value="Self"))}),
+                    Effects=ExecutionEffects(End=EndTerms(term={"Term_00": StateEffect(
+                        supplemental_semantic_ids=[f"{LAB}Position"],
+                        Subject=TermSubject(value=ModelReference(
+                            key=(*AXIS_POSITIONING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Self")))),
+                        Operator=EffectOperator(value="assign"),
+                        ValueReference=TermValueReference(value=ModelReference(
+                            key=(*MOVE_AXIS_START, Key(type_="Property", value="Position")))),
+                        Rate=Rate(value=ModelReference(key=(*AXIS_POSITIONING, Key(type_=SMC, value="PropertySet"),
+                                                            Key(type_=SMC, value="Speed"), VALUE))),
+                    )})),
+                ),
+            )}),
+        }),
     )
 
 
@@ -160,6 +208,37 @@ def filling_pump() -> Component:
                     ])}),
                 Completion=s.Completion(After=s.After(value="Volume / FlowRate")),
             ),
+        }),
+        # What the pump does wherever it is built in: it adds the volume it was given to the unit it doses into,
+        # at the flow rate. Which unit that is, is the module's to say (the composite's Unit).
+        capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
+            AUXILIARY: ModuleCapabilitySet(CapabilityContainer={"Dosing": ModuleCapabilityContainer(
+                Capability=Capability(supplemental_semantic_ids=[f"{LAB}Dosing"]),
+                PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
+                    "Volume": StatedProperty(PropertyRange={"Value": PropertyRange(
+                        min="0.5", max="10.0", value_type="xs:double",
+                        supplemental_semantic_ids=[f"{LAB}FillVolume"])}),
+                    "FlowRate": StatedProperty(PropertyRange={"Value": PropertyRange(
+                        min="0.1", max="5.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}FlowRate"])}),
+                })},
+                CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={"RealizedBy": RealizedBySkill(
+                    first=ModelReference(key=(*PUMP_DOSING, CAPABILITY)), second=ModelReference(key=DISPENSE))}),
+                Execution=Execution(
+                    Subjects=Subjects(subject={
+                        "Self": ExecutionSubject(Role=SubjectRole(value="Self")),
+                        "Unit": ExecutionSubject(Role=SubjectRole(value="Product")),
+                    }),
+                    Effects=ExecutionEffects(End=EndTerms(term={"Term_00": StateEffect(
+                        supplemental_semantic_ids=[f"{LAB}ContentVolume"],
+                        Subject=TermSubject(value=ModelReference(
+                            key=(*PUMP_DOSING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Unit")))),
+                        Operator=EffectOperator(value="increase"),
+                        ValueReference=TermValueReference(value=ModelReference(
+                            key=(*DISPENSE_START, Key(type_="Property", value="Volume")))),
+                        Rate=Rate(value=ModelReference(key=(*DISPENSE_START, Key(type_="Property", value="FlowRate")))),
+                    )})),
+                ),
+            )}),
         }),
     )
 
@@ -187,6 +266,26 @@ def filling_scale() -> Component:
                 Completion=s.Completion(After=s.After(value="0.2")),
             ),
         }),
+        # What the scale does wherever it is built in: the weight of the unit on it becomes known.
+        capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
+            AUXILIARY: ModuleCapabilitySet(CapabilityContainer={"Weighing": ModuleCapabilityContainer(
+                Capability=Capability(supplemental_semantic_ids=[f"{LAB}Weighing"]),
+                CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={"RealizedBy": RealizedBySkill(
+                    first=ModelReference(key=(*SCALE_WEIGHING, CAPABILITY)), second=ModelReference(key=WEIGH))}),
+                Execution=Execution(
+                    Subjects=Subjects(subject={
+                        "Self": ExecutionSubject(Role=SubjectRole(value="Self")),
+                        "Unit": ExecutionSubject(Role=SubjectRole(value="Product")),
+                    }),
+                    Effects=ExecutionEffects(End=EndTerms(term={"Term_00": StateEffect(
+                        supplemental_semantic_ids=[f"{LAB}FillWeight"],
+                        Subject=TermSubject(value=ModelReference(
+                            key=(*SCALE_WEIGHING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Unit")))),
+                        Operator=EffectOperator(value="measured"),
+                    )})),
+                ),
+            )}),
+        }),
     )
 
 
@@ -194,73 +293,60 @@ def filling_scale() -> Component:
 
 def filling_module() -> Module:
     # ── Capability Description ──────────────────────────────────────────────────────────────────────────────
-    # A property of a subject in a formula is a Use naming the subject, its meaning the property's.
+    # Per component capability, what holds of it in this station: generalized by the component's own (in its AAS,
+    # with what the component does anywhere), it adds the station's values and the conditions they set. A
+    # property of a subject in a formula is a Use naming the subject, its meaning the property's.
+    axis = ExecutionSubject(Role=SubjectRole(value="Component"),
+                            Binding=SubjectBinding(value=ModelReference(key=AXIS_NODE)))
+    unit = ExecutionSubject(Role=SubjectRole(value="Product"))
 
-    # The linear axis: Positioning, realized by MoveAxis. The needle's tip stays BottomClearance above the inner
-    # bottom of the container in the nest; the move ends where it was sent, at the axis's speed.
-    axis_unit = ModelReference(key=(*POSITIONING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Unit")))
-    axis_self = ModelReference(key=(*POSITIONING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Self")))
+    # Positioning: the needle's tip stays BottomClearance above the inner bottom of the container in the nest.
     positioning = ModuleCapabilityContainer(
         Capability=Capability(supplemental_semantic_ids=[f"{LAB}Positioning"]),
         PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
-            "Position": StatedProperty(PropertyRange={"Value": PropertyRange(
-                min="0.0", max="60.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}Position"])}),
-            "Speed": StatedProperty(PropertyProperty={"Value": PropertyProperty(
-                value="12.5", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}Speed"])}),
             "NestPosition": StatedProperty(PropertyProperty={"Value": PropertyProperty(
                 value="70.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}NestPosition"])}),
             "BottomClearance": StatedProperty(PropertyProperty={"Value": PropertyProperty(
                 value="1.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}BottomClearance"])}),
         })},
-        CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={
-            "RealizedBy": RealizedBySkill(first=ModelReference(key=(*POSITIONING, Key(type_="Capability",
-                                                                                      value="Capability"))),
-                                          second=ModelReference(key=MOVE_AXIS)),
-        }),
+        CapabilityRelations=ModuleCapabilityRelations(
+            CapabilityRealizedBy={"RealizedBy": RealizedBySkill(first=ModelReference(key=(*POSITIONING, CAPABILITY)),
+                                                                second=ModelReference(key=MOVE_AXIS))},
+            GeneralizedBySet={"GeneralizedBySet": GeneralizedBySet(CapabilityGeneralizedBy={
+                "GeneralizedBy": CapabilityGeneralizedBy(first=ModelReference(key=(*POSITIONING, CAPABILITY)),
+                                                         second=ModelReference(key=(*AXIS_POSITIONING, CAPABILITY)))})},
+        ),
         Execution=Execution(
-            Subjects=Subjects(subject={
-                "Self": ExecutionSubject(Role=SubjectRole(value="Self")),
-                "Unit": ExecutionSubject(Role=SubjectRole(value="Product")),
-            }),
+            Subjects=Subjects(subject={"LinearAxis": axis, "Unit": unit}),
             Conditions=ExecutionConditions(Invariant=InvariantTerms(term={"Term_00": StateCondition(
                 supplemental_semantic_ids=[f"{LAB}Position"],
-                Subject=TermSubject(value=axis_self),
+                Subject=TermSubject(value=ModelReference(
+                    key=(*POSITIONING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="LinearAxis")))),
                 Operator=ConditionOperator(value="lessOrEqual"),
                 Formula=TermFormula(value="NestPosition - InnerBottomHeight - BottomClearance"),
                 Uses=FormulaUses(use={
                     "NestPosition": FormulaUse(value=ModelReference(
                         key=(*POSITIONING_PROPERTIES, Key(type_=SMC, value="NestPosition"), VALUE))),
-                    "InnerBottomHeight": FormulaUse(value=axis_unit,
-                                                    supplemental_semantic_ids=[f"{LAB}InnerBottomHeight"]),
+                    "InnerBottomHeight": FormulaUse(
+                        value=ModelReference(key=(*POSITIONING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Unit"))),
+                        supplemental_semantic_ids=[f"{LAB}InnerBottomHeight"]),
                     "BottomClearance": FormulaUse(value=ModelReference(
                         key=(*POSITIONING_PROPERTIES, Key(type_=SMC, value="BottomClearance"), VALUE))),
                 }),
             )})),
-            Effects=ExecutionEffects(End=EndTerms(term={"Term_00": StateEffect(
-                supplemental_semantic_ids=[f"{LAB}Position"],
-                Subject=TermSubject(value=axis_self),
-                Operator=EffectOperator(value="assign"),
-                ValueReference=TermValueReference(value=ModelReference(
-                    key=(*MOVE_AXIS_START, Key(type_="Property", value="Position")))),
-                Rate=Rate(value=ModelReference(
-                        key=(*POSITIONING_PROPERTIES, Key(type_=SMC, value="Speed"), VALUE))),
-            )})),
         ),
     )
 
-    # The pump: Dosing, realized by Dispense. It doses through the needle on the axis: a dose starts with the
-    # needle at the fill position or deeper, and the needle stays InsertDepth below the rim meanwhile. While it
-    # doses, how deep the needle's tip is in the liquid (OutletImmersion) follows from where the axis is, the
-    # container's geometry and its content. The volume rises at the flow rate until the dose is in.
+    # Dosing: the pump doses through the needle on the axis, so a dose starts with the needle at the fill
+    # position or deeper, and the needle stays InsertDepth below the rim meanwhile. While it doses, how deep the
+    # needle's tip is in the liquid (OutletImmersion) follows from where the axis is, the container's geometry
+    # and its content.
     dose_axis = ModelReference(key=(*DOSING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="LinearAxis")))
     dose_unit = ModelReference(key=(*DOSING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Unit")))
+    nest = FormulaUse(value=ModelReference(key=(*DOSING_PROPERTIES, Key(type_=SMC, value="NestPosition"), VALUE)))
     dosing = ModuleCapabilityContainer(
         Capability=Capability(supplemental_semantic_ids=[f"{LAB}Dosing"]),
         PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
-            "Volume": StatedProperty(PropertyRange={"Value": PropertyRange(
-                min="0.5", max="10.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}FillVolume"])}),
-            "FlowRate": StatedProperty(PropertyRange={"Value": PropertyRange(
-                min="0.1", max="5.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}FlowRate"])}),
             "FillPosition": StatedProperty(PropertyProperty={"Value": PropertyProperty(
                 value="40.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}FillPosition"])}),
             "NestPosition": StatedProperty(PropertyProperty={"Value": PropertyProperty(
@@ -268,17 +354,15 @@ def filling_module() -> Module:
             "InsertDepth": StatedProperty(PropertyProperty={"Value": PropertyProperty(
                 value="5.0", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}InsertDepth"])}),
         })},
-        CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={
-            "RealizedBy": RealizedBySkill(first=ModelReference(key=(*DOSING, CAPABILITY)),
-                                          second=ModelReference(key=DISPENSE)),
-        }),
+        CapabilityRelations=ModuleCapabilityRelations(
+            CapabilityRealizedBy={"RealizedBy": RealizedBySkill(first=ModelReference(key=(*DOSING, CAPABILITY)),
+                                                                second=ModelReference(key=DISPENSE))},
+            GeneralizedBySet={"GeneralizedBySet": GeneralizedBySet(CapabilityGeneralizedBy={
+                "GeneralizedBy": CapabilityGeneralizedBy(first=ModelReference(key=(*DOSING, CAPABILITY)),
+                                                         second=ModelReference(key=(*PUMP_DOSING, CAPABILITY)))})},
+        ),
         Execution=Execution(
-            Subjects=Subjects(subject={
-                "Self": ExecutionSubject(Role=SubjectRole(value="Self")),
-                "LinearAxis": ExecutionSubject(Role=SubjectRole(value="Component"),
-                                               Binding=SubjectBinding(value=ModelReference(key=AXIS_NODE))),
-                "Unit": ExecutionSubject(Role=SubjectRole(value="Product")),
-            }),
+            Subjects=Subjects(subject={"LinearAxis": axis, "Unit": unit}),
             Conditions=ExecutionConditions(
                 Pre=PreTerms(term={"Term_00": StateCondition(
                     supplemental_semantic_ids=[f"{LAB}Position"],
@@ -293,60 +377,46 @@ def filling_module() -> Module:
                     Operator=ConditionOperator(value="greaterOrEqual"),
                     Formula=TermFormula(value="NestPosition - RimHeight + InsertDepth"),
                     Uses=FormulaUses(use={
-                        "NestPosition": FormulaUse(value=ModelReference(
-                        key=(*DOSING_PROPERTIES, Key(type_=SMC, value="NestPosition"), VALUE))),
+                        "NestPosition": nest,
                         "RimHeight": FormulaUse(value=dose_unit, supplemental_semantic_ids=[f"{LAB}RimHeight"]),
                         "InsertDepth": FormulaUse(value=ModelReference(
-                        key=(*DOSING_PROPERTIES, Key(type_=SMC, value="InsertDepth"), VALUE))),
+                            key=(*DOSING_PROPERTIES, Key(type_=SMC, value="InsertDepth"), VALUE))),
                     }),
                 )}),
             ),
-            Effects=ExecutionEffects(
-                During=DuringTerms(term={"Term_00": StateEffect(
-                    supplemental_semantic_ids=[f"{LAB}OutletImmersion"],
-                    Subject=TermSubject(value=dose_unit),
-                    Operator=EffectOperator(value="assign"),
-                    Formula=TermFormula(
-                        value="Position - NestPosition + InnerBottomHeight"
-                              " + 1000 * ContentVolume / (pi * InnerDiameter * InnerDiameter / 4)"),
-                    Uses=FormulaUses(use={
-                        "Position": FormulaUse(value=dose_axis, supplemental_semantic_ids=[f"{LAB}Position"]),
-                        "NestPosition": FormulaUse(value=ModelReference(
-                        key=(*DOSING_PROPERTIES, Key(type_=SMC, value="NestPosition"), VALUE))),
-                        "InnerBottomHeight": FormulaUse(value=dose_unit,
-                                                        supplemental_semantic_ids=[f"{LAB}InnerBottomHeight"]),
-                        "ContentVolume": FormulaUse(value=dose_unit, supplemental_semantic_ids=[f"{LAB}ContentVolume"]),
-                        "InnerDiameter": FormulaUse(value=dose_unit, supplemental_semantic_ids=[f"{LAB}InnerDiameter"]),
-                    }),
-                )}),
-                End=EndTerms(term={"Term_00": StateEffect(
-                    supplemental_semantic_ids=[f"{LAB}ContentVolume"],
-                    Subject=TermSubject(value=dose_unit),
-                    Operator=EffectOperator(value="increase"),
-                    ValueReference=TermValueReference(value=ModelReference(
-                        key=(*DISPENSE_START, Key(type_="Property", value="Volume")))),
-                    Rate=Rate(value=ModelReference(key=(*DISPENSE_START, Key(type_="Property", value="FlowRate")))),
-                )}),
-            ),
+            Effects=ExecutionEffects(During=DuringTerms(term={"Term_00": StateEffect(
+                supplemental_semantic_ids=[f"{LAB}OutletImmersion"],
+                Subject=TermSubject(value=dose_unit),
+                Operator=EffectOperator(value="assign"),
+                Formula=TermFormula(
+                    value="Position - NestPosition + InnerBottomHeight"
+                          " + 1000 * ContentVolume / (pi * InnerDiameter * InnerDiameter / 4)"),
+                Uses=FormulaUses(use={
+                    "Position": FormulaUse(value=dose_axis, supplemental_semantic_ids=[f"{LAB}Position"]),
+                    "NestPosition": nest,
+                    "InnerBottomHeight": FormulaUse(value=dose_unit,
+                                                    supplemental_semantic_ids=[f"{LAB}InnerBottomHeight"]),
+                    "ContentVolume": FormulaUse(value=dose_unit, supplemental_semantic_ids=[f"{LAB}ContentVolume"]),
+                    "InnerDiameter": FormulaUse(value=dose_unit, supplemental_semantic_ids=[f"{LAB}InnerDiameter"]),
+                }),
+            )})),
         ),
     )
 
-    # The scale: Weighing, realized by Weigh. It weighs the container under the needle with the needle out of
-    # it, and nothing may move the needle meanwhile (the lock). The weight is known once it has weighed.
+    # Weighing: the scale weighs the container under the needle with the needle out of it, and nothing may move
+    # the needle meanwhile (the lock).
     weigh_axis = ModelReference(key=(*WEIGHING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="LinearAxis")))
     weighing = ModuleCapabilityContainer(
         Capability=Capability(supplemental_semantic_ids=[f"{LAB}Weighing"]),
-        CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={
-            "RealizedBy": RealizedBySkill(first=ModelReference(key=(*WEIGHING, CAPABILITY)),
-                                          second=ModelReference(key=WEIGH)),
-        }),
+        CapabilityRelations=ModuleCapabilityRelations(
+            CapabilityRealizedBy={"RealizedBy": RealizedBySkill(first=ModelReference(key=(*WEIGHING, CAPABILITY)),
+                                                                second=ModelReference(key=WEIGH))},
+            GeneralizedBySet={"GeneralizedBySet": GeneralizedBySet(CapabilityGeneralizedBy={
+                "GeneralizedBy": CapabilityGeneralizedBy(first=ModelReference(key=(*WEIGHING, CAPABILITY)),
+                                                         second=ModelReference(key=(*SCALE_WEIGHING, CAPABILITY)))})},
+        ),
         Execution=Execution(
-            Subjects=Subjects(subject={
-                "Self": ExecutionSubject(Role=SubjectRole(value="Self")),
-                "LinearAxis": ExecutionSubject(Role=SubjectRole(value="Component"),
-                                               Binding=SubjectBinding(value=ModelReference(key=AXIS_NODE))),
-                "Unit": ExecutionSubject(Role=SubjectRole(value="Product")),
-            }),
+            Subjects=Subjects(subject={"LinearAxis": axis, "Unit": unit}),
             Conditions=ExecutionConditions(
                 Pre=PreTerms(term={"Term_00": StateCondition(
                     supplemental_semantic_ids=[f"{LAB}Position"], Subject=TermSubject(value=weigh_axis),
@@ -357,17 +427,12 @@ def filling_module() -> Module:
                     Operator=ConditionOperator(value="unchanged"),
                 )}),
             ),
-            Effects=ExecutionEffects(End=EndTerms(term={"Term_00": StateEffect(
-                supplemental_semantic_ids=[f"{LAB}FillWeight"],
-                Subject=TermSubject(value=ModelReference(key=(*WEIGHING, *EXECUTION_SUBJECTS,
-                                                              Key(type_=SMC, value="Unit")))),
-                Operator=EffectOperator(value="measured"),
-            )})),
         ),
     )
 
-    # What the module offers: Filling, realized by Dispensing. Its Execution is derived from the steps above (it
-    # is what they add up to for the unit, the components' state hidden: every cycle starts and ends at rest):
+    # What the module offers: Filling, realized by Dispensing and composed of the three capabilities above. Its
+    # Execution is derived from theirs (and so from the components' they generalize) and from the steps: what they
+    # add up to for the unit, the components' state hidden (every cycle starts and ends at rest):
     # the unit empty and in the module's custody, then holding the volume it was given, dosed at the station's
     # flow rate (the step's constant), and its weight known.
     fill_unit = ModelReference(key=(*FILLING, *EXECUTION_SUBJECTS, Key(type_=SMC, value="Unit")))
@@ -431,10 +496,10 @@ def filling_module() -> Module:
             # Written by hand until modplan's compose derives it; the fingerprint is the deriving tool's.
             Provenance=Provenance(
                 derived_from={
-                    "Positioning": DerivedFrom(
-                        value=ModelReference(key=(*POSITIONING, Key(type_=SMC, value="Execution")))),
-                    "Dosing": DerivedFrom(value=ModelReference(key=(*DOSING, Key(type_=SMC, value="Execution")))),
-                    "Weighing": DerivedFrom(value=ModelReference(key=(*WEIGHING, Key(type_=SMC, value="Execution")))),
+                    **{name: DerivedFrom(value=ModelReference(key=(*path, Key(type_=SMC, value="Execution"))))
+                       for name, path in (("Positioning", POSITIONING), ("Dosing", DOSING), ("Weighing", WEIGHING),
+                                          ("AxisPositioning", AXIS_POSITIONING), ("PumpDosing", PUMP_DOSING),
+                                          ("ScaleWeighing", SCALE_WEIGHING))},
                     "Steps": DerivedFrom(value=ModelReference(key=DISPENSING_STEPS)),
                 },
                 Fingerprint=Fingerprint(value=""),
@@ -519,8 +584,7 @@ def filling_module() -> Module:
 
         capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
             "OfferedCapabilities": ModuleCapabilitySet(CapabilityContainer={"Filling": filling}),
-            "LinearAxis": ModuleCapabilitySet(CapabilityContainer={"Positioning": positioning}),
-            "Pump": ModuleCapabilitySet(CapabilityContainer={"Dosing": dosing}),
-            "Scale": ModuleCapabilitySet(CapabilityContainer={"Weighing": weighing}),
+            AUXILIARY: ModuleCapabilitySet(CapabilityContainer={
+                "Positioning": positioning, "Dosing": dosing, "Weighing": weighing}),
         }),
     )

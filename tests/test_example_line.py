@@ -43,22 +43,38 @@ def test_each_instance_reads_back_from_its_json(name):
     assert json.loads(again.model_dump_json()) == json.loads(made.model_dump_json())
 
 
-def test_every_reference_of_the_modules_capabilities_resolves_in_the_line():
-    from aas_model.resource_instances.modules.filling_module import MODULE
+def test_every_reference_of_the_capabilities_resolves_in_the_line():
+    """The module's and the components' capabilities, which name each other across their AASs."""
+    from aas_model.resource_instances.modules.filling_module import LINEAR_AXIS, MODULE, PUMP, SCALE
 
     store = _store()
-    description = _submodel(store, MODULE, "CapabilityDescription")
-    references = [ref for capability_set in description.submodel_element for container in capability_set.value
-                  for ref in _references(container)]
+    references = [ref for aas_id in (MODULE, LINEAR_AXIS, PUMP, SCALE)
+                  for capability_set in _submodel(store, aas_id, "CapabilityDescription").submodel_element
+                  for container in capability_set.value for ref in _references(container)]
     unresolved = [ref for ref in references if ref.value.resolve(store) is None]
-    assert len(references) > 30 and not unresolved
+    assert len(references) > 40 and not unresolved
+
+
+def test_each_component_offers_its_capability_and_the_module_generalizes_it():
+    from aas_model.resource_instances.modules.filling_module import LINEAR_AXIS, MODULE, PUMP, SCALE
+
+    store = _store()
+    for aas_id, name in ((LINEAR_AXIS, "Positioning"), (PUMP, "Dosing"), (SCALE, "Weighing")):
+        own = _submodel(store, aas_id, "CapabilityDescription").get_referable(["AuxiliaryCapabilities", name])
+        realized = own.get_referable(["CapabilityRelations", "RealizedBy"]).second.resolve(store)
+        assert realized.id_short in ("MoveAxis", "Dispense", "Weigh")
+        here = _submodel(store, MODULE, "CapabilityDescription").get_referable(["AuxiliaryCapabilities", name])
+        general = here.get_referable(["CapabilityRelations", "GeneralizedBySet", "GeneralizedBy"]).second
+        assert general.resolve(store) is own.get_referable("Capability")
+    assert {s.id_short for s in _submodel(store, MODULE, "CapabilityDescription").submodel_element} == {
+        "OfferedCapabilities", "AuxiliaryCapabilities"}
 
 
 def test_the_components_capabilities_say_what_the_filling_module_does():
     from aas_model.resource_instances.modules.filling_module import MODULE
 
     description = _submodel(_store(), MODULE, "CapabilityDescription")
-    dosing = description.get_referable(["Pump", "Dosing", "Execution"])
+    dosing = description.get_referable(["AuxiliaryCapabilities", "Dosing", "Execution"])
     assert dosing.get_referable(["Effects", "During"]).semantic_id.key[0].value == EXECUTION_DURING
     during = dosing.get_referable(["Effects", "During", "Term_00"])
     assert during.semantic_id.key[0].value == EXECUTION_EFFECT
@@ -66,7 +82,8 @@ def test_the_components_capabilities_say_what_the_filling_module_does():
     uses = {use.id_short: [r.key[0].value for r in use.supplemental_semantic_id] for use in during.get_referable("Uses")}
     assert uses == {"Position": [f"{LAB}Position"], "NestPosition": [], "InnerBottomHeight": [f"{LAB}InnerBottomHeight"],
                     "ContentVolume": [f"{LAB}ContentVolume"], "InnerDiameter": [f"{LAB}InnerDiameter"]}
-    lock = description.get_referable(["Scale", "Weighing", "Execution", "Conditions", "Invariant", "Term_00"])
+    lock = description.get_referable(["AuxiliaryCapabilities", "Weighing", "Execution", "Conditions", "Invariant",
+                                      "Term_00"])
     assert lock.get_referable("Operator").value == "unchanged"
 
 
@@ -84,19 +101,18 @@ def test_the_offered_filling_is_derived_and_bound_to_its_skill():
     assert rate.value == "1.0"                                        # the step's constant flow rate
     derived = filling.get_referable(["Provenance"])
     assert {d.id_short for d in derived.value if d.id_short != "Fingerprint"} == {
-        "Positioning", "Dosing", "Weighing", "Steps"}
+        "Positioning", "Dosing", "Weighing", "AxisPositioning", "PumpDosing", "ScaleWeighing", "Steps"}
 
 
 def test_the_vial_declares_what_the_module_reads_of_its_units():
     """Every property of the Unit the module's formulas and terms name is declared by the vial."""
     from aas_model.product_instances.vial_2ml import AAS_ID
-    from aas_model.resource_instances.modules import filling_module
 
     declared = {variable.supplemental_semantic_ids[0] for variable in
                 PRODUCT_FACTORIES["vial2mL"]().state_declaration.variable.values()}
     named = set()
-    module = filling_module()
-    for capability_set in module.capability_description.CapabilitySet.values():
+    descriptions = [made.capability_description for made in (factory() for factory in MODULE_FACTORIES.values())]
+    for capability_set in (s for description in descriptions for s in description.CapabilitySet.values()):
         for container in capability_set.CapabilityContainer.values():
             dumped = json.loads(container.Execution.model_dump_json()) if container.Execution else {}
             named |= _unit_properties(dumped)

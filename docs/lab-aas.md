@@ -139,8 +139,9 @@ store = build_from_model(vial)          # a BaSyx object store: the shell and it
 ```
 
 Two of them are written out here too, with the execution model: the filling module and its three components
-(`aas_model.resource_instances.modules`: each component's capability with what it needs and changes, and the
-offered Filling derived from them) and the 2 mL vial (`aas_model.product_instances`, with the State Declaration
+(`aas_model.resource_instances.modules`: each component offers its capability in its own AAS, in
+`AuxiliaryCapabilities`; the module states what holds of each in this station, generalized by the component's
+across the AASs, and the offered Filling derived from them) and the 2 mL vial (`aas_model.product_instances`, with the State Declaration
 of its units); `tests/test_example_line.py` builds them as one line and resolves every reference across them. Their AAS JSON is checked in under `examples/aas/`
 (`scripts/export_examples.py`).
 
