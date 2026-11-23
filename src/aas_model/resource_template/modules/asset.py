@@ -3,9 +3,9 @@ component of a module.
 
 Each is a ``Resource``. ARSO's **Skills** take the place of the Control Component Instance; the
 **Variables** are aas-model's (the live values, and in ``Measurements`` the coordinates). What a kind
-of resource does not have is left out (``None``): a component has its Skills only, a production
-system its Hierarchical Structures and the coordinates of its own points. What kind of resource an
-AAS is, is its asset type: ``.../Resource/System``, ``.../Resource/Module``,
+of resource does not have is left out (``None``): a component has its Skills and the capabilities
+they realize, a production system its Hierarchical Structures and the coordinates of its own
+points. What kind of resource an AAS is, is its asset type: ``.../Resource/System``, ``.../Resource/Module``,
 ``.../Resource/Component/<Kind>``.
 """
 
@@ -68,11 +68,13 @@ class Module(ArsoResource):
 
 
 class Component(ArsoResource):
-    """A part of a module that acts (an axis, a pump, a scale): its primitive skills. The module it
-    is built into carries them out, so their commands refer to actions of the module's interface
-    description. Its asset type ends in its kind (``.../Resource/Component/LinearAxis``)."""
+    """A part of a module that acts (an axis, a pump, a scale): its primitive skills and the
+    capabilities they realize. The module it is built into carries them out, so their commands refer
+    to actions of the module's interface description, and a capability's state to the module's
+    Variables. Its asset type ends in its kind (``.../Resource/Component/LinearAxis``)."""
     asset_type: str = f"{RESOURCE}/Component"
     skills: ModuleSkills = ModuleSkills(id_short="Skills")
+    capability_description: Optional[ModuleCapabilityDescription] = None
 
 
 class ProductionSystem(ArsoResource):

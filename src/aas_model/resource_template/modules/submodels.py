@@ -96,8 +96,25 @@ class ModuleConstraintSet(cd.ConstraintSet):
     PropertyConstraintContainer: Dict[str, BasicConstraintContainer] = {}
 
 
+class ComposedOf(cd.CapabilityComposedOf):
+    """A capability (first) composed of the capability of a component (second): what the primitive a
+    step of its skill runs realizes. IDTA 02020 draws both ends from one submodel; here the second is
+    a model reference into the component's own Capability Description."""
+    first: ModelReference = ModelReference()
+    second: ModelReference = ModelReference()
+
+
+class ModuleComposedOfContainer(cd.ComposedOfContainer):
+    CapabilityComposedOf: Dict[str, ComposedOf] = {}
+
+
+class ModuleComposedOfSet(cd.ComposedOfSet):
+    ComposedOfContainer: Dict[str, ModuleComposedOfContainer] = {}
+
+
 class ModuleCapabilityRelations(cd.CapabilityRelations):
     CapabilityRealizedBy: Dict[str, RealizedBySkill] = {}
+    ComposedOfSet: Optional[ModuleComposedOfSet] = None
     ConstraintSet: Dict[str, ModuleConstraintSet] = {}
 
 
@@ -111,8 +128,9 @@ class ModuleCapabilitySet(cd.CapabilitySet):
 
 
 class ModuleCapabilityDescription(cd.CapabilityDescription):
-    """The capabilities a module offers, each realized by one of its skills, and in a set per
-    component the capabilities of its components, each realized by a primitive (ARSO 0.11)."""
+    """The capabilities of a resource. A module's: those it offers, each realized by one of its
+    skills and composed of its components' capabilities. A component's: in one set named after it,
+    the capabilities its primitives realize (ARSO 0.11)."""
     CapabilitySet: Dict[str, ModuleCapabilitySet] = {}
 
 
