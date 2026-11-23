@@ -1,7 +1,7 @@
 """
 StateDeclaration submodel — the state of a subject that no data point observes, and where it is kept.
 
-A custom (non-IDTA) submodel. The state variables a capability's Execution names are declared once, on the AAS of
+A custom (non-IDTA) submodel. The state variables a capability's conditions and effects name are declared once, on the AAS of
 their subject, as a time series is: observed resource state is a series of Variables; state only effects change
 (a station's occupancy where it reports none, a unit's content) is declared here. A product type declares the state
 of its units; a resource declares its own.

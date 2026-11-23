@@ -8,7 +8,7 @@ with:
 - operation: the AAS Operation clients invoke, delegated to the DMP, and the roles of its variables
   (``SubjectVariable``, ``ParameterVariable``)
 
-What a skill's capability needs and changes is not here: it is the capability's Execution
+What a skill's capability needs and changes is not here: it is the capability's conditions and effects
 (``capability_description``, ``execution``).
 
 Named-field style: containers hold their children as DIRECT named fields

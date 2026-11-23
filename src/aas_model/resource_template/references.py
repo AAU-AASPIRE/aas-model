@@ -74,13 +74,31 @@ def capability_ref(capability_set: str, name: str) -> ModelReference:
 
 def capability_property_ref(capability_set: str, name: str, prop: str) -> ModelReference:
     """The Property ``prop`` of a capability, in its PropertyContainer of the same name
-    (``.../<name>/PropertySet/<prop>/<prop>``): a named value or a characteristic an Execution term uses."""
+    (``.../<name>/PropertySet/<prop>/<prop>``): a named value, a characteristic, or a property of a subject a condition or effect is about."""
     return ModelReference(key=(Key(type_="Submodel", value=CAPABILITIES_SUBMODEL_ID),
                                *_collections(capability_set, name, "PropertySet", prop),
                                Key(type_="Property", value=prop)))
 
 
-def execution_subject_ref(capability_set: str, name: str, subject: str) -> ModelReference:
-    """A Subject of a capability's Execution: what a Condition or Effect is about, or the value it compares with."""
+def subject_ref(capability_set: str, name: str, subject: str) -> ModelReference:
+    """A Subject of a capability (``.../<name>/Subjects/<subject>``): whose property a PropertySet entry is, or
+    the value a condition compares with."""
     return ModelReference(key=(Key(type_="Submodel", value=CAPABILITIES_SUBMODEL_ID),
-                               *_collections(capability_set, name, "Execution", "Subjects", subject)))
+                               *_collections(capability_set, name, "Subjects"),
+                               Key(type_="ReferenceElement", value=subject)))
+
+
+def condition_ref(capability_set: str, name: str, condition: str) -> ModelReference:
+    """The CustomConstraint of a condition (``.../<name>/CapabilityRelations/ConstraintSet/<condition>/
+    CustomConstraint``): the first element of its ConstraintHasProperty relations."""
+    return ModelReference(key=(Key(type_="Submodel", value=CAPABILITIES_SUBMODEL_ID),
+                               *_collections(capability_set, name, "CapabilityRelations", "ConstraintSet", condition,
+                                             "CustomConstraint")))
+
+
+def effect_ref(capability_set: str, name: str, effect: str) -> ModelReference:
+    """The Effect of an EffectContainer (``.../<name>/CapabilityRelations/EffectSet/<effect>/Effect``): the first
+    element of its EffectHasProperty relations."""
+    return ModelReference(key=(Key(type_="Submodel", value=CAPABILITIES_SUBMODEL_ID),
+                               *_collections(capability_set, name, "CapabilityRelations", "EffectSet", effect,
+                                             "Effect")))

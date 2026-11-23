@@ -284,10 +284,11 @@ def create_submodel_element(
     # ── Typed leaf models (metadata from instance, not field_info) ──
     if isinstance(attribute_value, aas_model.ReferenceElement):
         q, s, d, dn = _model_metadata(attribute_value)
-        if not attribute_value.value:
+        if not attribute_value.value and not type(attribute_value).KEEP_WITHOUT_VALUE:
             return None
         return model.ReferenceElement(
-            id_short=attribute_name, value=_make_basyx_reference(attribute_value.value),
+            id_short=attribute_name,
+            value=_make_basyx_reference(attribute_value.value) if attribute_value.value else None,
             semantic_id=sid or get_semantic_id(attribute_value),
             qualifier=q, supplemental_semantic_id=s, description=d, display_name=dn)
 

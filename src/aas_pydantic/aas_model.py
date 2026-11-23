@@ -765,6 +765,10 @@ class ExternalReference(Reference):
 
 
 class ReferenceElement(SubmodelElement):
+    # A ReferenceElement without a value is left out of a built submodel, as templates carry many; a class whose
+    # empty references are meaningful (a parameter nothing binds yet) sets KEEP_WITHOUT_VALUE. (A comment, not the
+    # docstring: the docstring is part of the schemas the DMP's snapshot locks.)
+    KEEP_WITHOUT_VALUE: ClassVar[bool] = False
     id_short: AasIdString = "ReferenceElement"
     value: Optional[Reference] = None
 

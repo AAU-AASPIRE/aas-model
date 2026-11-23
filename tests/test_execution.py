@@ -1,4 +1,5 @@
-"""The execution semantics of capabilities: their structure, references and how they serialize."""
+"""The execution semantics of capabilities: conditions as IDTA 02020 constraints, effects in an EffectSet beside
+them, subjects as references; their structure, references and how they serialize."""
 
 from __future__ import annotations
 
@@ -9,16 +10,20 @@ from basyx.aas import model
 
 from aas_model import build_from_model
 from aas_model.constants import (
-    EXECUTION, EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_EFFECT, EXECUTION_FOR_ALL, EXECUTION_ONE_OF, EXECUTION_OR,
-    EXECUTION_WHEN, LAB, OPERATION_VARIABLE_PARAMETER, OPERATION_VARIABLE_SUBJECT,
+    EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_EFFECT, EXECUTION_FOR_ALL, EXECUTION_ONE_OF, EXECUTION_OR,
+    EXECUTION_STATE_CONSTRAINT, EXECUTION_SUBJECT_PRODUCT, EXECUTION_WHEN, LAB, OPERATION_VARIABLE_PARAMETER,
+    OPERATION_VARIABLE_SUBJECT,
 )
 from aas_model.resource_instances import RESOURCE_FACTORIES
 from aas_model.resource_template.operational import MODULE_CONTROL, OperationalCapabilityDescription
-from aas_model.submodel_templates.capability_description import ModuleCapabilityDescription
+from aas_model.submodel_templates.capability_description import (
+    ModuleCapabilityDescription, StateConditionalType, StateConstraint, StateConstraintContainer,
+    StatedConstraintPropertyRelations,
+)
 from aas_model.submodel_templates.control_component_instance import OPERATION_VARIABLE_OPTIONAL
 from aas_model.submodel_templates.execution import (
-    And, Body, ConditionOperator, EffectOperator, EndTerms, Execution, ExecutionConditions, ExecutionEffects,
-    ExecutionSubject, ForAll, OneOfEffects, Or, Outcome, PreTerms, StateCondition, StateEffect, SubjectRole,
+    And, Body, ConditionOperator, EffectContainer, EffectDefinition, EffectOperator, EffectPropertyRelations,
+    EffectSet, EffectTimingType, ForAll, OneOfEffects, Or, Outcome, QuantifiedVariable, StateCondition, StateEffect,
     TermValue, When, WhenCondition, WhenThen,
 )
 
@@ -31,10 +36,14 @@ def _capability_description(store):
 
 
 def _references(element):
-    """Every ModelReference below an element (ReferenceElement values)."""
+    """Every model reference below an element: ReferenceElement values and both ends of a relationship."""
     if isinstance(element, model.ReferenceElement) and isinstance(element.value, model.ModelReference):
         yield element.id_short, element.value
-    if isinstance(element, model.SubmodelElementCollection):
+    if isinstance(element, model.RelationshipElement):
+        for end in (element.first, element.second):
+            if isinstance(end, model.ModelReference):
+                yield element.id_short, end
+    if isinstance(element, (model.SubmodelElementCollection, model.SubmodelElementList)):
         for child in element.value:
             yield from _references(child)
 
@@ -60,34 +69,52 @@ def test_module_control_is_added_unless_authored_and_survives_json():
 
 
 @pytest.mark.parametrize("name", OPERATIONAL)
-def test_every_execution_reference_resolves_in_the_built_resource(name):
+def test_every_reference_of_a_capability_resolves_in_the_built_resource(name):
+    """Subjects, the properties of subjects, conditions and effects, and what relates them, all resolve."""
     store = build_from_model(RESOURCE_FACTORIES[name]())
-    description = _capability_description(store)
     found = 0
-    for capability_set in description.submodel_element:
+    for capability_set in _capability_description(store).submodel_element:
         for container in capability_set.value:
-            execution = next((e for e in container.value if e.id_short == "Execution"), None)
-            if execution is None:
-                continue
-            assert execution.semantic_id.key[0].value == EXECUTION
-            for id_short, reference in _references(execution):
+            for id_short, reference in _references(container):
                 assert reference.resolve(store) is not None, f"{container.id_short}: {id_short} does not resolve"
                 found += 1
     assert found
 
 
+def test_module_control_states_its_condition_as_a_02020_constraint_and_its_effect_beside_it():
+    store = build_from_model(RESOURCE_FACTORIES["imaDispensing"]())
+    occupying = _capability_description(store).get_referable([MODULE_CONTROL, "Occupying"])
+    room = occupying.get_referable(["CapabilityRelations", "ConstraintSet", "HasRoom"])
+    assert room.get_referable("PropertyConditionalType").value == "Pre"
+    custom = room.get_referable("CustomConstraint")
+    assert custom.supplemental_semantic_id[0].key[0].value == EXECUTION_STATE_CONSTRAINT
+    term = custom.get_referable("Term")
+    occupancy = term.get_referable("Property").value.resolve(store)
+    assert occupancy.supplemental_semantic_id[0].key[0].value == f"{LAB}Occupancy" and occupancy.value is None
+    assert occupancy.parent.get_referable("OfSubject").second.resolve(store).id_short == "Self"
+    assert {r.second.resolve(store).parent.id_short for r in room.get_referable("ConstraintPropertyRelations").value} \
+        == {"Occupancy", "Capacity"}
+    effect = occupying.get_referable(["CapabilityRelations", "EffectSet", "TakesPlace"])
+    assert effect.get_referable("EffectTimingType").value == "End"
+    assert effect.get_referable(["Effect", "Term", "Operator"]).value == "increase"
+
+
 def test_dispensing_binds_the_unit_and_the_volume_of_its_operation():
     resource = RESOURCE_FACTORIES["imaDispensing"]()
-    execution = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer["Dispensing"].Execution
-    unit = execution.Subjects.subject["Unit"]
-    assert unit.Role.value == "Product"
-    assert [key.value for key in unit.Binding.value.key[-2:]] == ["operation", "Unit"]
-    (pre,) = execution.Conditions.Pre.term.values()
-    assert isinstance(pre, StateCondition) and pre.supplemental_semantic_ids == [f"{LAB}ContentVolume"]
-    assert (pre.Operator.value, pre.Value.value) == ("equal", "0.0")
-    (end,) = execution.Effects.End.term.values()
-    assert isinstance(end, StateEffect) and end.Operator.value == "increase"
+    container = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer["Dispensing"]
+    unit = container.Subjects.subject["Unit"]
+    assert unit.semantic_id == EXECUTION_SUBJECT_PRODUCT
+    assert [key.value for key in unit.value.key[-2:]] == ["operation", "Unit"]
+    empty = container.CapabilityRelations.ConstraintSet["ConstraintSet"].PropertyConstraintContainer["UnitEmpty"]
+    assert empty.PropertyConditionalType.value == "Pre"
+    (pre,) = empty.CustomConstraint.value.values()
+    assert isinstance(pre, StateCondition) and (pre.Operator.value, pre.Value.value) == ("equal", "0.0")
+    assert pre.Property.value.key[-2].value == "ContentVolume"
+    filled = container.CapabilityRelations.EffectSet.EffectContainer["Filled"]
+    (end,) = filled.Effect.term.values()
+    assert filled.EffectTimingType.value == "End" and isinstance(end, StateEffect) and end.Operator.value == "increase"
     assert [key.value for key in end.ValueReference.value.key[-2:]] == ["operation", "Volume"]
+    assert container.CapabilityRelations.CapabilityRealizedBy             # the instance added its skill
 
     variables = {v.id_short: v for v in resource.control_component_instance.Skills.Skill["Dispensing"].operation
                  .input_variable}
@@ -101,112 +128,73 @@ def test_shuttle_takes_the_unit_it_carries_and_measures_where_it_ends():
     resource = RESOURCE_FACTORIES["planarShuttle1"]()
     container = resource.capability_description.CapabilitySet["Transport"].CapabilityContainer["MoveToPosition"]
     assert container.Capability.supplemental_semantic_ids == [f"{LAB}Transporting"]
-    unit = container.Execution.Subjects.subject["Unit"]
-    assert [key.value for key in unit.Binding.value.key[-2:]] == ["operation", "ProductID"]
-    (end,) = container.Execution.Effects.End.term.values()
-    assert end.Operator.value == "measured" and end.supplemental_semantic_ids == [f"{LAB}Position"]
+    assert [key.value for key in container.Subjects.subject["Unit"].value.key[-2:]] == ["operation", "ProductID"]
+    (end,) = container.CapabilityRelations.EffectSet.EffectContainer["PositionKnown"].Effect.term.values()
+    assert end.Operator.value == "measured" and end.Property.value.key[-2].value == "Position"
 
 
 def test_term_kinds_survive_json_and_are_told_apart_by_semantic_id_in_aas():
     condition = StateCondition(Operator=ConditionOperator(value="equal"), Value=TermValue(value="0", value_type="xs:int"))
     effect = StateEffect(Operator=EffectOperator(value="assign"), Value=TermValue(value="1", value_type="xs:int"))
-    execution = Execution(
-        Conditions=ExecutionConditions(Pre=PreTerms(term={
-            "Term_00": And(term={"Term_00": condition, "Term_01": Or(term={"Term_00": condition})}),
-            "Term_01": ForAll(Variable=ExecutionSubject(Role=SubjectRole(value="Variable")),
-                              Body=Body(term={"Term_00": condition})),
-        })),
-        Effects=ExecutionEffects(End=EndTerms(term={
-            "Term_00": When(Condition=WhenCondition(term={"Term_00": condition}),
-                            Then=WhenThen(term={"Term_00": effect})),
-            "Term_01": OneOfEffects(outcome={"In": Outcome(term={"Term_00": effect}), "Out": Outcome()}),
-        })),
+    tree = StateConstraintContainer(
+        CustomConstraint=StateConstraint(value={"Term": And(term={
+            "Term_00": condition, "Term_01": Or(term={"Term_00": condition}),
+            "Term_02": ForAll(Variable=QuantifiedVariable(), Body=Body(term={"Term_00": condition})),
+        })}),
+        PropertyConditionalType=StateConditionalType(value="PreInvariant"),
+        ConstraintPropertyRelations=StatedConstraintPropertyRelations(),
     )
-    restored = Execution.model_validate_json(execution.model_dump_json())
-    assert json.loads(restored.model_dump_json()) == json.loads(execution.model_dump_json())
-    pre = restored.Conditions.Pre.term
-    assert (type(pre["Term_00"]), type(pre["Term_00"].term["Term_01"]), type(pre["Term_01"])) == (And, Or, ForAll)
-    end = restored.Effects.End.term
-    assert (type(end["Term_00"]), type(end["Term_01"])) == (When, OneOfEffects)
+    effects = EffectSet(EffectContainer={
+        "Conditional": EffectContainer(
+            EffectTimingType=EffectTimingType(value="End"),
+            Effect=EffectDefinition(term={"Term": When(Condition=WhenCondition(term={"Term_00": condition}),
+                                                       Then=WhenThen(term={"Term_00": effect}))}),
+            EffectPropertyRelations=EffectPropertyRelations()),
+        "Outcomes": EffectContainer(
+            EffectTimingType=EffectTimingType(value="End"),
+            Effect=EffectDefinition(term={"Term": OneOfEffects(outcome={"In": Outcome(term={"Term_00": effect}),
+                                                                        "Out": Outcome()})}),
+            EffectPropertyRelations=EffectPropertyRelations()),
+    })
+    for made in (tree, effects):
+        restored = type(made).model_validate_json(made.model_dump_json())
+        assert json.loads(restored.model_dump_json()) == json.loads(made.model_dump_json())
+    restored = StateConstraintContainer.model_validate_json(tree.model_dump_json())
+    root = restored.CustomConstraint.value["Term"]
+    assert (type(root), type(root.term["Term_01"]), type(root.term["Term_02"])) == (And, Or, ForAll)
 
     resource = RESOURCE_FACTORIES["imaDispensing"]()
-    resource.capability_description.CapabilitySet["Processing"].CapabilityContainer["Dispensing"].Execution = execution
-    description = _capability_description(build_from_model(resource))
-    built = description.get_referable(["Processing", "Dispensing", "Execution"])
-    ids = {
-        path: built.get_referable(path.split("/")).semantic_id.key[0].value
-        for path in ("Conditions/Pre/Term_00", "Conditions/Pre/Term_00/Term_01", "Conditions/Pre/Term_01",
-                     "Conditions/Pre/Term_00/Term_00", "Effects/End/Term_00", "Effects/End/Term_01",
-                     "Effects/End/Term_00/Then/Term_00")
-    }
+    relations = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer[
+        "Dispensing"].CapabilityRelations
+    relations.ConstraintSet["ConstraintSet"].PropertyConstraintContainer["Tree"] = tree
+    relations.EffectSet = effects
+    built = _capability_description(build_from_model(resource)).get_referable(
+        ["Processing", "Dispensing", "CapabilityRelations"])
+    ids = {path: built.get_referable(path.split("/")).semantic_id.key[0].value for path in (
+        "ConstraintSet/Tree/CustomConstraint/Term", "ConstraintSet/Tree/CustomConstraint/Term/Term_00",
+        "ConstraintSet/Tree/CustomConstraint/Term/Term_01", "ConstraintSet/Tree/CustomConstraint/Term/Term_02",
+        "EffectSet/Conditional/Effect/Term", "EffectSet/Conditional/Effect/Term/Then/Term_00",
+        "EffectSet/Outcomes/Effect/Term")}
     assert ids == {
-        "Conditions/Pre/Term_00": EXECUTION_AND, "Conditions/Pre/Term_00/Term_01": EXECUTION_OR,
-        "Conditions/Pre/Term_01": EXECUTION_FOR_ALL, "Conditions/Pre/Term_00/Term_00": EXECUTION_CONDITION,
-        "Effects/End/Term_00": EXECUTION_WHEN, "Effects/End/Term_01": EXECUTION_ONE_OF,
-        "Effects/End/Term_00/Then/Term_00": EXECUTION_EFFECT,
+        "ConstraintSet/Tree/CustomConstraint/Term": EXECUTION_AND,
+        "ConstraintSet/Tree/CustomConstraint/Term/Term_00": EXECUTION_CONDITION,
+        "ConstraintSet/Tree/CustomConstraint/Term/Term_01": EXECUTION_OR,
+        "ConstraintSet/Tree/CustomConstraint/Term/Term_02": EXECUTION_FOR_ALL,
+        "EffectSet/Conditional/Effect/Term": EXECUTION_WHEN,
+        "EffectSet/Conditional/Effect/Term/Then/Term_00": EXECUTION_EFFECT,
+        "EffectSet/Outcomes/Effect/Term": EXECUTION_ONE_OF,
     }
 
 
-def test_operators_are_restricted_to_their_kind():
+def test_operators_and_timings_are_restricted_to_their_kind():
     with pytest.raises(ValueError):
         ConditionOperator(value="assign")
     with pytest.raises(ValueError):
         EffectOperator(value="equal")
-
-
-def test_a_module_capability_holds_its_execution_bound_to_its_skills_operation():
-    from aas_pydantic import Capability, Key, ModelReference
-    from aas_model.resource_template.modules import Module, ModuleSkill
-    from aas_model.submodel_templates.arso import skills as s
-    from aas_model.submodel_templates.capability_description import (
-        ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilitySet,
-    )
-    from aas_model.submodel_templates.control_component_instance import ParameterVariable, SubjectVariable
-    from aas_model.submodel_templates.execution import (
-        Subjects, SubjectBinding, TermSubject, TermValueReference,
-    )
-
-    aas_id = "https://smartproductionlab.aau.dk/aas/DemoFillingModuleAAS"
-    skills_sm, capabilities_sm = f"{aas_id}/submodels/Skills", f"{aas_id}/submodels/CapabilityDescription"
-    start = [Key(type_="Submodel", value=skills_sm), Key(type_="SubmodelElementCollection", value="Dispensing"),
-             Key(type_="SubmodelElementCollection", value="Start"), Key(type_="Operation", value="Start")]
-    execution = [Key(type_="Submodel", value=capabilities_sm),
-                 Key(type_="SubmodelElementCollection", value="OfferedCapabilities"),
-                 Key(type_="SubmodelElementCollection", value="Filling"),
-                 Key(type_="SubmodelElementCollection", value="Execution"),
-                 Key(type_="SubmodelElementCollection", value="Subjects"),
-                 Key(type_="SubmodelElementCollection", value="Unit")]
-    module = Module(id_short="DemoFillingModuleAAS", id=aas_id)
-    module.skills.Skill["Dispensing"] = ModuleSkill(Start=s.Start(SkillOperation={"Start": s.SkillOperation(
-        id_short="Start", input_variable=[
-            ParameterVariable(id_short="Volume", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}Volume"]),
-            SubjectVariable(id_short="Unit"),
-        ])}))
-    module.capability_description = ModuleCapabilityDescription(CapabilitySet={
-        "OfferedCapabilities": ModuleCapabilitySet(CapabilityContainer={"Filling": ModuleCapabilityContainer(
-            Capability=Capability(supplemental_semantic_ids=[f"{LAB}Filling"]),
-            Execution=Execution(
-                Subjects=Subjects(subject={"Unit": ExecutionSubject(
-                    Role=SubjectRole(value="Product"),
-                    Binding=SubjectBinding(value=ModelReference(key=(*start, Key(type_="Property", value="Unit")))),
-                )}),
-                Effects=ExecutionEffects(End=EndTerms(term={"Term_00": StateEffect(
-                    supplemental_semantic_ids=[f"{LAB}ContentVolume"],
-                    Subject=TermSubject(value=ModelReference(key=tuple(execution))),
-                    Operator=EffectOperator(value="increase"),
-                    ValueReference=TermValueReference(value=ModelReference(
-                        key=(*start, Key(type_="Property", value="Volume")))),
-                )})),
-            ),
-        )}),
-    })
-    restored = Module.model_validate_json(module.model_dump_json())
-    assert json.loads(restored.model_dump_json()) == json.loads(module.model_dump_json())
-    store = build_from_model(restored)
-    description = _capability_description(store)
-    references = dict(_references(description.get_referable(["OfferedCapabilities", "Filling", "Execution"])))
-    assert set(references) == {"Binding", "Subject", "ValueReference"}
-    assert all(reference.resolve(store) is not None for reference in references.values())
+    with pytest.raises(ValueError):
+        StateConditionalType(value="Start")
+    with pytest.raises(ValueError):
+        EffectTimingType(value="Pre")
 
 
 def test_a_product_declares_the_state_of_its_units():

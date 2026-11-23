@@ -3,7 +3,7 @@
 from aas_pydantic import Property
 from aas_pydantic.submodel_templates.asset_interfaces_description import Title
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SinksItem, SourcesItem
-from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
+from aas_model.submodel_templates.capability_description import RealizedBySkill
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
 from aas_model.resource_template import ResourceNameplate
@@ -16,7 +16,7 @@ from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
     skill_ref,
 )
-from aas_model.submodel_templates.execution import SubjectBinding
+from aas_model.submodel_templates.execution import ProductSubject
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 from aas_model.resource_template.resources import PlanarShuttle
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
@@ -131,15 +131,11 @@ end
                        for member in ("Uuid", "State", "Outcome", "ProductID")],
     ))
     container = resource.capability_description.CapabilitySet["Transport"].CapabilityContainer[name]
-    container.CapabilityRelations = ModuleCapabilityRelations(
-        CapabilityRealizedBy={
-            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Transport", name), second=skill_ref(name))
-        }
-    )
+    container.CapabilityRelations.CapabilityRealizedBy[f"RealizedBy_{name}"] = RealizedBySkill(
+        id_short=f"RealizedBy_{name}", first=capability_ref("Transport", name), second=skill_ref(name))
     # The unit the move takes along arrives in the Operation's ProductID.
-    container.Execution.Subjects.subject["Unit"].Binding = SubjectBinding(
-        value=operation_variable_ref(name, "ProductID"),
-    )
+    container.Subjects.subject["Unit"] = ProductSubject(id_short="Unit",
+                                                       value=operation_variable_ref(name, "ProductID"))
 
     # Location: the reported position, as Properties and, one row per report, into Variables/Measurements/Location.
     location_url = f"{SCHEMA_BASE}/positionStamped.schema.json"

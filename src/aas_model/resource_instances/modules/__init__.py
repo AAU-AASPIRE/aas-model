@@ -1,4 +1,4 @@
-"""The lab's modules as ARSO describes them (``Module``, ``Component``), with their capabilities' Execution."""
+"""The lab's modules as ARSO describes them (``Module``, ``Component``), with what their capabilities need and change."""
 
 from .filling_module import filling_linear_axis, filling_module, filling_pump, filling_scale
 

@@ -37,8 +37,9 @@ from typing import Dict
 from aas_pydantic import Capability, Property
 from aas_pydantic.submodel_templates.capability_description import PropertyProperty
 from aas_model.submodel_templates.capability_description import (
-    ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
-    RealizedBySkill, StatedProperty, StatedPropertySet,
+    HasProperty, ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations,
+    ModuleCapabilitySet, ModuleConstraintSet, RealizedBySkill, SameAs, StateConditionalType, StateConstraint,
+    StateConstraintContainer, StatedConstraintPropertyRelations, StatedProperty, StatedPropertySet,
 )
 from aas_pydantic.submodel_templates.asset_interfaces_description import (
     Base, ContentType, EndpointMetadata, Title, securityDefinitions, security_t,
@@ -60,8 +61,9 @@ from aas_model.submodel_templates.control_component_instance import (
 )
 from aas_model.submodel_templates.variables import LogGroup, StateGroup, Variables
 from aas_model.submodel_templates.execution import (
-    ConditionOperator, EffectOperator, EndTerms, Execution, ExecutionConditions, ExecutionEffects, ExecutionSubject,
-    PreTerms, StateCondition, StateEffect, SubjectRole, Subjects, TermSubject, TermValue, TermValueReference,
+    ConditionOperator, EffectContainer, EffectDefinition, EffectHasProperty, EffectOperator, EffectPropertyRelations,
+    EffectSet, EffectTimingType, SelfSubject, StateCondition, StateEffect, Subjects, TermProperty, TermValue,
+    TermValueReference,
 )
 from aas_pydantic.submodel_templates.time_series import Name
 from aas_model.submodel_templates.time_series import (
@@ -70,7 +72,7 @@ from aas_model.submodel_templates.time_series import (
 )
 from aas_model.resource_template.references import (
     MQTT_INTERFACE, OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_property_ref, capability_ref,
-    execution_subject_ref, operation_ref, operation_variable_ref, series_segment_ref, skill_ref,
+    condition_ref, effect_ref, operation_ref, operation_variable_ref, series_segment_ref, skill_ref, subject_ref,
 )
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_pydantic.aas_model import AasIdString
@@ -151,68 +153,110 @@ class OperationalVariables(Variables):
 
 class ModuleControlCapabilities(ModuleCapabilitySet):
     """Occupying (Occupy, the lab's Receiving) and Releasing (Release, Releasing). The Capacity is the device's:
-    an instance that holds more than one product at a time sets it."""
+    an instance that holds more than one product at a time sets it. Occupancy is the device's state: how many
+    products it holds now (no value: the state store keeps it)."""
     CapabilityContainer: Dict[str, ModuleCapabilityContainer] = {
         "Occupying": ModuleCapabilityContainer(
             Capability=Capability(supplemental_semantic_ids=[f"{LAB}Receiving"]),
-            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={"Capacity": StatedProperty(
-                PropertyProperty={"Capacity": PropertyProperty(
+            Subjects=Subjects(subject={"Self": SelfSubject()}),
+            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
+                "Capacity": StatedProperty(PropertyProperty={"Capacity": PropertyProperty(
                     value="1", value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Capacity"],
                     description="How many products the device holds at a time.",
-                )},
-            )})},
-            CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={
-                "RealizedBy_Occupy": RealizedBySkill(
-                    first=capability_ref(MODULE_CONTROL, "Occupying"), second=skill_ref("Occupy"),
+                )}),
+                "Occupancy": StatedProperty(
+                    PropertyProperty={"Occupancy": PropertyProperty(
+                        value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        description="How many products the device holds now.",
+                    )},
+                    SameProperty={"OfSubject": SameAs(
+                        first=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy"),
+                        second=subject_ref(MODULE_CONTROL, "Occupying", "Self"),
+                    )},
                 ),
-            }),
-            Execution=Execution(
-                Subjects=Subjects(subject={"Self": ExecutionSubject(Role=SubjectRole(value="Self"))}),
-                Conditions=ExecutionConditions(Pre=PreTerms(term={
-                    "Term_00": StateCondition(
-                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Occupying", "Self")),
-                        Operator=ConditionOperator(value="less"),
-                        ValueReference=TermValueReference(
-                            value=capability_property_ref(MODULE_CONTROL, "Occupying", "Capacity"),
-                        ),
+            })},
+            CapabilityRelations=ModuleCapabilityRelations(
+                CapabilityRealizedBy={"RealizedBy_Occupy": RealizedBySkill(
+                    first=capability_ref(MODULE_CONTROL, "Occupying"), second=skill_ref("Occupy"),
+                )},
+                ConstraintSet={"ConstraintSet": ModuleConstraintSet(PropertyConstraintContainer={
+                    "HasRoom": StateConstraintContainer(
+                        CustomConstraint=StateConstraint(value={"Term": StateCondition(
+                            Property=TermProperty(
+                                value=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy")),
+                            Operator=ConditionOperator(value="less"),
+                            ValueReference=TermValueReference(
+                                value=capability_property_ref(MODULE_CONTROL, "Occupying", "Capacity")),
+                        )}),
+                        PropertyConditionalType=StateConditionalType(value="Pre"),
+                        ConstraintPropertyRelations=StatedConstraintPropertyRelations(ConstraintHasProperty={
+                            prop: HasProperty(first=condition_ref(MODULE_CONTROL, "Occupying", "HasRoom"),
+                                              second=capability_property_ref(MODULE_CONTROL, "Occupying", prop))
+                            for prop in ("Occupancy", "Capacity")
+                        }),
                     ),
-                })),
-                Effects=ExecutionEffects(End=EndTerms(term={
-                    "Term_00": StateEffect(
-                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Occupying", "Self")),
+                })},
+                EffectSet=EffectSet(EffectContainer={"TakesPlace": EffectContainer(
+                    EffectTimingType=EffectTimingType(value="End"),
+                    Effect=EffectDefinition(term={"Term": StateEffect(
+                        Property=TermProperty(value=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy")),
                         Operator=EffectOperator(value="increase"),
                         Value=TermValue(value="1", value_type="xs:int"),
-                    ),
-                })),
+                    )}),
+                    EffectPropertyRelations=EffectPropertyRelations(EffectHasProperty={"Occupancy": EffectHasProperty(
+                        first=effect_ref(MODULE_CONTROL, "Occupying", "TakesPlace"),
+                        second=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy"),
+                    )}),
+                )}),
             ),
         ),
         "Releasing": ModuleCapabilityContainer(
             Capability=Capability(supplemental_semantic_ids=[f"{LAB}Releasing"]),
-            CapabilityRelations=ModuleCapabilityRelations(CapabilityRealizedBy={
-                "RealizedBy_Release": RealizedBySkill(
-                    first=capability_ref(MODULE_CONTROL, "Releasing"), second=skill_ref("Release"),
+            Subjects=Subjects(subject={"Self": SelfSubject()}),
+            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
+                "Occupancy": StatedProperty(
+                    PropertyProperty={"Occupancy": PropertyProperty(
+                        value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        description="How many products the device holds now.",
+                    )},
+                    SameProperty={"OfSubject": SameAs(
+                        first=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy"),
+                        second=subject_ref(MODULE_CONTROL, "Releasing", "Self"),
+                    )},
                 ),
-            }),
-            Execution=Execution(
-                Subjects=Subjects(subject={"Self": ExecutionSubject(Role=SubjectRole(value="Self"))}),
-                Conditions=ExecutionConditions(Pre=PreTerms(term={
-                    "Term_00": StateCondition(
-                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Releasing", "Self")),
-                        Operator=ConditionOperator(value="greater"),
-                        Value=TermValue(value="0", value_type="xs:int"),
+            })},
+            CapabilityRelations=ModuleCapabilityRelations(
+                CapabilityRealizedBy={"RealizedBy_Release": RealizedBySkill(
+                    first=capability_ref(MODULE_CONTROL, "Releasing"), second=skill_ref("Release"),
+                )},
+                ConstraintSet={"ConstraintSet": ModuleConstraintSet(PropertyConstraintContainer={
+                    "HoldsOne": StateConstraintContainer(
+                        CustomConstraint=StateConstraint(value={"Term": StateCondition(
+                            Property=TermProperty(
+                                value=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy")),
+                            Operator=ConditionOperator(value="greater"),
+                            Value=TermValue(value="0", value_type="xs:int"),
+                        )}),
+                        PropertyConditionalType=StateConditionalType(value="Pre"),
+                        ConstraintPropertyRelations=StatedConstraintPropertyRelations(ConstraintHasProperty={
+                            "Occupancy": HasProperty(
+                                first=condition_ref(MODULE_CONTROL, "Releasing", "HoldsOne"),
+                                second=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy")),
+                        }),
                     ),
-                })),
-                Effects=ExecutionEffects(End=EndTerms(term={
-                    "Term_00": StateEffect(
-                        supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                        Subject=TermSubject(value=execution_subject_ref(MODULE_CONTROL, "Releasing", "Self")),
+                })},
+                EffectSet=EffectSet(EffectContainer={"GivesPlace": EffectContainer(
+                    EffectTimingType=EffectTimingType(value="End"),
+                    Effect=EffectDefinition(term={"Term": StateEffect(
+                        Property=TermProperty(value=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy")),
                         Operator=EffectOperator(value="decrease"),
                         Value=TermValue(value="1", value_type="xs:int"),
-                    ),
-                })),
+                    )}),
+                    EffectPropertyRelations=EffectPropertyRelations(EffectHasProperty={"Occupancy": EffectHasProperty(
+                        first=effect_ref(MODULE_CONTROL, "Releasing", "GivesPlace"),
+                        second=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy"),
+                    )}),
+                )}),
             ),
         ),
     }

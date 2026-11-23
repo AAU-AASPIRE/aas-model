@@ -35,13 +35,24 @@ too (`cell/examples/example_line.py`).
 - **Capability Description (IDTA 02020):** the lab's extension, shared with the stations
   (`submodel_templates.capability_description`): a capability is realized by a skill of the same AAS or a
   component's (`RealizedBySkill`, a model reference where IDTA leaves an external one); a property is
-  the variable of the module it is (`SameAs`); a constraint is a `BasicConstraint` expression. A
-  property may list the values a module takes (IDTA's `SubmodelElementList` kind: the containers
-  vial, syringe, cartridge). A capability may also hold its `Execution`
-  (`submodel_templates.execution`): the subjects taking part, the conditions on their state (Pre,
-  Invariant, Post) and the effects to it (Start, During, End), as a tree of terms whose kind is their
-  semantic id. The ConstraintSet stays for matching; the Execution is what the planners, the behaviour
-  tree and the DMP read.
+  the variable of the module it is, or a subject's property (`SameAs`, `OfSubject`). A property may list
+  the values a module takes (IDTA's `SubmodelElementList` kind: the containers vial, syringe, cartridge).
+  What a capability needs and changes sits where 02020 has room for it (`submodel_templates.execution`):
+  - **Subjects** (lab): who takes part, one ReferenceElement each, named as the planning domain's parameter,
+    its role (Self, Component, Product, Carrier, Variable) its semantic id, its value the AAS or the
+    Operation variable it is (none where nothing binds it at this level).
+  - **PropertySet** (02020): beside the capability's own properties, the properties of its subjects a
+    condition or effect is about, each without a value (the state store holds it) and the same as its
+    subject's (`OfSubject`).
+  - **ConstraintSet** (02020): a characteristic is a `BasicConstraint` (what matching reads); a condition on
+    the state of the subjects is a `CustomConstraint` holding one term (marked by its supplemental semantic
+    id), its `PropertyConditionalType` saying Pre, Invariant or Post, `ConstraintHasProperty` naming what it
+    reads.
+  - **EffectSet** (lab), beside the ConstraintSet: one `EffectContainer` per effect, its `EffectTimingType`
+    Start, During or End, its `Effect` one term, `EffectHasProperty` naming what it changes.
+
+  A term is a tree whose kind is its semantic id (Condition, Effect, And, Or, Not, Exists, ForAll, When,
+  OneOf). Conditions and effects are what the planners, the behaviour tree and the DMP read.
 - **Asset Interfaces Description:** one OPC UA interface (`ModuleInterfaces`).
 - **Hierarchical Structures:** parts that have parts in turn (`LocatedNode`). Where a part is, is a
   coordinate, not a statement of the node.
@@ -140,8 +151,8 @@ store = build_from_model(vial)          # a BaSyx object store: the shell and it
 
 Two of them are written out here too, with the execution model: the filling module and its three components
 (`aas_model.resource_instances.modules`: each component offers its capability in its own AAS, in
-`AuxiliaryCapabilities`; the module states what holds of each in this station, generalized by the component's
-across the AASs, and the offered Filling derived from them) and the 2 mL vial (`aas_model.product_instances`, with the State Declaration
+`AuxiliaryCapabilities`; the module states what holds of each in this station, a specialization of the
+component's (GeneralizedBy across the AASs), and the offered Filling derived from them) and the 2 mL vial (`aas_model.product_instances`, with the State Declaration
 of its units); `tests/test_example_line.py` builds them as one line and resolves every reference across them. Their AAS JSON is checked in under `examples/aas/`
 (`scripts/export_examples.py`).
 
