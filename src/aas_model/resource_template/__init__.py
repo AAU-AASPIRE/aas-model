@@ -17,7 +17,7 @@ from .resources import (
 )
 from .references import (
     MQTT_INTERFACE, OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_property_ref, capability_ref,
-    condition_ref, effect_ref, operation_ref, operation_variable_ref, series_segment_ref, skill_ref, subject_ref,
+    operation_ref, operation_variable_ref, series_segment_ref, skill_ref, subject_ref,
     variable_ref,
 )
 
@@ -30,7 +30,7 @@ __all__ = [
     "SoftwareResource", "MqttSoftwareResource",
     "CompositeResource",
     "MQTT_INTERFACE", "OPCUA_INTERFACE",
-    "action_member_ref", "affordance_ref", "capability_property_ref", "capability_ref", "condition_ref", "effect_ref",
+    "action_member_ref", "affordance_ref", "capability_property_ref", "capability_ref",
     "operation_ref", "operation_variable_ref", "series_segment_ref", "skill_ref", "subject_ref",
     "variable_ref",
 ]

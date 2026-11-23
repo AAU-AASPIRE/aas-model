@@ -16,13 +16,13 @@ from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
     skill_ref,
 )
-from aas_model.submodel_templates.execution import ProductSubject
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 from aas_model.resource_template.resources import PlanarShuttle
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm, MqttForm
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, OptionalVariable, ParameterVariable, SkillInterfaceRelationship, SkillOperation, SubjectVariable,
+    CapabilityVariable, ExtendedSkill, GroundingVariable, OptionalVariable, ParameterVariable,
+    SkillInterfaceRelationship, SkillOperation,
 )
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, TimeSeriesCollection, TimeSeriesMetadata, TimeSeriesRecord,
@@ -91,15 +91,21 @@ def _planar_shuttle(number: int, x: float) -> PlanarShuttle:
     cci.Skills.Skill[name] = ExtendedSkill(
         interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
         operation=SkillOperation(
-            # ProductID is not sent to the device; the reply echoes the caller's value.
+            # ProductID is not sent to the device; the reply echoes the caller's value (traceability only: where a
+            # unit is follows from custody, so it is not a subject of the move).
             in_output_variable=[
                 Property(id_short="Uuid", description="The UUID of the command"),
-                SubjectVariable(id_short="ProductID", description="The product the shuttle carries"),
+                Property(id_short="ProductID", description="The product the shuttle carries, echoed for tracing"),
             ],
+            # X, Y, Theta: the pose the device is sent to, in the table's frame. Capability and Grounding: the move and
+            # who it concerns (this shuttle, the target place), which ground its effect; the planner sends the place
+            # there and the pose composed from the place's coordinates. A manual move sends the pose alone and
+            # changes no symbolic state. Neither is sent to the device.
             input_variable=[
-                ParameterVariable(id_short=axis, value_type="xs:double", value="0.0",
-                                  supplemental_semantic_ids=[f"{LAB}{meaning}"])
-                for axis, meaning in (("X", "TargetX"), ("Y", "TargetY"), ("Theta", "TargetRz"))
+                *(ParameterVariable(id_short=axis, value_type="xs:double", value="0.0",
+                                    supplemental_semantic_ids=[f"{LAB}{meaning}"])
+                  for axis, meaning in (("X", "TargetX"), ("Y", "TargetY"), ("Theta", "TargetRz"))),
+                CapabilityVariable(), GroundingVariable(),
             ],
             output_variable=[
                 Property(id_short="State", description="The state of the command being executed"),
@@ -133,9 +139,6 @@ end
     container = resource.capability_description.CapabilitySet["Transport"].CapabilityContainer[name]
     container.CapabilityRelations.CapabilityRealizedBy[f"RealizedBy_{name}"] = RealizedBySkill(
         id_short=f"RealizedBy_{name}", first=capability_ref("Transport", name), second=skill_ref(name))
-    # The unit the move takes along arrives in the Operation's ProductID.
-    container.Subjects.subject["Unit"] = ProductSubject(id_short="Unit",
-                                                       value=operation_variable_ref(name, "ProductID"))
 
     # Location: the reported position, as Properties and, one row per report, into Variables/Measurements/Location.
     location_url = f"{SCHEMA_BASE}/positionStamped.schema.json"

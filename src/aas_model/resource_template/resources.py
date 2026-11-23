@@ -4,7 +4,7 @@
 subtypes add what holds for their kind: a physical resource has a Location parameter, a station speaks the
 PackML contract over its protocol (``operational``) and declares its capabilities (``capability_description``):
 what each means (the lab vocabulary, as a supplemental semantic id) and, where its type alone says it, what it
-needs and changes (its Subjects, its state conditions in the ConstraintSet, its EffectSet). An
+needs and changes (its Subjects, ConditionSet and EffectSet). An
 instance (``aas_model.resource_instances``) binds its own skills and observations. A full JSON export restores
 through ``Resource.model_validate_json()``.
 """
@@ -20,18 +20,14 @@ from aas_pydantic.submodel_templates.nameplate import (
     NationalCode, OrderCodeOfManufacturer, Street, URIOfTheProduct, Zipcode,
 )
 
-from aas_model.constants import BASE_URL, CSSX, LAB
+from aas_model.constants import BASE_URL, CSSX, LAB, SHUTTLE_ASSET_TYPE
 from aas_model.submodel_templates import Aimc, AimcMappingConfigurations
-from aas_pydantic.submodel_templates.capability_description import PropertyProperty
 from aas_model.submodel_templates.capability_description import (
-    HasProperty, ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations,
-    ModuleCapabilitySet, ModuleConstraintSet, SameAs, StateConditionalType, StateConstraint,
-    StateConstraintContainer, StatedConstraintPropertyRelations, StatedProperty, StatedPropertySet,
+    ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
 )
 from aas_model.submodel_templates.execution import (
-    ConditionOperator, EffectContainer, EffectDefinition, EffectHasProperty, EffectOperator, EffectPropertyRelations,
-    EffectSet, EffectTimingType, ProductSubject, SelfSubject, StateCondition, StateEffect, Subjects, TermProperty,
-    TermValue,
+    ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, PlaceSubject, PreTerms, SelfSubject,
+    StateCondition, StateEffect, Subjects, TermSubject, TermValue, TermValueReference, UnitSubject,
 )
 from aas_model.submodel_templates.state_declaration import StateDeclaration
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription
@@ -44,7 +40,7 @@ from aas_model.resource_template.operational import (
     OperationalMqttMappings, OperationalOpcuaControlComponent, OperationalOpcuaInterfaces, OperationalOpcuaMappings,
     OperationalVariables,
 )
-from aas_model.resource_template.references import capability_property_ref, condition_ref, effect_ref, subject_ref
+from aas_model.resource_template.references import subject_ref
 
 
 # ── Nameplate ────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -213,8 +209,8 @@ class CappingStation(ProcessingStation):
 
 
 class DispensingStation(ProcessingStation):
-    """Fills a unit (the lab's Filling): it needs the unit empty. Which Operation variable carries the unit, and
-    what the unit ends holding, is the instance's (the Subject's value, the EffectSet)."""
+    """Fills a unit (the lab's Filling): it needs the unit empty. What the unit ends holding is the instance's (the
+    EffectSet); which unit a call fills is the call's Grounding."""
     asset_type: str = f"{CSSX}#DispensingSystem"
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
@@ -224,33 +220,16 @@ class DispensingStation(ProcessingStation):
                     Capability=Capability(
                         semantic_id=f"{CSSX}#Dispensing", supplemental_semantic_ids=[f"{LAB}Filling"],
                     ),
-                    Subjects=Subjects(subject={"Self": SelfSubject(), "Unit": ProductSubject()}),
-                    PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={"ContentVolume": StatedProperty(
-                        PropertyProperty={"ContentVolume": PropertyProperty(
-                            value_type="xs:double", supplemental_semantic_ids=[f"{LAB}ContentVolume"],
-                            description="What the unit holds, mL.",
-                        )},
-                        SameProperty={"OfSubject": SameAs(
-                            first=capability_property_ref("Processing", "Dispensing", "ContentVolume"),
-                            second=subject_ref("Processing", "Dispensing", "Unit"),
-                        )},
-                    )})},
-                    CapabilityRelations=ModuleCapabilityRelations(ConstraintSet={"ConstraintSet": ModuleConstraintSet(
-                        PropertyConstraintContainer={"UnitEmpty": StateConstraintContainer(
-                            CustomConstraint=StateConstraint(value={"Term": StateCondition(
-                                Property=TermProperty(
-                                    value=capability_property_ref("Processing", "Dispensing", "ContentVolume")),
-                                Operator=ConditionOperator(value="equal"),
-                                Value=TermValue(value="0.0", value_type="xs:double"),
-                            )}),
-                            PropertyConditionalType=StateConditionalType(value="Pre"),
-                            ConstraintPropertyRelations=StatedConstraintPropertyRelations(ConstraintHasProperty={
-                                "ContentVolume": HasProperty(
-                                    first=condition_ref("Processing", "Dispensing", "UnitEmpty"),
-                                    second=capability_property_ref("Processing", "Dispensing", "ContentVolume")),
-                            }),
-                        )},
-                    )}),
+                    CapabilityRelations=ModuleCapabilityRelations(
+                        Subjects=Subjects(value=[SelfSubject(display_name={"en": "This station"}),
+                                                UnitSubject(display_name={"en": "Unit being filled"})]),
+                        ConditionSet=ConditionSet(Pre=PreTerms(term={"Term_00": StateCondition(
+                            display_name={"en": "Unit empty"}, supplemental_semantic_ids=[f"{LAB}ContentVolume"],
+                            Subject=TermSubject(value=subject_ref("Processing", "Dispensing", 1)),
+                            Operator=ConditionOperator(value="equal"),
+                            Value=TermValue(value="0.0", value_type="xs:double"),
+                        )})),
+                    ),
                 ),
             }),
         },
@@ -310,7 +289,7 @@ class TransportResource(PhysicalResource):
 
 class Shuttle(TransportResource):
     """Protocol-neutral shuttle; payload and product tracking are specialized."""
-    asset_type: str = f"{CSSX}#Shuttle"
+    asset_type: str = SHUTTLE_ASSET_TYPE
 
 
 class PlanarShuttle(Shuttle):
@@ -329,8 +308,9 @@ class PlanarShuttle(Shuttle):
     control_component_instance: ResourceControlComponentInstance = OperationalMqttControlComponent(
         id_short="ControlComponentInstance",
     )
-    # A move takes the shuttle and the unit it carries; where it ends is known once its position is reported
-    # again: the move is given a pose, not a place, so its position is measured, not assigned.
+    # A move takes the shuttle to a place: the shuttle is at that place when it ends. Where a unit it carries is
+    # follows from custody (the unit is held by the shuttle), so the unit takes no part. The place is a coordinate
+    # of the line (a module's TransferPoint); the pose the device is sent to is that place's, in the table's frame.
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
@@ -339,32 +319,17 @@ class PlanarShuttle(Shuttle):
                     Capability=Capability(
                         semantic_id=f"{CSSX}#MoveToPosition", supplemental_semantic_ids=[f"{LAB}Transporting"],
                     ),
-                    Subjects=Subjects(subject={"Self": SelfSubject(), "Unit": ProductSubject()}),
-                    PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={"Position": StatedProperty(
-                        PropertyProperty={"Position": PropertyProperty(
-                            value_type="xs:string", supplemental_semantic_ids=[f"{LAB}Position"],
-                            description="Where the shuttle is.",
-                        )},
-                        SameProperty={"OfSubject": SameAs(
-                            first=capability_property_ref("Transport", "MoveToPosition", "Position"),
-                            second=subject_ref("Transport", "MoveToPosition", "Self"),
-                        )},
-                    )})},
-                    CapabilityRelations=ModuleCapabilityRelations(EffectSet=EffectSet(EffectContainer={
-                        "PositionKnown": EffectContainer(
-                            EffectTimingType=EffectTimingType(value="End"),
-                            Effect=EffectDefinition(term={"Term": StateEffect(
-                                Property=TermProperty(
-                                    value=capability_property_ref("Transport", "MoveToPosition", "Position")),
-                                Operator=EffectOperator(value="measured"),
-                            )}),
-                            EffectPropertyRelations=EffectPropertyRelations(EffectHasProperty={
-                                "Position": EffectHasProperty(
-                                    first=effect_ref("Transport", "MoveToPosition", "PositionKnown"),
-                                    second=capability_property_ref("Transport", "MoveToPosition", "Position")),
-                            }),
-                        ),
-                    })),
+                    CapabilityRelations=ModuleCapabilityRelations(
+                        Subjects=Subjects(value=[SelfSubject(display_name={"en": "This shuttle"}),
+                                                PlaceSubject(display_name={"en": "Target place"})]),
+                        EffectSet=EffectSet(End=EndTerms(term={"Term_00": StateEffect(
+                            display_name={"en": "Shuttle at the target place"},
+                            supplemental_semantic_ids=[f"{LAB}Location"],
+                            Subject=TermSubject(value=subject_ref("Transport", "MoveToPosition", 0)),
+                            Operator=EffectOperator(value="assign"),
+                            ValueReference=TermValueReference(value=subject_ref("Transport", "MoveToPosition", 1)),
+                        )})),
+                    ),
                 ),
             }),
         },

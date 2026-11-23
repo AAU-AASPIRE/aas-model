@@ -16,7 +16,7 @@ from aas_pydantic.aas_model import (
 )
 from aas_pydantic.submodel_templates.hierarchical_structures import SameAs as HierarchySameAs
 from aas_model.submodel_templates.capability_description import SameAs as CapabilitySameAs
-from aas_model.submodel_templates.execution import EffectDefinition, StateEffect
+from aas_model.submodel_templates.execution import EndTerms, StateEffect
 
 for _module in pkgutil.walk_packages(aas_model.__path__, "aas_model."):
     importlib.import_module(_module.name)
@@ -41,7 +41,7 @@ def _constructible():
 
 
 def test_dumps_name_their_class_qualified():
-    end = EffectDefinition(term={"Term_00": StateEffect()})
+    end = EndTerms(term={"Term_00": StateEffect()})
     dumped = json.loads(end.model_dump_json())
     assert dumped["term"]["Term_00"]["modelType"] == "aas_model.submodel_templates.execution:StateEffect"
 

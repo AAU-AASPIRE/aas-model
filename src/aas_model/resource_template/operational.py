@@ -37,9 +37,8 @@ from typing import Dict
 from aas_pydantic import Capability, Property
 from aas_pydantic.submodel_templates.capability_description import PropertyProperty
 from aas_model.submodel_templates.capability_description import (
-    HasProperty, ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations,
-    ModuleCapabilitySet, ModuleConstraintSet, RealizedBySkill, SameAs, StateConditionalType, StateConstraint,
-    StateConstraintContainer, StatedConstraintPropertyRelations, StatedProperty, StatedPropertySet,
+    ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
+    RealizedBySkill, StatedProperty, StatedPropertySet,
 )
 from aas_pydantic.submodel_templates.asset_interfaces_description import (
     Base, ContentType, EndpointMetadata, Title, securityDefinitions, security_t,
@@ -57,13 +56,12 @@ from aas_model.submodel_templates.aid import (
 )
 from aas_model.submodel_templates.control_component_instance import (
     ExtendedSkill, ExtendedSkills, ResourceControlComponentInstance, ResourceEndpoints, SkillInterfaceRelationship,
-    SkillOperation,
+    CapabilityVariable, GroundingVariable, SkillOperation,
 )
 from aas_model.submodel_templates.variables import LogGroup, StateGroup, Variables
 from aas_model.submodel_templates.execution import (
-    ConditionOperator, EffectContainer, EffectDefinition, EffectHasProperty, EffectOperator, EffectPropertyRelations,
-    EffectSet, EffectTimingType, SelfSubject, StateCondition, StateEffect, Subjects, TermProperty, TermValue,
-    TermValueReference,
+    CarrierSubject, ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, PlaceSubject, PreTerms,
+    SelfSubject, StateCondition, StateEffect, Subjects, TermSubject, TermValue, TermValueReference, UnitSubject,
 )
 from aas_pydantic.submodel_templates.time_series import Name
 from aas_model.submodel_templates.time_series import (
@@ -72,7 +70,7 @@ from aas_model.submodel_templates.time_series import (
 )
 from aas_model.resource_template.references import (
     MQTT_INTERFACE, OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_property_ref, capability_ref,
-    condition_ref, effect_ref, operation_ref, operation_variable_ref, series_segment_ref, skill_ref, subject_ref,
+    operation_ref, operation_variable_ref, series_segment_ref, skill_ref, subject_ref,
 )
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_pydantic.aas_model import AasIdString
@@ -152,111 +150,116 @@ class OperationalVariables(Variables):
 # ── Capabilities: what Occupy and Release need and change ───────────────────
 
 class ModuleControlCapabilities(ModuleCapabilitySet):
-    """Occupying (Occupy, the lab's Receiving) and Releasing (Release, Releasing). The Capacity is the device's:
-    an instance that holds more than one product at a time sets it. Occupancy is the device's state: how many
-    products it holds now (no value: the state store keeps it)."""
+    """Occupying (Occupy, the lab's Receiving) and Releasing (Release, Releasing): the device takes a unit off the
+    shuttle at its transfer point, or puts it back on one. Custody (HeldBy) moves between the shuttle and the device,
+    and the device counts the places it fills against its Capacity, which an instance that holds more than one
+    product at a time sets.
+
+    The transfer point is the device's own coordinate: an instance that declares it binds the subject to it (a
+    ModelReference), as the filling module does; until then it is a place, grounded at run time. Who the subjects
+    are in a call is the call's Grounding."""
     CapabilityContainer: Dict[str, ModuleCapabilityContainer] = {
         "Occupying": ModuleCapabilityContainer(
             Capability=Capability(supplemental_semantic_ids=[f"{LAB}Receiving"]),
-            Subjects=Subjects(subject={"Self": SelfSubject()}),
-            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
-                "Capacity": StatedProperty(PropertyProperty={"Capacity": PropertyProperty(
+            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={"Capacity": StatedProperty(
+                PropertyProperty={"Capacity": PropertyProperty(
                     value="1", value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Capacity"],
                     description="How many products the device holds at a time.",
-                )}),
-                "Occupancy": StatedProperty(
-                    PropertyProperty={"Occupancy": PropertyProperty(
-                        value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                        description="How many products the device holds now.",
-                    )},
-                    SameProperty={"OfSubject": SameAs(
-                        first=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy"),
-                        second=subject_ref(MODULE_CONTROL, "Occupying", "Self"),
-                    )},
-                ),
-            })},
+                )},
+            )})},
             CapabilityRelations=ModuleCapabilityRelations(
                 CapabilityRealizedBy={"RealizedBy_Occupy": RealizedBySkill(
                     first=capability_ref(MODULE_CONTROL, "Occupying"), second=skill_ref("Occupy"),
                 )},
-                ConstraintSet={"ConstraintSet": ModuleConstraintSet(PropertyConstraintContainer={
-                    "HasRoom": StateConstraintContainer(
-                        CustomConstraint=StateConstraint(value={"Term": StateCondition(
-                            Property=TermProperty(
-                                value=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy")),
-                            Operator=ConditionOperator(value="less"),
-                            ValueReference=TermValueReference(
-                                value=capability_property_ref(MODULE_CONTROL, "Occupying", "Capacity")),
-                        )}),
-                        PropertyConditionalType=StateConditionalType(value="Pre"),
-                        ConstraintPropertyRelations=StatedConstraintPropertyRelations(ConstraintHasProperty={
-                            prop: HasProperty(first=condition_ref(MODULE_CONTROL, "Occupying", "HasRoom"),
-                                              second=capability_property_ref(MODULE_CONTROL, "Occupying", prop))
-                            for prop in ("Occupancy", "Capacity")
-                        }),
+                Subjects=Subjects(value=[
+                    SelfSubject(display_name={"en": "This device"}),
+                    PlaceSubject(display_name={"en": "Transfer point"}),
+                    CarrierSubject(display_name={"en": "Delivering shuttle"}),
+                    UnitSubject(display_name={"en": "Unit received"}),
+                ]),
+                ConditionSet=ConditionSet(Pre=PreTerms(term={
+                    "Term_00": StateCondition(
+                        display_name={"en": "Shuttle at the transfer point"}, supplemental_semantic_ids=[f"{LAB}Location"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 2)),
+                        Operator=ConditionOperator(value="equal"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Occupying", 1)),
                     ),
-                })},
-                EffectSet=EffectSet(EffectContainer={"TakesPlace": EffectContainer(
-                    EffectTimingType=EffectTimingType(value="End"),
-                    Effect=EffectDefinition(term={"Term": StateEffect(
-                        Property=TermProperty(value=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy")),
+                    "Term_01": StateCondition(
+                        display_name={"en": "Unit on the shuttle"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 3)),
+                        Operator=ConditionOperator(value="equal"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Occupying", 2)),
+                    ),
+                    "Term_02": StateCondition(
+                        display_name={"en": "Has room"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 0)),
+                        Operator=ConditionOperator(value="less"),
+                        ValueReference=TermValueReference(
+                            value=capability_property_ref(MODULE_CONTROL, "Occupying", "Capacity")),
+                    ),
+                })),
+                EffectSet=EffectSet(End=EndTerms(term={
+                    "Term_00": StateEffect(
+                        display_name={"en": "Unit held here"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 3)),
+                        Operator=EffectOperator(value="assign"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Occupying", 0)),
+                    ),
+                    "Term_01": StateEffect(
+                        display_name={"en": "Takes a place"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 0)),
                         Operator=EffectOperator(value="increase"),
                         Value=TermValue(value="1", value_type="xs:int"),
-                    )}),
-                    EffectPropertyRelations=EffectPropertyRelations(EffectHasProperty={"Occupancy": EffectHasProperty(
-                        first=effect_ref(MODULE_CONTROL, "Occupying", "TakesPlace"),
-                        second=capability_property_ref(MODULE_CONTROL, "Occupying", "Occupancy"),
-                    )}),
-                )}),
+                    ),
+                })),
             ),
         ),
         "Releasing": ModuleCapabilityContainer(
             Capability=Capability(supplemental_semantic_ids=[f"{LAB}Releasing"]),
-            Subjects=Subjects(subject={"Self": SelfSubject()}),
-            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={
-                "Occupancy": StatedProperty(
-                    PropertyProperty={"Occupancy": PropertyProperty(
-                        value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                        description="How many products the device holds now.",
-                    )},
-                    SameProperty={"OfSubject": SameAs(
-                        first=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy"),
-                        second=subject_ref(MODULE_CONTROL, "Releasing", "Self"),
-                    )},
-                ),
-            })},
             CapabilityRelations=ModuleCapabilityRelations(
                 CapabilityRealizedBy={"RealizedBy_Release": RealizedBySkill(
                     first=capability_ref(MODULE_CONTROL, "Releasing"), second=skill_ref("Release"),
                 )},
-                ConstraintSet={"ConstraintSet": ModuleConstraintSet(PropertyConstraintContainer={
-                    "HoldsOne": StateConstraintContainer(
-                        CustomConstraint=StateConstraint(value={"Term": StateCondition(
-                            Property=TermProperty(
-                                value=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy")),
-                            Operator=ConditionOperator(value="greater"),
-                            Value=TermValue(value="0", value_type="xs:int"),
-                        )}),
-                        PropertyConditionalType=StateConditionalType(value="Pre"),
-                        ConstraintPropertyRelations=StatedConstraintPropertyRelations(ConstraintHasProperty={
-                            "Occupancy": HasProperty(
-                                first=condition_ref(MODULE_CONTROL, "Releasing", "HoldsOne"),
-                                second=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy")),
-                        }),
+                Subjects=Subjects(value=[
+                    SelfSubject(display_name={"en": "This device"}),
+                    PlaceSubject(display_name={"en": "Transfer point"}),
+                    CarrierSubject(display_name={"en": "Collecting shuttle"}),
+                    UnitSubject(display_name={"en": "Unit released"}),
+                ]),
+                ConditionSet=ConditionSet(Pre=PreTerms(term={
+                    "Term_00": StateCondition(
+                        display_name={"en": "Shuttle at the transfer point"}, supplemental_semantic_ids=[f"{LAB}Location"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 2)),
+                        Operator=ConditionOperator(value="equal"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Releasing", 1)),
                     ),
-                })},
-                EffectSet=EffectSet(EffectContainer={"GivesPlace": EffectContainer(
-                    EffectTimingType=EffectTimingType(value="End"),
-                    Effect=EffectDefinition(term={"Term": StateEffect(
-                        Property=TermProperty(value=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy")),
+                    "Term_01": StateCondition(
+                        display_name={"en": "Unit held here"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 3)),
+                        Operator=ConditionOperator(value="equal"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Releasing", 0)),
+                    ),
+                    "Term_02": StateCondition(
+                        display_name={"en": "Holds one"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 0)),
+                        Operator=ConditionOperator(value="greater"),
+                        Value=TermValue(value="0", value_type="xs:int"),
+                    ),
+                })),
+                EffectSet=EffectSet(End=EndTerms(term={
+                    "Term_00": StateEffect(
+                        display_name={"en": "Unit on the shuttle"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 3)),
+                        Operator=EffectOperator(value="assign"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Releasing", 2)),
+                    ),
+                    "Term_01": StateEffect(
+                        display_name={"en": "Gives a place back"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 0)),
                         Operator=EffectOperator(value="decrease"),
                         Value=TermValue(value="1", value_type="xs:int"),
-                    )}),
-                    EffectPropertyRelations=EffectPropertyRelations(EffectHasProperty={"Occupancy": EffectHasProperty(
-                        first=effect_ref(MODULE_CONTROL, "Releasing", "GivesPlace"),
-                        second=capability_property_ref(MODULE_CONTROL, "Releasing", "Occupancy"),
-                    )}),
-                )}),
+                    ),
+                })),
             ),
         ),
     }
@@ -277,6 +280,7 @@ class OperationalCapabilityDescription(ModuleCapabilityDescription):
 
 # ── Control component: the PackML skills, bound to one interface ─────────────
 
+
 class OperationalMqttControlComponent(ResourceControlComponentInstance):
     # Halt carries the command's Uuid; Occupy and Release return it with the command's State.
     Skills: ExtendedSkills = ExtendedSkills(Skill={
@@ -290,6 +294,8 @@ class OperationalMqttControlComponent(ResourceControlComponentInstance):
             interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
             operation=SkillOperation(
                 in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
+                # Who it acts on (the unit, the shuttle) and the capability: never sent to the device.
+                input_variable=[CapabilityVariable(), GroundingVariable()],
                 output_variable=[Property(id_short="State", description="The state of the command being executed")],
             ),
         ) for name in LOGGED_SKILLS},
@@ -313,6 +319,8 @@ class OperationalOpcuaControlComponent(ResourceControlComponentInstance):
             interface_reference=affordance_ref(OPCUA_INTERFACE, "actions", name),
             operation=SkillOperation(
                 in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
+                # Who it acts on (the unit, the shuttle) and the capability: never sent to the device.
+                input_variable=[CapabilityVariable(), GroundingVariable()],
                 output_variable=[Property(id_short="State", description="The state of the command being executed")],
             ),
         ) for name in LOGGED_SKILLS},

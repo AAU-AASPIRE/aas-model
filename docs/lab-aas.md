@@ -35,24 +35,26 @@ too (`cell/examples/example_line.py`).
 - **Capability Description (IDTA 02020):** the lab's extension, shared with the stations
   (`submodel_templates.capability_description`): a capability is realized by a skill of the same AAS or a
   component's (`RealizedBySkill`, a model reference where IDTA leaves an external one); a property is
-  the variable of the module it is, or a subject's property (`SameAs`, `OfSubject`). A property may list
-  the values a module takes (IDTA's `SubmodelElementList` kind: the containers vial, syringe, cartridge).
-  What a capability needs and changes sits where 02020 has room for it (`submodel_templates.execution`):
-  - **Subjects** (lab): who takes part, one ReferenceElement each, named as the planning domain's parameter,
-    its role (Self, Component, Product, Carrier, Variable) its semantic id, its value the AAS or the
-    Operation variable it is (none where nothing binds it at this level).
-  - **PropertySet** (02020): beside the capability's own properties, the properties of its subjects a
-    condition or effect is about, each without a value (the state store holds it) and the same as its
-    subject's (`OfSubject`).
-  - **ConstraintSet** (02020): a characteristic is a `BasicConstraint` (what matching reads); a condition on
-    the state of the subjects is a `CustomConstraint` holding one term (marked by its supplemental semantic
-    id), its `PropertyConditionalType` saying Pre, Invariant or Post, `ConstraintHasProperty` naming what it
-    reads.
-  - **EffectSet** (lab), beside the ConstraintSet: one `EffectContainer` per effect, its `EffectTimingType`
-    Start, During or End, its `Effect` one term, `EffectHasProperty` naming what it changes.
+  the variable of the module it is (`SameAs`); a property constraint is a `BasicConstraint` expression. A
+  property may list the values a module takes (IDTA's `SubmodelElementList` kind: the containers vial,
+  syringe, cartridge). The ConstraintSet is otherwise as IDTA has it; the lab does not use it to say what a
+  capability needs and changes. That is in three SMCs of the CapabilityRelations
+  (`submodel_templates.execution`):
+  - **Subjects:** who takes part, an ordered list (SML) of ReferenceElements, each with a display name
+    ("Container in the nest"); a term references a subject by its index. Its value is the AAS it is (Self, a component), or an external reference to the semantic id of what it stands
+    for where it is only known at run time (a unit: the products' asset type; a place: a coordinate).
+    Who a subject is in a call is the call's: the realizing skill's Operation takes `Capability` (which of its
+    capabilities the call carries out) and `Grounding` (an SML, one reference per subject in the order of
+    Subjects: an AAS or element, or a unit's IRI), filled by the planner and never sent to the device. The planar shuttle's move has the
+    subjects "This shuttle" and "Target place" and ends with the shuttle at that place; a module's Receiving needs a
+    shuttle at its transfer point holding the unit, and moves custody (`HeldBy`) to the module, which Filling needs.
+  - **ConditionSet:** what must hold of the subjects, Pre (at the start), Invariant (throughout) and Post (at
+    the end).
+  - **EffectSet:** what changes, Start, During (definitions while it runs) and End.
 
-  A term is a tree whose kind is its semantic id (Condition, Effect, And, Or, Not, Exists, ForAll, When,
-  OneOf). Conditions and effects are what the planners, the behaviour tree and the DMP read.
+  Each holds trees of terms whose kind is their semantic id (Condition, Effect, And, Or, Not, Exists,
+  ForAll, When, OneOf), nesting freely; a Condition or Effect names its Subject, and the property as a
+  supplemental semantic id. A term's idShort (`Term_00`) only orders it; its display name says what it states. They are what the planners, the behaviour tree and the DMP read.
 - **Asset Interfaces Description:** one OPC UA interface (`ModuleInterfaces`).
 - **Hierarchical Structures:** parts that have parts in turn (`LocatedNode`). Where a part is, is a
   coordinate, not a statement of the node.

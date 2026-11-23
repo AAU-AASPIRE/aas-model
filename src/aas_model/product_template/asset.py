@@ -27,7 +27,7 @@ from aas_pydantic.submodel_templates.nameplate import (
 )
 from pydantic import model_validator
 
-from aas_model.constants import BASE_URL
+from aas_model.constants import BASE_URL, PRODUCT_ASSET_TYPE
 from aas_model.resource_template.modules.submodels import LabNameplate
 from aas_model.submodel_templates.product.process_parameters import Processes, ProcessParameters
 from aas_model.submodel_templates.capability_description import ModuleCapabilityDescription
@@ -94,7 +94,7 @@ class Product(AAS):
     model_config = {"extra": "forbid"}
     # A product AAS describes a kind of product, not one item of it.
     ASSET_KIND: ClassVar[str] = "Type"
-    asset_type: str = f"{BASE_URL}/Product"
+    asset_type: str = PRODUCT_ASSET_TYPE
     nameplate: Nameplate = ProductNameplate()
     hierarchical_structures: BillOfMaterial = BillOfMaterial()
     process_parameters: ProcessParameters = ProcessParameters(id_short="ProcessParameters", Processes=Processes())

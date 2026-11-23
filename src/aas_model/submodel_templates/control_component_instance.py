@@ -6,7 +6,7 @@ fields (disabled, modes, parameters, errors, uses). This module extends it
 with:
 - interface_reference: ReferenceElement pointing to the AID action
 - operation: the AAS Operation clients invoke, delegated to the DMP, and the roles of its variables
-  (``SubjectVariable``, ``ParameterVariable``)
+  (``ParameterVariable``; ``CapabilityVariable`` and ``GroundingVariable``, which ground a call's effects)
 
 What a skill's capability needs and changes is not here: it is the capability's conditions and effects
 (``capability_description``, ``execution``).
@@ -18,11 +18,11 @@ Named-field style: containers hold their children as DIRECT named fields
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
 from aas_pydantic import (
     Key, ModelReference,
-    Property, ReferenceElement, Operation, RelationshipElement, Qualifier,
+    Property, ReferenceElement, Operation, RelationshipElement, Qualifier, SubmodelElementList,
 )
 
 from aas_pydantic.submodel_templates.control_component_instance import (
@@ -35,8 +35,8 @@ from aas_pydantic.submodel_templates.control_component_instance import (
 )
 
 from aas_model.constants import (
-    BASE_URL, CONTROL_COMPONENT_TYPE_SUBMODEL_ID, INVOCATION_URL_TEMPLATE, OPERATION_VARIABLE_PARAMETER,
-    OPERATION_VARIABLE_SUBJECT,
+    BASE_URL, CONTROL_COMPONENT_TYPE_SUBMODEL_ID, INVOCATION_URL_TEMPLATE, OPERATION_VARIABLE_CAPABILITY,
+    OPERATION_VARIABLE_GROUNDED_SUBJECT, OPERATION_VARIABLE_GROUNDING, OPERATION_VARIABLE_PARAMETER,
 )
 
 
@@ -66,12 +66,35 @@ class OptionalVariable(Qualifier):
     semantic_id: str = OPERATION_VARIABLE_OPTIONAL
 
 
-class SubjectVariable(Property):
-    """An Operation variable that carries a subject only known at run time (the unit a station fills, the unit a
-    shuttle carries), as an IRI. The DMP grounds the capability's effects on it; it never enters the payload.
-    Optional, so a manual call still works: effects about a subject that was not passed leave it unknown."""
-    semantic_id: str = OPERATION_VARIABLE_SUBJECT
-    description: str = "The subject this call acts on, as an IRI."
+class CapabilityVariable(ReferenceElement):
+    """Which capability a call carries out, among those the skill realizes (MoveAxis realizes the axis's
+    Positioning and the module's): the DMP applies that capability's conditions and effects, with those of what it
+    specializes. Never sent to the device; optional, so a manual call still works and changes no symbolic state."""
+    KEEP_WITHOUT_VALUE = True                   # empty until a call fills it
+    id_short: str = "Capability"
+    semantic_id: str = OPERATION_VARIABLE_CAPABILITY
+    description: str = "The capability this call carries out."
+    qualifiers: List[Qualifier] = [OptionalVariable()]
+
+
+class GroundedSubject(ReferenceElement):
+    """Who one subject of the capability is in this call: an AAS or an element of one (a ModelReference: a shuttle,
+    a place), or a unit's IRI (an ExternalReference)."""
+    semantic_id: str = OPERATION_VARIABLE_GROUNDED_SUBJECT
+
+
+class GroundingVariable(SubmodelElementList):
+    """Who the capability's subjects are in this call, one item per subject in the order of its Subjects. A subject
+    the capability fixes (Self, a component, its own transfer point) is given as the capability states it, and the
+    DMP checks that it is; a subject known only at run time is given by the planner, who chose it. Never sent to
+    the device; optional, as Capability."""
+    id_short: str = "Grounding"
+    semantic_id: str = OPERATION_VARIABLE_GROUNDING
+    description: str = "Who the capability's subjects are in this call, in their order."
+    type_value_list_element: str = "ReferenceElement"
+    semantic_id_list_element: str = OPERATION_VARIABLE_GROUNDED_SUBJECT
+    item_type: ClassVar = GroundedSubject
+    value: List[GroundedSubject] = []
     qualifiers: List[Qualifier] = [OptionalVariable()]
 
 

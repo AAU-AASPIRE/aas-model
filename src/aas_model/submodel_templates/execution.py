@@ -1,127 +1,126 @@
 """
-Execution semantics — what a capability needs and changes, inside IDTA 02020 (plans/kg-planning-execution-PLAN.md, 4.2).
+Execution semantics — what a capability needs and changes (plans/kg-planning-execution-PLAN.md, 4.2).
 
-A capability states what it needs and changes in the places IDTA 02020 has for it, extended where it has none
-(``capability_description`` composes them into a CapabilityContainer):
+Three SMCs in a CapabilityContainer's CapabilityRelations, beside IDTA 02020's relations (RealizedBy, ComposedOf,
+GeneralizedBy) and its ConstraintSet, which the lab leaves as IDTA has it and does not use
+(``capability_description`` composes them)::
 
-::
+    CapabilityRelations
+    ├── CapabilityRealizedBy, ComposedOfSet, GeneralizedBySet     02020
+    ├── ConstraintSet                                             02020, as IDTA has it
+    ├── Subjects                 who takes part, one ReferenceElement each
+    ├── ConditionSet
+    │   ├── Pre                  terms, all of which hold at the start
+    │   ├── Invariant            ... throughout
+    │   └── Post                 ... at the end
+    └── EffectSet
+        ├── Start                effect terms applied when the action starts
+        ├── During               definitions that hold while it runs (assign only)
+        └── End                  effect terms applied when it ends
 
-    CapabilityContainer
-    ├── Capability
-    ├── Subjects                         (lab) who takes part, one ReferenceElement each
-    ├── PropertySet                      (02020) the capability's properties, and the properties of its subjects
-    │   └── <property>                   a subject's is the same as that subject's (SameProperty ``OfSubject``)
-    └── CapabilityRelations
-        ├── ConstraintSet                (02020)
-        │   └── <condition>              PropertyConstraintContainer: PropertyConditionalType Pre / Invariant / Post,
-        │                                a CustomConstraint holding one term, ConstraintHasProperty to what it reads
-        └── EffectSet                    (lab)
-            └── <effect>                 EffectContainer: EffectTimingType Start / During / End, an Effect holding
-                                         one term, EffectHasProperty to what it changes
-
-**Subjects** are ReferenceElements: the idShort is the name a planning domain gives the parameter, the semantic id
-the role (Self, Component, Product, Carrier, a quantified Variable), the value what the subject is: an AAS (Self,
-a component), the Operation variable a run-time subject arrives in (a unit), or nothing (a parameter nothing binds
-at this level, or a quantified variable). What kind of thing it is (a container, a shuttle) rides as a
-supplemental semantic id.
-
-**Properties.** A term is about a property in the capability's PropertySet. A property of a subject (a unit's
-ContentVolume, an axis's Position) is a PropertyContainer whose value's supplemental semantic id is its meaning and
-whose SameProperty ``OfSubject`` names the subject; its value, where it has one, is the range it takes. Matching
-reads a property's value; a property without one is state, which the state store holds.
+**Subjects** is a list (SML) of ReferenceElements, in order, each with a display name saying who it is (its items
+have no idShort; a term references a subject by its index). The value says what the subject is: a ModelReference to an AAS where it is one particular asset (Self, the resource's own AAS; a
+component's AAS), or an ExternalReference to the semantic id of what it stands for where it is only known at run
+time (a unit: the asset type of products) or ranged over by a quantifier. Who a subject is in a call is the call's: the realizing skill's
+Operation carries the capability it executes (``Capability``) and who its subjects are, one item per subject in
+this list's order (``Grounding``); the planner, who chose them, fills both.
 
 **Terms.** A term is an SMC whose semantic id says what it is:
 
-- ``Condition`` / ``Effect``: ``Property`` references the PropertySet entry's value; ``Operator`` is one of
-  the operators below; the operand is exactly one of ``Value`` (a literal), ``ValueReference`` (a parameter, a
-  property, a subject) or ``Formula`` with its ``Uses``. An End effect may carry a ``Rate``: the change runs
-  continuously at that rate until the end.
+- ``Condition`` / ``Effect``: one property of one subject. The property rides as a supplemental semantic id
+  (the lab vocabulary); ``Subject`` references an item of Subjects; ``Operator`` is one of the operators
+  below; the operand is exactly one of ``Value`` (a literal), ``ValueReference`` (a parameter, a property of
+  the capability, a subject) or ``Formula`` with its ``Uses``. An End effect may carry a ``Rate``: the change
+  runs continuously at that rate until the end.
 - ``And``, ``Or``, ``Not``, ``Exists``, ``ForAll`` combine conditions; ``And``, ``ForAll``, ``When`` and
-  ``OneOf`` combine effects. The conditions of one ConditionalType, and the effects of one timing, all hold (an
-  implicit And across containers). A quantifier's ``Variable`` references a Subject with role Variable.
+  ``OneOf`` combine effects; they nest freely. Several terms directly under Pre, End, ... all hold (an implicit
+  And). A quantifier's ``Variable`` references the Subject it ranges over; its ``Body`` holds the terms.
 
-The classes are named apart from other templates' (``StateCondition``): aas_pydantic reads an element back as the
-class its dump names. The idShorts of terms (``Term``) carry no meaning; only those in ``Uses`` do: they are the
-names the formula uses. The formula is the only text: arithmetic over those names, numbers and ``pi``. Everything
-else is a reference or a vocabulary id, so nothing is matched by name. What a consumer can evaluate is checked by
-the validator of the shared execution package, not here.
+The classes are named apart from other templates' (``StateCondition``, ``PreTerms``): aas_pydantic reads an
+element back as the class its dump names. The idShorts of terms (``Term_00``) carry no meaning and keep them in
+order; a term's display name says in words what it states ("Needle at fill depth"). Only the idShorts in ``Uses``
+carry meaning: they are the names the formula uses. The formula is the only text: arithmetic over those names,
+numbers and ``pi``. Everything else is a reference or a vocabulary id, so nothing is matched by name. What a
+consumer can evaluate is checked by the validator of the shared execution package, not here.
 """
 
 from __future__ import annotations
 
-from typing import Dict, Optional, TypeAlias, Union
+from typing import ClassVar, Dict, List, Optional, TypeAlias, Union
 
-from aas_pydantic import Key, ModelReference, Property, ReferenceElement, RelationshipElement, SubmodelElementCollection
+from aas_pydantic import (
+    ExternalReference, Key, ModelReference, Property, ReferenceElement, SubmodelElementCollection, SubmodelElementList,
+)
 
 from aas_model.constants import (
-    EXECUTION_AND, EXECUTION_BODY, EXECUTION_CONDITION, EXECUTION_CONDITION_OPERATOR, EXECUTION_EFFECT,
-    EXECUTION_EFFECT_CONTAINER, EXECUTION_EFFECT_DEFINITION, EXECUTION_EFFECT_HAS_PROPERTY, EXECUTION_EFFECT_OPERATOR,
-    EXECUTION_EFFECT_PROPERTY_RELATIONS, EXECUTION_EFFECT_SET, EXECUTION_EFFECT_TIMING, EXECUTION_EXISTS,
-    EXECUTION_FOR_ALL, EXECUTION_FORMULA_USE, EXECUTION_FORMULA_USES, EXECUTION_NOT, EXECUTION_ONE_OF, EXECUTION_OR,
-    EXECUTION_OUTCOME, EXECUTION_QUANTIFIED_VARIABLE, EXECUTION_RATE, EXECUTION_SUBJECT_CARRIER,
-    EXECUTION_SUBJECT_COMPONENT, EXECUTION_SUBJECT_PRODUCT, EXECUTION_SUBJECT_SELF, EXECUTION_SUBJECT_VARIABLE,
-    EXECUTION_SUBJECTS, EXECUTION_TERM_FORMULA, EXECUTION_TERM_PROPERTY, EXECUTION_TERM_VALUE,
-    EXECUTION_TERM_VALUE_REFERENCE, EXECUTION_WHEN, EXECUTION_WHEN_CONDITION, EXECUTION_WHEN_THEN,
+    EXECUTION_AND, EXECUTION_BODY, EXECUTION_CONDITION, EXECUTION_CONDITION_OPERATOR, EXECUTION_CONDITION_SET,
+    EXECUTION_DURING, EXECUTION_EFFECT, EXECUTION_EFFECT_OPERATOR, EXECUTION_EFFECT_SET, EXECUTION_END,
+    EXECUTION_EXISTS, EXECUTION_FOR_ALL, EXECUTION_FORMULA_USE, EXECUTION_FORMULA_USES, EXECUTION_INVARIANT,
+    EXECUTION_NOT, EXECUTION_ONE_OF, EXECUTION_OR, EXECUTION_OUTCOME, EXECUTION_POST, EXECUTION_PRE,
+    EXECUTION_QUANTIFIED_VARIABLE, EXECUTION_RATE, EXECUTION_START, EXECUTION_SUBJECT, EXECUTION_SUBJECTS,
+    EXECUTION_TERM_FORMULA, EXECUTION_TERM_SUBJECT, EXECUTION_TERM_VALUE,
+    EXECUTION_TERM_VALUE_REFERENCE, EXECUTION_WHEN, EXECUTION_WHEN_CONDITION, EXECUTION_WHEN_THEN, PRODUCT_ASSET_TYPE,
+    SHUTTLE_ASSET_TYPE,
 )
+from aas_model.submodel_templates.coordinates import VAR_COORDINATE
 
 
 # ── Subjects ─────────────────────────────────────────────────────────────────
 
-class SelfSubject(ReferenceElement):
+class ExecutionSubject(ReferenceElement):
+    """Who takes part: an AAS (a ModelReference), or the semantic id of what it stands for (an ExternalReference)."""
+    semantic_id: str = EXECUTION_SUBJECT
+    description: str = "A subject of the capability."
+
+
+class SelfSubject(ExecutionSubject):
     """The resource owning the capability, and so the invoked Operation: its own AAS."""
-    semantic_id: str = EXECUTION_SUBJECT_SELF
     description: str = "The resource offering the capability."
     value: ModelReference = ModelReference(key=(Key(type_="AssetAdministrationShell", value="{aas_id}"),))
 
 
-class ComponentSubject(ReferenceElement):
-    """A component of the resource: the component's AAS."""
-    semantic_id: str = EXECUTION_SUBJECT_COMPONENT
-    description: str = "A component of the resource."
-
-
-class ProductSubject(ReferenceElement):
-    """A unit of a product, known only at run time: the Operation variable it arrives in, or nothing where no
-    Operation of this capability carries it."""
-    KEEP_WITHOUT_VALUE = True
-    semantic_id: str = EXECUTION_SUBJECT_PRODUCT
+class UnitSubject(ExecutionSubject):
+    """A unit of a product, known only at run time: what it stands for is the asset type of products; which unit it
+    is, is the call's Grounding."""
     description: str = "A unit of a product."
+    value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=PRODUCT_ASSET_TYPE),))
 
 
-class CarrierSubject(ReferenceElement):
-    """A carrier that is not the resource itself (a shuttle a unit rides): the Operation variable it arrives in."""
-    KEEP_WITHOUT_VALUE = True
-    semantic_id: str = EXECUTION_SUBJECT_CARRIER
-    description: str = "A carrier taking part."
+class CarrierSubject(ExecutionSubject):
+    """A carrier, known only at run time (the shuttle that brings or takes a unit): what it stands for is the asset
+    type of shuttles; which shuttle it is, is the call's Grounding."""
+    description: str = "A carrier."
+    value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=SHUTTLE_ASSET_TYPE),))
 
 
-class VariableSubject(ReferenceElement):
-    """A quantified variable: no value; the type it ranges over rides as a supplemental semantic id."""
-    KEEP_WITHOUT_VALUE = True
-    semantic_id: str = EXECUTION_SUBJECT_VARIABLE
-    description: str = "A variable a quantifier ranges over."
+class PlaceSubject(ExecutionSubject):
+    """A place, known only at run time (where a shuttle is sent): what it stands for is a coordinate, the entry of a
+    Coordinates tree that is the place (a module's TransferPoint); which place it is, is the call's Grounding."""
+    description: str = "A place."
+    value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=VAR_COORDINATE),))
 
 
-ExecutionSubject = Union[SelfSubject, ComponentSubject, ProductSubject, CarrierSubject, VariableSubject]
-
-
-class Subjects(SubmodelElementCollection):
+class Subjects(SubmodelElementList):
+    """Who takes part, in order; each item says in its display name who it is ("Container in the nest")."""
     id_short: str = "Subjects"
     semantic_id: str = EXECUTION_SUBJECTS
-    description: str = "Who takes part, each named as the planning domain's parameter is."
-    subject: Dict[str, ExecutionSubject] = {}
+    description: str = "Who takes part, in order."
+    type_value_list_element: str = "ReferenceElement"
+    semantic_id_list_element: str = EXECUTION_SUBJECT
+    item_type: ClassVar = ExecutionSubject
+    value: List[Union[SelfSubject, UnitSubject, CarrierSubject, PlaceSubject, ExecutionSubject]] = []
 
 Subjects_t: TypeAlias = Subjects  # a field may share the class's id_short
 
 
 # ── Atoms ────────────────────────────────────────────────────────────────────
 
-class TermProperty(ReferenceElement):
-    id_short: str = "Property"
-    semantic_id: str = EXECUTION_TERM_PROPERTY
-    description: str = "The property the term is about: the value of an entry of the capability's PropertySet."
+class TermSubject(ReferenceElement):
+    id_short: str = "Subject"
+    semantic_id: str = EXECUTION_TERM_SUBJECT
+    description: str = "The subject whose property the term is about: an item of Subjects."
 
-TermProperty_t: TypeAlias = TermProperty  # a field may share the class's id_short
+TermSubject_t: TypeAlias = TermSubject  # a field may share the class's id_short
 
 
 class ConditionOperator(Property):
@@ -174,8 +173,9 @@ TermFormula_t: TypeAlias = TermFormula  # a field may share the class's id_short
 
 
 class FormulaUse(ReferenceElement):
-    """One name of the formula (its idShort) and what it stands for: a property of the capability (a PropertySet
-    entry's value, a subject's property among them) or an Operation variable."""
+    """One name of the formula (its idShort) and what it stands for: an element (a property of the capability, an
+    Operation variable), or a property of a subject, referenced as the item of Subjects with the property's
+    meaning as supplemental semantic id (the unit's ``lab:InnerBottomHeight``)."""
     semantic_id: str = EXECUTION_FORMULA_USE
 
 
@@ -198,9 +198,9 @@ Rate_t: TypeAlias = Rate  # a field may share the class's id_short
 
 
 class StateCondition(SubmodelElementCollection):
-    """One property compared with an operand."""
+    """One property of one subject compared with an operand. The property rides as a supplemental semantic id."""
     semantic_id: str = EXECUTION_CONDITION
-    Property: TermProperty_t = TermProperty()
+    Subject: TermSubject_t = TermSubject()
     Operator: ConditionOperator_t = ConditionOperator()
     Value: Optional[TermValue_t] = None
     ValueReference: Optional[TermValueReference_t] = None
@@ -209,9 +209,9 @@ class StateCondition(SubmodelElementCollection):
 
 
 class StateEffect(SubmodelElementCollection):
-    """One property changed."""
+    """One property of one subject changed. The property rides as a supplemental semantic id."""
     semantic_id: str = EXECUTION_EFFECT
-    Property: TermProperty_t = TermProperty()
+    Subject: TermSubject_t = TermSubject()
     Operator: EffectOperator_t = EffectOperator()
     Value: Optional[TermValue_t] = None
     ValueReference: Optional[TermValueReference_t] = None
@@ -243,7 +243,7 @@ class Not(SubmodelElementCollection):
 class QuantifiedVariable(ReferenceElement):
     id_short: str = "Variable"
     semantic_id: str = EXECUTION_QUANTIFIED_VARIABLE
-    description: str = "The Subject (role Variable) the quantifier ranges over."
+    description: str = "The Subject the quantifier ranges over (its value: the semantic id of what it ranges over)."
 
 QuantifiedVariable_t: TypeAlias = QuantifiedVariable  # a field may share the class's id_short
 
@@ -333,67 +333,86 @@ class OneOfEffects(SubmodelElementCollection):
 EffectTerm = Union[StateEffect, EffectAnd, EffectForAll, When, OneOfEffects]
 
 
-# ── Effects: the EffectSet beside the ConstraintSet ──────────────────────────
+# ── Time points ──────────────────────────────────────────────────────────────
 
-class EffectTimingType(Property):
-    """When the effect applies: as the action starts, while it runs (a definition, assign only), as it ends."""
-    id_short: str = "EffectTimingType"
-    semantic_id: str = EXECUTION_EFFECT_TIMING
-    value_type: str = "xs:string"
-    FORM_CHOICES = ("Start", "During", "End")
+class PreTerms(SubmodelElementCollection):
+    id_short: str = "Pre"
+    semantic_id: str = EXECUTION_PRE
+    description: str = "What holds when the action starts."
+    term: Dict[str, ConditionTerm] = {}
 
-EffectTimingType_t: TypeAlias = EffectTimingType  # a field may share the class's id_short
+PreTerms_t: TypeAlias = PreTerms  # a field may share the class's id_short
 
 
-class EffectDefinition(SubmodelElementCollection):
-    """The effect: one term (an effect, or And, ForAll, When, OneOf of effects)."""
-    id_short: str = "Effect"
-    semantic_id: str = EXECUTION_EFFECT_DEFINITION
+class InvariantTerms(SubmodelElementCollection):
+    id_short: str = "Invariant"
+    semantic_id: str = EXECUTION_INVARIANT
+    description: str = "What holds while the action runs."
+    term: Dict[str, ConditionTerm] = {}
+
+InvariantTerms_t: TypeAlias = InvariantTerms  # a field may share the class's id_short
+
+
+class PostTerms(SubmodelElementCollection):
+    id_short: str = "Post"
+    semantic_id: str = EXECUTION_POST
+    description: str = "What holds when the action has ended."
+    term: Dict[str, ConditionTerm] = {}
+
+PostTerms_t: TypeAlias = PostTerms  # a field may share the class's id_short
+
+
+class ConditionSet(SubmodelElementCollection):
+    id_short: str = "ConditionSet"
+    semantic_id: str = EXECUTION_CONDITION_SET
+    description: str = "What must hold of the subjects: at the start, throughout, at the end."
+    Pre: Optional[PreTerms_t] = None
+    Invariant: Optional[InvariantTerms_t] = None
+    Post: Optional[PostTerms_t] = None
+
+ConditionSet_t: TypeAlias = ConditionSet  # a field may share the class's id_short
+
+
+class StartTerms(SubmodelElementCollection):
+    id_short: str = "Start"
+    semantic_id: str = EXECUTION_START
+    description: str = "What changes when the action starts."
     term: Dict[str, EffectTerm] = {}
 
-EffectDefinition_t: TypeAlias = EffectDefinition  # a field may share the class's id_short
+StartTerms_t: TypeAlias = StartTerms  # a field may share the class's id_short
 
 
-class EffectHasProperty(RelationshipElement):
-    """Relates the Effect as first element to a property it changes (a PropertySet entry's value) as second, as
-    02020's ConstraintHasProperty does for a constraint."""
-    semantic_id: str = EXECUTION_EFFECT_HAS_PROPERTY
-    first: ModelReference = ModelReference()
-    second: ModelReference = ModelReference()
+class DuringTerms(SubmodelElementCollection):
+    id_short: str = "During"
+    semantic_id: str = EXECUTION_DURING
+    description: str = "What is defined while the action runs (assign only)."
+    term: Dict[str, EffectTerm] = {}
 
-EffectHasProperty_t: TypeAlias = EffectHasProperty  # a field shares the class's name
-
-
-class EffectPropertyRelations(SubmodelElementCollection):
-    id_short: str = "EffectPropertyRelations"
-    semantic_id: str = EXECUTION_EFFECT_PROPERTY_RELATIONS
-    description: str = "The properties the effect changes."
-    EffectHasProperty: Dict[str, EffectHasProperty_t] = {}
-
-EffectPropertyRelations_t: TypeAlias = EffectPropertyRelations  # a field may share the class's id_short
+DuringTerms_t: TypeAlias = DuringTerms  # a field may share the class's id_short
 
 
-class EffectContainer(SubmodelElementCollection):
-    """One effect of the capability, as a PropertyConstraintContainer is one constraint."""
-    semantic_id: str = EXECUTION_EFFECT_CONTAINER
-    EffectTimingType: EffectTimingType_t
-    Effect: EffectDefinition_t
-    EffectPropertyRelations: EffectPropertyRelations_t
+class EndTerms(SubmodelElementCollection):
+    id_short: str = "End"
+    semantic_id: str = EXECUTION_END
+    description: str = "What changes when the action ends."
+    term: Dict[str, EffectTerm] = {}
 
-EffectContainer_t: TypeAlias = EffectContainer  # a field shares the class's name
+EndTerms_t: TypeAlias = EndTerms  # a field may share the class's id_short
 
 
 class EffectSet(SubmodelElementCollection):
     id_short: str = "EffectSet"
     semantic_id: str = EXECUTION_EFFECT_SET
-    description: str = "What the capability changes, one EffectContainer per effect."
-    EffectContainer: Dict[str, EffectContainer_t] = {}
+    description: str = "What the action changes: as it starts, while it runs, as it ends."
+    Start: Optional[StartTerms_t] = None
+    During: Optional[DuringTerms_t] = None
+    End: Optional[EndTerms_t] = None
 
 EffectSet_t: TypeAlias = EffectSet  # a field may share the class's id_short
 
 
 # ── Resolve forward references (the term tree is recursive) ──
 for _model in (Subjects, StateCondition, StateEffect, And, Or, Not, Body, Exists, ForAll, EffectAnd, EffectBody,
-               EffectForAll, WhenCondition, WhenThen, When, Outcome, OneOfEffects, EffectDefinition, EffectContainer,
-               EffectSet):
+               EffectForAll, WhenCondition, WhenThen, When, Outcome, OneOfEffects, PreTerms, InvariantTerms, PostTerms,
+               ConditionSet, StartTerms, DuringTerms, EndTerms, EffectSet):
     _model.model_rebuild()

@@ -159,6 +159,17 @@ def test_a_modbus_interface_holds_no_actions():
         ModbusInteractionMetadata(actions=DmpActions())
 
 
+def _walk(element):
+    """An element of AAS JSON and every element below it."""
+    yield element
+    for key in ("submodelElements", "value", "statements"):
+        children = element.get(key)
+        if isinstance(children, list):
+            for child in children:
+                if isinstance(child, dict):
+                    yield from _walk(child)
+
+
 def test_a_template_display_name_labels_the_template_not_its_instances():
     """``Capability Set`` names the template element: an instance is shown by its own idShort, and the template
     export carries the label again."""
@@ -171,4 +182,6 @@ def test_a_template_display_name_labels_the_template_not_its_instances():
     store = build_from_model(RESOURCE_FACTORIES["cytivaCapping"]())
     document = json.loads(json_serialization.object_store_to_json(store))
     capabilities = next(s for s in document["submodels"] if s["idShort"] == "CapabilityDescription")
-    assert "displayName" not in json.dumps(capabilities)
+    labels = {name["text"] for element in _walk(capabilities) for name in element.get("displayName", ())}
+    assert not labels & {"Submodel Template Capability Description", "Capability Set", "Capability Container"}
+    assert labels                                          # an instance's own display names (its terms) stay

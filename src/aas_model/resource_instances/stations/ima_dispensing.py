@@ -13,15 +13,15 @@ from aas_model.resource_template.operational import (
 from aas_model.resource_template.resources import DispensingStation
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.resource_template.references import (
-    OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_property_ref, capability_ref, effect_ref,
-    operation_variable_ref, series_segment_ref, skill_ref,
+    OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
+    skill_ref, subject_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, OptionalVariable, ParameterVariable, SkillInterfaceRelationship, SkillOperation, SubjectVariable,
+    CapabilityVariable, ExtendedSkill, GroundingVariable, OptionalVariable, ParameterVariable,
+    SkillInterfaceRelationship, SkillOperation,
 )
 from aas_model.submodel_templates.execution import (
-    EffectContainer, EffectDefinition, EffectHasProperty, EffectOperator, EffectPropertyRelations, EffectSet,
-    EffectTimingType, ProductSubject, StateEffect, TermProperty, TermValueReference,
+    EffectOperator, EffectSet, EndTerms, StateEffect, TermSubject, TermValueReference,
 )
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.capability_description import RealizedBySkill
@@ -108,9 +108,8 @@ def ima_dispensing() -> DispensingStation:
                     id_short="Volume", value="1.0", value_type="xs:double", description="The volume to dispense in ml",
                     supplemental_semantic_ids=[f"{LAB}Volume"],
                 ),
-                # Not sent to the station: the DMP grounds the capability's effects on it.
-                SubjectVariable(id_short="Unit", description="The unit being filled",
-                                supplemental_semantic_ids=[f"{LAB}ContentVolume"]),
+                # Not sent to the station: which capability the call carries out and who its subjects are.
+                CapabilityVariable(), GroundingVariable(),
             ],
             in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
             output_variable=[
@@ -130,9 +129,8 @@ def ima_dispensing() -> DispensingStation:
     reply = ("Uuid", "State", "Outcome")
     mappings.append(AimcMappingConfiguration(
         id_short=name, DefaultPollingInterval="0.0",
-        # Every input is a Source; the Unit is not sent (the transformation leaves it out).
-        Sources=[SourcesItem(SourceId=member, Source=operation_variable_ref(name, member))
-                 for member in (*command, "Unit")],
+        # Every input the device is sent is a Source; Capability and Grounding are the DMP's, never the device's.
+        Sources=[SourcesItem(SourceId=member, Source=operation_variable_ref(name, member)) for member in command],
         Sinks=[SinksItem(SinkId=member,
             Sink=action_member_ref(OPCUA_INTERFACE, name, "input", member),
         ) for member in command],
@@ -156,20 +154,14 @@ def ima_dispensing() -> DispensingStation:
     relations = container.CapabilityRelations
     relations.CapabilityRealizedBy[f"RealizedBy_{name}"] = RealizedBySkill(
         id_short=f"RealizedBy_{name}", first=capability_ref("Processing", name), second=skill_ref(name))
-    # The type says Filling needs the unit empty; this station's call says which unit and how much: the unit is the
-    # Operation's Unit, and it ends holding the Volume it was given.
-    container.Subjects.subject["Unit"] = ProductSubject(id_short="Unit", value=operation_variable_ref(name, "Unit"))
-    content = capability_property_ref("Processing", name, "ContentVolume")
-    relations.EffectSet = EffectSet(EffectContainer={"Filled": EffectContainer(
-        EffectTimingType=EffectTimingType(value="End"),
-        Effect=EffectDefinition(term={"Term": StateEffect(
-            Property=TermProperty(value=content),
-            Operator=EffectOperator(value="increase"),
-            ValueReference=TermValueReference(value=operation_variable_ref(name, "Volume")),
-        )}),
-        EffectPropertyRelations=EffectPropertyRelations(EffectHasProperty={"ContentVolume": EffectHasProperty(
-            first=effect_ref("Processing", name, "Filled"), second=content)}),
-    )})
+    # The type says Filling needs the unit empty; this station's call says which unit (its Grounding) and how much:
+    # the unit ends holding the Volume it was given.
+    relations.EffectSet = EffectSet(End=EndTerms(term={"Term_00": StateEffect(
+        display_name={"en": "Unit holds the volume"}, supplemental_semantic_ids=[f"{LAB}ContentVolume"],
+        Subject=TermSubject(value=subject_ref("Processing", name, 1)),
+        Operator=EffectOperator(value="increase"),
+        ValueReference=TermValueReference(value=operation_variable_ref(name, "Volume")),
+    )}))
 
     # Weight: the scale's reading, sampled every 100 ms while it changes.
     weight = load_schema(f"{SCHEMA_BASE}/weight.schema.json")["properties"]["Weight"]

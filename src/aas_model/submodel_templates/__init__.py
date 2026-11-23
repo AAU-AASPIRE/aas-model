@@ -101,7 +101,7 @@ from .capability_description import (
 )
 from .execution import EffectSet, Subjects
 from .state_declaration import StateDeclaration, StateVariable
-from .control_component_instance import ParameterVariable, SubjectVariable
+from .control_component_instance import CapabilityVariable, GroundingVariable, ParameterVariable
 from .variables import Variables
 from .parameters import Parameters
 # The AIMC submodel is the GENERATED IDTA template + the DMP extension
@@ -163,7 +163,8 @@ __all__ = [
     "StateDeclaration",
     "StateVariable",
     "ParameterVariable",
-    "SubjectVariable",
+    "CapabilityVariable",
+    "GroundingVariable",
     # Skills
     "ExtendedSkill",
     "ExtendedSkills",

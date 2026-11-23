@@ -9,6 +9,7 @@ from aas_pydantic import Property, SubmodelElementCollection, SubmodelElementLis
 from basyx.aas.adapter.json import json_serialization
 
 from aas_model.builder import build_from_model
+from aas_model.constants import OPERATION_VARIABLE_CAPABILITY, OPERATION_VARIABLE_GROUNDING
 from aas_model.resource_instances import RESOURCE_FACTORIES
 from aas_model.submodel_templates.control_component_instance import (
     OPERATION_VARIABLE_OPTIONAL, OptionalVariable,
@@ -70,8 +71,8 @@ def test_operation_aimc_uses_explicit_input_and_output_variable_references():
     source_ids = [source.SourceId.value for source in mapping.Sources.value]
     declared_inputs = {variable.id_short for variable in (
         *operation.input_variable, *operation.in_output_variable,
-    )}
-    assert set(source_ids) == declared_inputs == {"Uuid", "Volume", "Unit"}
+    ) if variable.semantic_id not in (OPERATION_VARIABLE_CAPABILITY, OPERATION_VARIABLE_GROUNDING)}
+    assert set(source_ids) == declared_inputs == {"Uuid", "Volume"}     # the grounding inputs are the DMP's
     for source, variable in zip(mapping.Sources.value, source_ids):
         assert [(key.type_, key.value) for key in source.Source.value.key[-2:]] == [
             ("Operation", "operation"), ("Property", variable),

@@ -44,26 +44,28 @@ LAB = f"{BASE_URL}/semantics/"
 # ═══════════════════════════════════════════════════════════════════════════════
 # Execution semantics — what a capability needs and changes (plans/kg-planning-execution-PLAN.md, 4.2)
 # ═══════════════════════════════════════════════════════════════════════════════
-# Conditions are IDTA 02020 PropertyConstraintContainers whose CustomConstraint holds a term tree (the
-# ConditionalType says Pre, Invariant, Post); effects are EffectContainers in an EffectSet beside the ConstraintSet.
-# A term's kind is its semantic id; the property it is about is an entry of the capability's PropertySet.
+# In a capability's CapabilityRelations, beside 02020's relations and ConstraintSet (which the lab leaves as IDTA
+# has it): Subjects (who takes part), ConditionSet (Pre, Invariant, Post) and EffectSet (Start, During, End), each
+# a tree of terms. A term's kind is its semantic id; the property it is about rides as a supplemental semantic id.
 
 EXECUTION_SUBJECTS = f"{BASE_URL}/execution/Subjects/1/0"
-EXECUTION_SUBJECT_SELF = f"{BASE_URL}/execution/Subject/Self/1/0"
-EXECUTION_SUBJECT_COMPONENT = f"{BASE_URL}/execution/Subject/Component/1/0"
-EXECUTION_SUBJECT_PRODUCT = f"{BASE_URL}/execution/Subject/Product/1/0"
-EXECUTION_SUBJECT_CARRIER = f"{BASE_URL}/execution/Subject/Carrier/1/0"
-EXECUTION_SUBJECT_VARIABLE = f"{BASE_URL}/execution/Subject/Variable/1/0"
-EXECUTION_STATE_CONSTRAINT = f"{BASE_URL}/execution/StateConstraint/1/0"
+EXECUTION_SUBJECT = f"{BASE_URL}/execution/Subject/1/0"
+
+# What a unit of any product is (the asset type of a product type AAS): what a subject that is a unit stands for.
+PRODUCT_ASSET_TYPE = f"{BASE_URL}/Product"
+# What a shuttle is (the asset type of the shuttles): what a subject that is a carrier stands for.
+SHUTTLE_ASSET_TYPE = f"{CSSX}#Shuttle"
+EXECUTION_CONDITION_SET = f"{BASE_URL}/execution/ConditionSet/1/0"
+EXECUTION_PRE = f"{BASE_URL}/execution/ConditionSet/Pre/1/0"
+EXECUTION_INVARIANT = f"{BASE_URL}/execution/ConditionSet/Invariant/1/0"
+EXECUTION_POST = f"{BASE_URL}/execution/ConditionSet/Post/1/0"
 EXECUTION_EFFECT_SET = f"{BASE_URL}/execution/EffectSet/1/0"
-EXECUTION_EFFECT_CONTAINER = f"{BASE_URL}/execution/EffectContainer/1/0"
-EXECUTION_EFFECT_TIMING = f"{BASE_URL}/execution/EffectTimingType/1/0"
-EXECUTION_EFFECT_DEFINITION = f"{BASE_URL}/execution/EffectContainer/Effect/1/0"
-EXECUTION_EFFECT_PROPERTY_RELATIONS = f"{BASE_URL}/execution/EffectPropertyRelations/1/0"
-EXECUTION_EFFECT_HAS_PROPERTY = f"{BASE_URL}/execution/EffectHasProperty/1/0"
+EXECUTION_START = f"{BASE_URL}/execution/EffectSet/Start/1/0"
+EXECUTION_DURING = f"{BASE_URL}/execution/EffectSet/During/1/0"
+EXECUTION_END = f"{BASE_URL}/execution/EffectSet/End/1/0"
 EXECUTION_CONDITION = f"{BASE_URL}/execution/Condition/1/0"
 EXECUTION_EFFECT = f"{BASE_URL}/execution/Effect/1/0"
-EXECUTION_TERM_PROPERTY = f"{BASE_URL}/execution/Term/Property/1/0"
+EXECUTION_TERM_SUBJECT = f"{BASE_URL}/execution/Term/Subject/1/0"
 EXECUTION_CONDITION_OPERATOR = f"{BASE_URL}/execution/Condition/Operator/1/0"
 EXECUTION_EFFECT_OPERATOR = f"{BASE_URL}/execution/Effect/Operator/1/0"
 EXECUTION_TERM_VALUE = f"{BASE_URL}/execution/Term/Value/1/0"
@@ -85,10 +87,12 @@ EXECUTION_WHEN_THEN = f"{BASE_URL}/execution/When/Then/1/0"
 EXECUTION_ONE_OF = f"{BASE_URL}/execution/OneOf/1/0"
 EXECUTION_OUTCOME = f"{BASE_URL}/execution/OneOf/Outcome/1/0"
 
-# The role of an Operation variable (D27): a subject only known at run time, used to ground effects, or a
-# parameter the payload is built from.
-OPERATION_VARIABLE_SUBJECT = f"{BASE_URL}/aas/OperationVariable/Subject/1/0"
+# The role of an Operation variable (D27): a parameter the payload is built from, or, never sent to the device, the
+# capability a call carries out and its grounding: who each of that capability's subjects is in this call.
 OPERATION_VARIABLE_PARAMETER = f"{BASE_URL}/aas/OperationVariable/Parameter/1/0"
+OPERATION_VARIABLE_CAPABILITY = f"{BASE_URL}/aas/OperationVariable/Capability/1/0"
+OPERATION_VARIABLE_GROUNDING = f"{BASE_URL}/aas/OperationVariable/Grounding/1/0"
+OPERATION_VARIABLE_GROUNDED_SUBJECT = f"{BASE_URL}/aas/OperationVariable/Grounding/Subject/1/0"
 
 # The StateDeclaration submodel: the state variables of a subject that are not observed, and where they are kept.
 SM_STATE_DECLARATION = f"{BASE_URL}/submodels/StateDeclaration/1/0"

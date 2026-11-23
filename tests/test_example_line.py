@@ -10,8 +10,8 @@ from basyx.aas import model
 
 from aas_model import build_from_model
 from aas_model.constants import (
-    EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_EFFECT, EXECUTION_STATE_CONSTRAINT, EXECUTION_SUBJECT_COMPONENT,
-    EXECUTION_SUBJECT_PRODUCT, LAB,
+    EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_DURING, EXECUTION_EFFECT, EXECUTION_SUBJECT, LAB,
+    OPERATION_VARIABLE_CAPABILITY, OPERATION_VARIABLE_GROUNDING, PRODUCT_ASSET_TYPE,
 )
 from aas_model.product_instances import PRODUCT_FACTORIES
 from aas_model.resource_instances.modules import MODULE_FACTORIES
@@ -59,34 +59,27 @@ def _has(element, path: str) -> bool:
         return False
 
 
-def _conditions(container):
-    """A capability's state conditions: (when it holds, its term), each a CustomConstraint marked as one."""
-    if not _has(container, "CapabilityRelations/ConstraintSet"):
+def _terms(container, kind: str):
+    """A capability's top-level terms of its ConditionSet or EffectSet: (Pre / Invariant / ... / End, term)."""
+    if not _has(container, f"CapabilityRelations/{kind}"):
         return
-    for constraint in container.get_referable(["CapabilityRelations", "ConstraintSet"]).value:
-        custom = next((e for e in constraint.value if e.id_short == "CustomConstraint"), None)
-        if custom is not None and _meaning(custom) == EXECUTION_STATE_CONSTRAINT:
-            yield constraint.get_referable("PropertyConditionalType").value, next(iter(custom.value))
+    for section in container.get_referable(["CapabilityRelations", kind]).value:
+        for term in section.value:
+            yield section.id_short, term
 
 
-def _effects(container):
-    """A capability's effects: (when it applies, its term)."""
-    if not _has(container, "CapabilityRelations/EffectSet"):
-        return
-    for effect in container.get_referable(["CapabilityRelations", "EffectSet"]).value:
-        yield effect.get_referable("EffectTimingType").value, next(iter(effect.get_referable("Effect").value))
+def _subject(store, term):
+    return term.get_referable("Subject").value.resolve(store)
 
 
-def _about(store, term):
-    """The PropertySet entry's value a term is about."""
-    return term.get_referable("Property").value.resolve(store)
+def _is_unit(subject) -> bool:
+    """A subject that stands for a unit of a product: an external reference to the products' asset type."""
+    return isinstance(subject.value, model.ExternalReference) and subject.value.key[0].value == PRODUCT_ASSET_TYPE
 
 
-def _subject_of(store, value):
-    """The subject a property of the capability is of (its SameProperty OfSubject), or None for its own."""
-    container = value.parent
-    relation = next((e for e in container.value if e.id_short == "OfSubject"), None)
-    return relation.second.resolve(store) if relation is not None else None
+def _asset(store, subject):
+    """The AAS a subject is (Self, a component), or None for one only known at run time."""
+    return subject.value.resolve(store) if isinstance(subject.value, model.ModelReference) else None
 
 
 @pytest.mark.parametrize("name", sorted(FACTORIES))
@@ -105,7 +98,7 @@ def test_every_reference_of_the_capabilities_resolves_in_the_line():
                   for capability_set in _submodel(store, aas_id, "CapabilityDescription").submodel_element
                   for container in capability_set.value for ref in _references(container)]
     unresolved = [ref for ref in references if ref.resolve(store) is None]
-    assert len(references) > 100 and not unresolved
+    assert len(references) > 50 and not unresolved
 
 
 def test_each_component_offers_its_capability_and_the_module_specializes_it():
@@ -120,56 +113,84 @@ def test_each_component_offers_its_capability_and_the_module_specializes_it():
         general = here.get_referable(["CapabilityRelations", "GeneralizedBySet", "GeneralizedBy"]).second
         assert general.resolve(store) is own.get_referable("Capability")
     assert {s.id_short for s in _submodel(store, MODULE, "CapabilityDescription").submodel_element} == {
-        "OfferedCapabilities", "AuxiliaryCapabilities"}
+        "OfferedCapabilities", "AuxiliaryCapabilities", "ModuleControl"}
 
 
-def test_conditions_are_02020_constraints_and_effects_sit_beside_them():
-    """A condition is a PropertyConstraintContainer (CustomConstraint, its ConditionalType, ConstraintHasProperty to
-    every property it reads); an effect an EffectContainer in the EffectSet next to the ConstraintSet."""
+def test_conditions_and_effects_are_term_trees_in_the_capability_relations():
+    """Subjects, ConditionSet (Pre, Invariant, Post) and EffectSet (Start, During, End) beside 02020's relations;
+    02020's ConstraintSet is left as IDTA has it, unused."""
     from aas_model.resource_instances.modules.filling_module import MODULE
 
     store = _store()
     description = _submodel(store, MODULE, "CapabilityDescription")
     dosing = description.get_referable(["AuxiliaryCapabilities", "Dosing"])
-    rim = dosing.get_referable(["CapabilityRelations", "ConstraintSet", "NeedleInsideRim"])
-    assert _semantic_id(rim).endswith("/CapabilityDescription/PropertyConstraintContainer/1/0")
-    assert rim.get_referable("ConstraintType").value == "CustomConstraint"
-    assert rim.get_referable("PropertyConditionalType").value == "Invariant"
-    term = rim.get_referable(["CustomConstraint", "Term"])
-    assert _semantic_id(term) == EXECUTION_CONDITION
-    read = {relation.second.resolve(store).parent.id_short
-            for relation in rim.get_referable("ConstraintPropertyRelations").value}
-    uses = {use.value.resolve(store).parent.id_short for use in term.get_referable("Uses").value}
-    assert read == uses | {_about(store, term).parent.id_short} == {"Position", "NestPosition", "RimHeight",
-                                                                     "InsertDepth"}
-    rim_height = term.get_referable(["Uses", "RimHeight"]).value.resolve(store)
-    assert _meaning(rim_height) == f"{LAB}RimHeight" and _subject_of(store, rim_height).id_short == "Unit"
+    relations = dosing.get_referable("CapabilityRelations")
+    assert {e.id_short for e in relations.value} >= {"Subjects", "ConditionSet", "EffectSet", "RealizedBy"}
+    assert not _has(relations, "ConstraintSet")
+    rim = relations.get_referable(["ConditionSet", "Invariant", "Term_00"])
+    assert _semantic_id(rim) == EXECUTION_CONDITION and _meaning(rim) == f"{LAB}Position"
+    assert _subject(store, rim).display_name["en"] == "Needle axis"
+    rim_height = rim.get_referable(["Uses", "RimHeight"])
+    assert rim_height.value.resolve(store).display_name["en"] == "Container in the nest"
+    assert _meaning(rim_height) == f"{LAB}RimHeight"
 
-    (timing, effect), = _effects(dosing)
-    assert timing == "During" and _semantic_id(effect) == EXECUTION_EFFECT
-    assert _meaning(_about(store, effect)) == f"{LAB}OutletImmersion"
-    assert {use.id_short: _meaning(use.value.resolve(store)) for use in effect.get_referable("Uses").value} == {
-        "Position": f"{LAB}Position", "NestPosition": f"{LAB}NestPosition",
-        "InnerBottomHeight": f"{LAB}InnerBottomHeight", "ContentVolume": f"{LAB}ContentVolume",
-        "InnerDiameter": f"{LAB}InnerDiameter"}
+    during = relations.get_referable(["EffectSet", "During"])
+    assert _semantic_id(during) == EXECUTION_DURING
+    immersion = during.get_referable("Term_00")
+    assert _semantic_id(immersion) == EXECUTION_EFFECT and _meaning(immersion) == f"{LAB}OutletImmersion"
+    assert {use.id_short: _meaning(use) for use in immersion.get_referable("Uses").value} == {
+        "Position": f"{LAB}Position", "NestPosition": None, "InnerBottomHeight": f"{LAB}InnerBottomHeight",
+        "ContentVolume": f"{LAB}ContentVolume", "InnerDiameter": f"{LAB}InnerDiameter"}
     weighing = description.get_referable(["AuxiliaryCapabilities", "Weighing"])
-    assert sorted((when, t.get_referable("Operator").value) for when, t in _conditions(weighing)) == [
+    assert sorted((when, t.get_referable("Operator").value) for when, t in _terms(weighing, "ConditionSet")) == [
         ("Invariant", "unchanged"), ("Pre", "equal")]
 
 
-def test_subjects_are_references_named_for_the_domain_with_their_role_as_semantic_id():
+def test_subjects_are_an_aas_or_the_semantic_id_of_what_they_stand_for():
     from aas_model.resource_instances.modules.filling_module import LINEAR_AXIS, MODULE
 
     store = _store()
     subjects = _submodel(store, MODULE, "CapabilityDescription").get_referable(
-        ["AuxiliaryCapabilities", "Dosing", "Subjects"])
-    axis, unit = subjects.get_referable("LinearAxis"), subjects.get_referable("Unit")
-    assert isinstance(axis, model.ReferenceElement) and _semantic_id(axis) == EXECUTION_SUBJECT_COMPONENT
-    assert axis.value.resolve(store).id == LINEAR_AXIS
-    assert _semantic_id(unit) == EXECUTION_SUBJECT_PRODUCT and unit.value is None       # nothing binds it here
+        ["AuxiliaryCapabilities", "Dosing", "CapabilityRelations", "Subjects"])
+    assert isinstance(subjects, model.SubmodelElementList)
+    assert subjects.semantic_id_list_element.key[0].value == EXECUTION_SUBJECT
+    axis, unit = subjects.value
+    assert [s.display_name["en"] for s in subjects.value] == ["Needle axis", "Container in the nest"]
+    assert _asset(store, axis).id == LINEAR_AXIS                                       # one particular asset
+    assert _is_unit(unit) and _asset(store, unit) is None                              # known only at run time
     own = _submodel(store, LINEAR_AXIS, "CapabilityDescription").get_referable(
-        ["AuxiliaryCapabilities", "Positioning", "Subjects", "Self"])
-    assert own.value.resolve(store).id == LINEAR_AXIS                                  # Self: its own AAS
+        ["AuxiliaryCapabilities", "Positioning", "CapabilityRelations", "Subjects"]).value[0]
+    assert _asset(store, own).id == LINEAR_AXIS                                        # Self: its own AAS
+
+
+def test_every_skill_a_call_can_ground_carries_the_capability_and_its_grounding():
+    """A skill realizing a capability with subjects takes the capability a call carries out and who its subjects are
+    (Grounding, in the order of the capability's Subjects) as Operation inputs; a primitive, which its module runs,
+    takes neither."""
+    store, grounded, primitives = _store(), set(), set()
+    for container in _module_containers(store, every=True):
+        relations = container.get_referable("CapabilityRelations")
+        skill = relations.get_referable("RealizedBy").second.resolve(store)
+        inputs = {_semantic_id(v): v for v in skill.get_referable(["Start", "Start"]).input_variable}
+        if any(r.key[0].value.endswith("/Primitive") for r in skill.supplemental_semantic_id):
+            assert OPERATION_VARIABLE_GROUNDING not in inputs
+            primitives.add(skill.id_short)
+            continue
+        assert inputs[OPERATION_VARIABLE_CAPABILITY].id_short == "Capability", container.id_short
+        grounding = inputs[OPERATION_VARIABLE_GROUNDING]
+        assert isinstance(grounding, model.SubmodelElementList) and not grounding.value      # filled by a call
+        grounded.add(skill.id_short)
+    assert grounded == {"Dispensing", "Occupy", "Release"} and primitives == {"MoveAxis", "Dispense", "Weigh"}
+
+
+def test_every_term_says_in_its_display_name_what_it_states():
+    store, terms = _store(), 0
+    for container in _module_containers(store, every=True):
+        for kind in ("ConditionSet", "EffectSet"):
+            for _, term in _terms(container, kind):
+                assert term.display_name and term.display_name.get("en"), (container.id_short, term.id_short)
+                terms += 1
+    assert terms == 22
 
 
 def test_the_offered_filling_is_derived_and_bound_to_its_skill():
@@ -177,31 +198,44 @@ def test_the_offered_filling_is_derived_and_bound_to_its_skill():
 
     store = _store()
     filling = _submodel(store, MODULE, "CapabilityDescription").get_referable(["OfferedCapabilities", "Filling"])
-    unit = filling.get_referable(["Subjects", "Unit"]).value.resolve(store)
-    assert unit.id_short == "Unit" and unit.semantic_id.key[0].value.endswith("/OperationVariable/Subject/1/0")
-    effects = dict((_meaning(_about(store, term)), (when, term)) for when, term in _effects(filling))
+    relations = filling.get_referable("CapabilityRelations")
+    assert _is_unit(relations.get_referable("Subjects").value[1])
+    effects = {_meaning(term): (when, term) for when, term in _terms(filling, "EffectSet")}
     assert {when for when, _ in effects.values()} == {"End"}
     rate = effects[f"{LAB}ContentVolume"][1].get_referable("Rate").value.resolve(store)
     assert rate.value == "1.0"                                        # the step's constant flow rate
-    assert sorted(when for when, _ in _conditions(filling)) == ["Invariant", "Pre"]
-    parts = filling.get_referable(["CapabilityRelations", "ComposedOfSet", "ComposedOf"])
+    assert sorted(when for when, _ in _terms(filling, "ConditionSet")) == ["Invariant", "Pre"]
+    parts = relations.get_referable(["ComposedOfSet", "ComposedOf"])
     assert {part.second.resolve(store).parent.id_short for part in parts.value
             if isinstance(part, model.RelationshipElement)} == {"Positioning", "Dosing", "Weighing"}
 
 
+def _unit_properties(store, element) -> set:
+    """The meanings of what the terms and Uses below an element say of a unit."""
+    found = set()
+    if isinstance(element, model.SubmodelElementCollection):
+        subject = next((e for e in element.value if e.id_short == "Subject"), None)
+        if subject is not None and _is_unit(subject.value.resolve(store)):
+            found.add(_meaning(element))
+        for child in element.value:
+            found |= _unit_properties(store, child)
+    elif isinstance(element, model.ReferenceElement) and element.id_short != "Subject" \
+            and isinstance(element.value, model.ModelReference) and _meaning(element):
+        target = element.value.resolve(store)
+        if _semantic_id(target) == EXECUTION_SUBJECT and _is_unit(target):
+            found.add(_meaning(element))
+    return found
+
+
 def test_the_vial_declares_what_the_module_reads_of_its_units():
-    """Every property of a unit a capability of the line states is declared by the vial."""
+    """Every property of a unit a capability of the line names is declared by the vial."""
     from aas_model.product_instances.vial_2ml import AAS_ID
 
     store = _store()
     declared = {_meaning(v) for v in _submodel(store, AAS_ID, "StateDeclaration").submodel_element}
     named = set()
     for container in _module_containers(store, every=True):
-        for entry in (container.get_referable("PropertySet").value if _has(container, "PropertySet") else ()):
-            value = entry.get_referable("Value")
-            subject = _subject_of(store, value)
-            if subject is not None and _semantic_id(subject) == EXECUTION_SUBJECT_PRODUCT:
-                named.add(_meaning(value))
+        named |= _unit_properties(store, container)
     assert named and named <= declared, named - declared
 
 
@@ -211,8 +245,7 @@ SPECIALIZES = ("/CapabilityGeneralizedBy/", "/CapabilityComposedOf/")   # the re
 
 
 def _stated(container) -> dict:
-    """A capability's properties that have a value, as meaning -> (lowest, highest); a list of choices, and the
-    properties of its subjects (state, no value), are left out."""
+    """A capability's properties as meaning -> (lowest, highest); a list of choices is left out."""
     found = {}
     for property_container in (container.get_referable("PropertySet").value if _has(container, "PropertySet")
                                else ()):
@@ -269,12 +302,12 @@ def _top_level(term):
 
 
 def _said(store, container) -> dict:
-    """What a capability says of each property of a subject: (condition or effect, when, meaning) -> its bound."""
+    """What a capability says of each property: (ConditionSet or EffectSet, Pre / ... / End, meaning) -> its bound."""
     said = {}
-    for kind, terms in (("condition", _conditions(container)), ("effect", _effects(container))):
-        for when, root in terms:
+    for kind in ("ConditionSet", "EffectSet"):
+        for when, root in _terms(container, kind):
             for term in _top_level(root):
-                said[(kind, when, _meaning(_about(store, term)))] = _bound(term)
+                said[(kind, when, _meaning(term))] = _bound(term)
     return said
 
 
@@ -316,7 +349,7 @@ def _component_offers(store, aas) -> dict:
 
 def _evaluate(store, term, unit: dict) -> float:
     """A condition's bound as a number: its value, the property it references, or its formula over its Uses (a
-    unit's property at the vial's declared value)."""
+    unit's property, a Use naming the unit, at the vial's declared value)."""
     named = {e.id_short: e for e in term.value}
     if "Value" in named:
         return float(named["Value"].value)
@@ -325,7 +358,7 @@ def _evaluate(store, term, unit: dict) -> float:
     values = {}
     for use in named["Uses"].value:
         used = use.value.resolve(store)
-        values[use.id_short] = unit[_meaning(used)] if _subject_of(store, used) is not None else float(used.value)
+        values[use.id_short] = unit[_meaning(use)] if isinstance(used, model.ReferenceElement) else float(used.value)
     return eval(named["Formula"].value, {"__builtins__": {}}, {"pi": math.pi, **values})
 
 
@@ -338,25 +371,128 @@ def test_the_stations_conditions_on_a_component_leave_it_room_within_what_it_off
     """Each condition the module sets on a component's property, at the vial's dimensions, is one the component can
     meet: the fill position and the weighing position are within the axis's travel."""
     from aas_model.product_instances.vial_2ml import AAS_ID
+    from aas_model.resource_instances.modules.filling_module import MODULE
 
     store, checked = _store(), []
     unit = {_meaning(v): float(v.get_referable("Initial").value)
             for v in _submodel(store, AAS_ID, "StateDeclaration").submodel_element if _has(v, "Initial")}
     for container in _module_containers(store):
-        for when, root in _conditions(container):
+        for when, root in _terms(container, "ConditionSet"):
             for term in _top_level(root):
-                about = _about(store, term)
-                subject = _subject_of(store, about)
+                component = _asset(store, _subject(store, term))
                 operator = term.get_referable("Operator").value
-                if subject is None or _semantic_id(subject) != EXECUTION_SUBJECT_COMPONENT \
+                if not isinstance(component, model.AssetAdministrationShell) or component.id == MODULE \
                         or operator not in SATISFIABLE:
                     continue
-                low, high = _component_offers(store, subject.value.resolve(store))[_meaning(about)]
+                low, high = _component_offers(store, component)[_meaning(term)]
                 bound = _evaluate(store, term, unit)
                 assert SATISFIABLE[operator](low, high, bound), (container.id_short, when, operator, bound)
                 checked.append((container.id_short, when))
     assert sorted(checked) == [("Dosing", "Invariant"), ("Dosing", "Pre"), ("Positioning", "Invariant"),
                                ("Weighing", "Pre")]
+
+
+# ── The predicates fit together: move, receive, fill ────────────────────────────────────────────────────────────
+
+def _reference_key(reference) -> str:
+    """An identity for what a reference names: its keys, joined."""
+    return "/".join(key.value for key in reference.key)
+
+
+class _Ground:
+    """Applies a capability, grounded on concrete subjects, to a symbolic state: (identity, meaning) -> value."""
+
+    def __init__(self, store, state: dict):
+        self.store, self.state = store, state
+
+    def _identity(self, subjects, grounding: list, reference) -> str:
+        """Who a term's subject reference names: the call's grounding at the subject's place."""
+        return grounding[int(reference.key[-1].value)]
+
+    @staticmethod
+    def _check_grounding(subjects, grounding: list) -> None:
+        """One entry per subject, in order; a subject the capability fixes is given as it states it."""
+        assert len(grounding) == len(subjects.value)
+        for subject, given in zip(subjects.value, grounding):
+            if isinstance(subject.value, model.ModelReference):
+                assert given == _reference_key(subject.value), (subject.display_name["en"], given)
+
+    def _operand(self, subjects, grounding: list, term, parameters: dict):
+        named = {e.id_short: e for e in term.value}
+        if "Value" in named:
+            return float(named["Value"].value)
+        target = named["ValueReference"].value
+        if target.key[-2].value == "Subjects":
+            return self._identity(subjects, grounding, target)
+        resolved = target.resolve(self.store)
+        if resolved.id_short in parameters:
+            return parameters[resolved.id_short]
+        return float(resolved.value)
+
+    def apply(self, container, grounding: list, parameters: dict | None = None) -> None:
+        parameters = parameters or {}
+        relations = container.get_referable("CapabilityRelations")
+        subjects = relations.get_referable("Subjects")
+        self._check_grounding(subjects, grounding)
+        for when, term in _terms(container, "ConditionSet"):
+            if when != "Pre" and when != "Invariant":
+                continue
+            key = (self._identity(subjects, grounding, term.get_referable("Subject").value), _meaning(term))
+            operator, have = term.get_referable("Operator").value, self.state.get(key)
+            want = self._operand(subjects, grounding, term, parameters) if operator != "unchanged" else have
+            holds = {"equal": have == want, "less": have is not None and have < want,
+                     "greater": have is not None and have > want, "unchanged": True}[operator]
+            assert holds, f"{container.id_short}: {term.display_name['en']} ({key}: {have!r} {operator} {want!r})"
+        for when, term in _terms(container, "EffectSet"):
+            if when != "End":
+                continue
+            key = (self._identity(subjects, grounding, term.get_referable("Subject").value), _meaning(term))
+            operator = term.get_referable("Operator").value
+            if operator == "measured":
+                self.state[key] = "known"
+                continue
+            value = self._operand(subjects, grounding, term, parameters)
+            if operator == "assign":
+                self.state[key] = value
+            else:
+                self.state[key] = (self.state.get(key) or 0) + (value if operator == "increase" else -value)
+
+
+def test_a_shuttle_brings_a_vial_the_module_takes_it_and_fills_it():
+    """The line's predicates chain: each step's preconditions are what the steps before made true, matched by the
+    properties' semantic ids and the subjects' identities. MoveToPosition puts the shuttle at the filling module's
+    transfer point; Receiving needs exactly that and the vial on the shuttle, and hands it to the module; Filling
+    needs the vial held by the module."""
+    from aas_model.resource_instances import RESOURCE_FACTORIES
+    from aas_model.resource_instances.modules.filling_module import MODULE, TRANSFER_POINT
+    from aas_pydantic import ModelReference
+
+    store = _store()
+    shuttle = RESOURCE_FACTORIES["planarShuttle1"]()
+    for identifiable in build_from_model(shuttle):
+        store.add(identifiable)
+    vial, place = "urn:batch:1/unit/17", _reference_key(ModelReference(key=TRANSFER_POINT))
+    module = _submodel(store, MODULE, "CapabilityDescription")
+    move = _submodel(store, shuttle.id, "CapabilityDescription").get_referable(["Transport", "MoveToPosition"])
+    state = {(vial, f"{LAB}HeldBy"): shuttle.id, (vial, f"{LAB}ContentVolume"): 0.0,
+             (MODULE, f"{LAB}Occupancy"): 0.0}
+    line = _Ground(store, state)
+
+    # Each call's Grounding: who the capability's subjects are, in their order (fixed ones as the model states them).
+    receiving = module.get_referable(["ModuleControl", "Receiving"])
+    handover = [MODULE, place, shuttle.id, vial]
+    with pytest.raises(AssertionError, match="Shuttle at the transfer point"):
+        line.apply(receiving, handover)                                     # not there yet
+    with pytest.raises(AssertionError, match="Transfer point"):
+        line.apply(receiving, [MODULE, "elsewhere", shuttle.id, vial])      # a fixed subject given otherwise
+    line.apply(move, [shuttle.id, place])                                   # the shuttle drives to the module
+    assert state[(shuttle.id, f"{LAB}Location")] == place
+    line.apply(receiving, handover)                                         # the module takes the vial
+    assert state[(vial, f"{LAB}HeldBy")] == MODULE and state[(MODULE, f"{LAB}Occupancy")] == 1.0
+    line.apply(module.get_referable(["OfferedCapabilities", "Filling"]), [MODULE, vial], {"Volume": 2.0})
+    assert state[(vial, f"{LAB}ContentVolume")] == 2.0 and state[(vial, f"{LAB}FillWeight")] == "known"
+    line.apply(module.get_referable(["ModuleControl", "Releasing"]), handover)
+    assert state[(vial, f"{LAB}HeldBy")] == shuttle.id and state[(MODULE, f"{LAB}Occupancy")] == 0.0
 
 
 def test_the_checked_in_example_files_are_what_the_export_writes():

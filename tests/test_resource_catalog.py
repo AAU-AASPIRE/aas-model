@@ -177,9 +177,11 @@ def test_system_type_requires_its_hierarchical_structure():
 def test_motion_schema_operation_and_mapping_describe_the_same_payload():
     shuttle = RESOURCE_FACTORIES["planarShuttle1"]()
     skill = shuttle.control_component_instance.Skills.Skill["MoveToPosition"]
-    assert [(v.id_short, v.value_type) for v in skill.operation.input_variable] == [
+    assert [(v.id_short, v.value_type) for v in skill.operation.input_variable[:3]] == [
         ("X", "xs:double"), ("Y", "xs:double"), ("Theta", "xs:double"),
     ]
+    # The capability and its grounding (who the move concerns) are, like ProductID, not sent to the device.
+    assert [v.id_short for v in skill.operation.input_variable[3:]] == ["Capability", "Grounding"]
     action = shuttle.asset_interfaces_description.InterfaceTemplateForMQTT[
         "interface_mqtt"
     ].InteractionMetadata.actions.property_name["MoveToPosition"]
