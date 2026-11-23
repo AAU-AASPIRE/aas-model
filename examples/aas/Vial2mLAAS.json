@@ -434,6 +434,68 @@
                           "valueType": "xs:double"
                         }
                       ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "Information for a certain property as defined by CapabilityPropertyType and its descriptive elements."
+                        }
+                      ],
+                      "idShort": "FillWeight",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/CapabilityDescription/PropertyContainer/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "Range made of min and max values forming an interval. A valueId shall be set to define the semantic for the values."
+                            }
+                          ],
+                          "idShort": "Value",
+                          "max": "2.1",
+                          "min": "1.9",
+                          "modelType": "Range",
+                          "qualifiers": [
+                            {
+                              "kind": "ConceptQualifier",
+                              "type": "Unit",
+                              "value": "g",
+                              "valueType": "xs:string"
+                            }
+                          ],
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/CapabilityPropertyEnumType/Range/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://smartproductionlab.aau.dk/semantics/FillWeight"
+                                }
+                              ],
+                              "type": "ExternalReference"
+                            }
+                          ],
+                          "valueType": "xs:double"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -3827,6 +3889,30 @@
                 {
                   "type": "GlobalReference",
                   "value": "https://smartproductionlab.aau.dk/semantics/FillWeight"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ]
+        },
+        {
+          "idShort": "FillResult",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/semantics/FillResult"
                 }
               ],
               "type": "ExternalReference"

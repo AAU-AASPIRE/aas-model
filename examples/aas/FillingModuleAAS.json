@@ -1715,6 +1715,116 @@
                               "displayName": [
                                 {
                                   "language": "en",
+                                  "text": "Unit weighed"
+                                }
+                              ],
+                              "idShort": "Term_02",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Effect/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "supplementalSemanticIds": [
+                                {
+                                  "keys": [
+                                    {
+                                      "type": "GlobalReference",
+                                      "value": "https://smartproductionlab.aau.dk/semantics/Weighed"
+                                    }
+                                  ],
+                                  "type": "ExternalReference"
+                                }
+                              ],
+                              "value": [
+                                {
+                                  "description": [
+                                    {
+                                      "language": "en",
+                                      "text": "The subject whose property the term is about: an item of Subjects."
+                                    }
+                                  ],
+                                  "idShort": "Subject",
+                                  "modelType": "ReferenceElement",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": {
+                                    "keys": [
+                                      {
+                                        "type": "Submodel",
+                                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "OfferedCapabilities"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Filling"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "CapabilityRelations"
+                                      },
+                                      {
+                                        "type": "SubmodelElementList",
+                                        "value": "Subjects"
+                                      },
+                                      {
+                                        "type": "ReferenceElement",
+                                        "value": "1"
+                                      }
+                                    ],
+                                    "type": "ModelReference"
+                                  }
+                                },
+                                {
+                                  "idShort": "Operator",
+                                  "modelType": "Property",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Effect/Operator/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": "assign",
+                                  "valueType": "xs:string"
+                                },
+                                {
+                                  "idShort": "Value",
+                                  "modelType": "Property",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": "true",
+                                  "valueType": "xs:boolean"
+                                }
+                              ]
+                            },
+                            {
+                              "displayName": [
+                                {
+                                  "language": "en",
                                   "text": "Unit's weight known"
                                 }
                               ],
@@ -1805,6 +1915,285 @@
                                   "valueType": "xs:string"
                                 }
                               ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "How long the action takes, in seconds."
+                        }
+                      ],
+                      "idShort": "Duration",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Duration/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "idShort": "Formula",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Term/Formula/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "2 * Position / Speed + Volume / FlowRate + Weighing",
+                          "valueType": "xs:string"
+                        },
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "The names the formula uses, each the element it stands for."
+                            }
+                          ],
+                          "idShort": "Uses",
+                          "modelType": "SubmodelElementCollection",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Term/Uses/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": [
+                            {
+                              "idShort": "Position",
+                              "modelType": "ReferenceElement",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Term/Use/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": {
+                                "keys": [
+                                  {
+                                    "type": "Submodel",
+                                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Skills"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Dispensing"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Start"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Steps"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Step_0000"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Bindings"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Binding_0000"
+                                  },
+                                  {
+                                    "type": "Property",
+                                    "value": "Value"
+                                  }
+                                ],
+                                "type": "ModelReference"
+                              }
+                            },
+                            {
+                              "idShort": "Speed",
+                              "modelType": "ReferenceElement",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Term/Use/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": {
+                                "keys": [
+                                  {
+                                    "type": "Submodel",
+                                    "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/CapabilityDescription"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "AuxiliaryCapabilities"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Positioning"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "PropertySet"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Speed"
+                                  },
+                                  {
+                                    "type": "Property",
+                                    "value": "Value"
+                                  }
+                                ],
+                                "type": "ModelReference"
+                              }
+                            },
+                            {
+                              "idShort": "Volume",
+                              "modelType": "ReferenceElement",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Term/Use/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": {
+                                "keys": [
+                                  {
+                                    "type": "Submodel",
+                                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Skills"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Dispensing"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Start"
+                                  },
+                                  {
+                                    "type": "Operation",
+                                    "value": "Start"
+                                  },
+                                  {
+                                    "type": "Property",
+                                    "value": "Volume"
+                                  }
+                                ],
+                                "type": "ModelReference"
+                              }
+                            },
+                            {
+                              "idShort": "FlowRate",
+                              "modelType": "ReferenceElement",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Term/Use/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": {
+                                "keys": [
+                                  {
+                                    "type": "Submodel",
+                                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Skills"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Dispensing"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Start"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Steps"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Step_0001"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Bindings"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Binding_0001"
+                                  },
+                                  {
+                                    "type": "Property",
+                                    "value": "Value"
+                                  }
+                                ],
+                                "type": "ModelReference"
+                              }
+                            },
+                            {
+                              "idShort": "Weighing",
+                              "modelType": "ReferenceElement",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Term/Use/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": {
+                                "keys": [
+                                  {
+                                    "type": "Submodel",
+                                    "value": "https://smartproductionlab.aau.dk/aas/FillingScaleAAS/submodels/CapabilityDescription"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "AuxiliaryCapabilities"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Weighing"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "CapabilityRelations"
+                                  },
+                                  {
+                                    "type": "SubmodelElementCollection",
+                                    "value": "Duration"
+                                  },
+                                  {
+                                    "type": "Property",
+                                    "value": "Value"
+                                  }
+                                ],
+                                "type": "ModelReference"
+                              }
                             }
                           ]
                         }
@@ -4480,7 +4869,7 @@
                   "text": "A Container for one capability and all its additional descriptive elements."
                 }
               ],
-              "idShort": "Receiving",
+              "idShort": "Occupying",
               "modelType": "SubmodelElementCollection",
               "semanticId": {
                 "keys": [
@@ -4500,7 +4889,7 @@
                       "keys": [
                         {
                           "type": "GlobalReference",
-                          "value": "https://smartproductionlab.aau.dk/semantics/Receiving"
+                          "value": "https://smartproductionlab.aau.dk/semantics/Occupying"
                         }
                       ],
                       "type": "ExternalReference"
@@ -4619,7 +5008,7 @@
                           },
                           {
                             "type": "SubmodelElementCollection",
-                            "value": "Receiving"
+                            "value": "Occupying"
                           },
                           {
                             "type": "Capability",
@@ -4927,7 +5316,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -4984,7 +5373,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5064,7 +5453,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5121,7 +5510,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5201,7 +5590,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5258,7 +5647,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5380,7 +5769,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5437,7 +5826,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5517,7 +5906,7 @@
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
-                                        "value": "Receiving"
+                                        "value": "Occupying"
                                       },
                                       {
                                         "type": "SubmodelElementCollection",
@@ -5568,6 +5957,42 @@
                               ]
                             }
                           ]
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "How long the action takes, in seconds."
+                        }
+                      ],
+                      "idShort": "Duration",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Duration/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "idShort": "Value",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "2.0",
+                          "valueType": "xs:double"
                         }
                       ]
                     }
@@ -6459,6 +6884,42 @@
                               ]
                             }
                           ]
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "How long the action takes, in seconds."
+                        }
+                      ],
+                      "idShort": "Duration",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Duration/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "idShort": "Value",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "2.0",
+                          "valueType": "xs:double"
                         }
                       ]
                     }
@@ -8348,7 +8809,57 @@
             }
           ],
           "idShort": "Errors",
-          "modelType": "SubmodelElementCollection"
+          "modelType": "SubmodelElementCollection",
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "No container in the nest"
+                }
+              ],
+              "idShort": "NoContainer",
+              "modelType": "Property",
+              "value": "1",
+              "valueType": "xs:integer"
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "The needle axis did not reach its position"
+                }
+              ],
+              "idShort": "AxisFault",
+              "modelType": "Property",
+              "value": "2",
+              "valueType": "xs:integer"
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "The pump did not deliver the volume"
+                }
+              ],
+              "idShort": "PumpFault",
+              "modelType": "Property",
+              "value": "3",
+              "valueType": "xs:integer"
+            },
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "The scale did not settle"
+                }
+              ],
+              "idShort": "ScaleUnstable",
+              "modelType": "Property",
+              "value": "4",
+              "valueType": "xs:integer"
+            }
+          ]
         }
       ]
     },

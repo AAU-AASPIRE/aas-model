@@ -1,0 +1,61 @@
+@prefix lab:  <https://smartproductionlab.aau.dk/semantics/> .
+@prefix css:  <http://www.w3id.org/hsu-aut/css#> .
+@prefix pprl: <https://w3id.org/2025/pprl#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+#################################################################
+# Proposed additions to the lab vocabulary (iec61499-mgmt-py, ontology/Vocabulary/capabilities.ttl, 0.10),
+# for the execution model (plans/kg-planning-execution-PLAN.md, D14, D15). Not an ontology of aas-model's own:
+# every term is in the lab's namespace, to be merged there; until it is, this file is where a planner, the DMP
+# and the tests read the cardinality of a property from.
+#
+# - lab:cardinality: whether a state property of a subject has one value at a time ("single": an effect assigns
+#   it, the old value goes) or a set of values ("set": effects add and remove values). D14: a state property
+#   without one is an error. The vocabulary's properties are classes (the meaning of a property element), so
+#   this is an annotation, not owl:FunctionalProperty.
+# - lab:valueType "reference": a value that names something (an AAS, an element of one, a unit's IRI). HeldBy
+#   was "string" (an idShort); the execution model states custody as a reference to the holding resource.
+# - lab:Location (new): where a carrier is, as a place (a transfer point).
+# - lab:Occupying (new): taking a container into custody, as the Occupy skill does; what lab:Receiving named.
+# - lab:FillResult (new), lab:InTolerance, lab:OutOfTolerance: the classification of a measured fill against the
+#   product's requirement, the outcomes a FOND plan branches on (D23, D26).
+#
+# tests/test_vocabulary.py fails when a state property the example line uses has no cardinality or value type here.
+#################################################################
+
+lab:cardinality rdf:type owl:AnnotationProperty ;
+  rdfs:comment "Of a state property: single (one value at a time; effects assign) or set (a set of values; effects add and remove)." .
+
+lab:Location rdf:type owl:Class ; rdfs:subClassOf css:Property ;
+  rdfs:label "Location" ; lab:valueType "reference" ; lab:cardinality "single" ;
+  rdfs:comment "Where a carrier is: the place (a module's transfer point) its last move went to." ;
+  lab:characterizes lab:Transporting .
+
+lab:Occupying rdf:type owl:Class ; rdfs:subClassOf css:Capability ;
+  rdfs:label "Occupying" ; owl:equivalentClass lab:Receiving ;
+  rdfs:comment "Taking a container into custody from the carrier that brings it, as the Occupy skill does: the container is then held by the resource. Named as the skill; what lab:Receiving named." .
+
+lab:FillResult rdf:type owl:Class ; rdfs:subClassOf css:Property , pprl:ProductProperty ;
+  rdfs:label "Fill result" ; lab:valueType "reference" ; lab:cardinality "single" ;
+  rdfs:comment "Whether the container's measured fill is within the product's requirement: lab:InTolerance or lab:OutOfTolerance. Set by classifying a measured result; the number stays in the time series." ;
+  lab:characterizes lab:Filling .
+
+lab:InTolerance rdf:type owl:NamedIndividual ; rdfs:label "In tolerance" .
+lab:OutOfTolerance rdf:type owl:NamedIndividual ; rdfs:label "Out of tolerance" .
+
+# Cardinality and value type of the state properties already in the vocabulary that the execution model uses.
+lab:HeldBy lab:valueType "reference" ; lab:cardinality "single" .
+lab:Occupancy lab:valueType "number" ; lab:cardinality "single" .
+lab:Position lab:valueType "number" ; lab:cardinality "single" .
+lab:ContentVolume lab:valueType "number" ; lab:cardinality "single" .
+lab:OutletImmersion lab:valueType "number" ; lab:cardinality "single" .
+lab:FillWeight lab:valueType "number" ; lab:cardinality "single" .
+lab:Weighed lab:valueType "boolean" ; lab:cardinality "single" .
+lab:Stoppered lab:valueType "boolean" ; lab:cardinality "single" .
+lab:Capped lab:valueType "boolean" ; lab:cardinality "single" .
+lab:Inspected lab:valueType "boolean" ; lab:cardinality "single" .
+lab:InnerDiameter lab:valueType "number" ; lab:cardinality "single" .
+lab:InnerBottomHeight lab:valueType "number" ; lab:cardinality "single" .
+lab:RimHeight lab:valueType "number" ; lab:cardinality "single" .

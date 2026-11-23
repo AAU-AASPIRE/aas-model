@@ -26,10 +26,11 @@ from aas_model.submodel_templates.capability_description import (
     ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
 )
 from aas_model.submodel_templates.execution import (
-    ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, PlaceSubject, PreTerms, SelfSubject,
+    ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, ExecutionDuration, PlaceSubject, PreTerms,
+    SelfSubject,
     StateCondition, StateEffect, Subjects, TermSubject, TermValue, TermValueReference, UnitSubject,
 )
-from aas_model.submodel_templates.state_declaration import StateDeclaration
+from aas_model.submodel_templates.state_declaration import StateDeclaration, StateVariable, StateVariableInitial
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription
 from aas_model.submodel_templates.control_component_instance import ResourceControlComponentInstance
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
@@ -127,7 +128,12 @@ class PhysicalResource(Resource):
 
 
 class OperationalResource(PhysicalResource):
-    """Operational physical asset, without an assumed native protocol."""
+    """Operational physical asset, without an assumed native protocol. Every one has module control (Occupy,
+    Release), so it declares how many units it holds: state no data point reports, kept in the state store."""
+    state_declaration: Optional[StateDeclaration] = StateDeclaration(id_short="StateDeclaration", variable={
+        "Occupancy": StateVariable(supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                                   Initial=StateVariableInitial(value="0", value_type="xs:int")),
+    })
 
 
 # ── Stations ─────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -298,6 +304,14 @@ class PlanarShuttle(Shuttle):
     Native Position arrays and operation X/Y/Theta use millimetres and radians.
     """
     asset_type: str = f"{CSSX}#PlanarTableShuttle"
+    # Where the shuttle is, as a place (the transfer point its last move went to): asserted by the DMP when a move
+    # ends, not reported; the reported pose is a time series. No initial value: unknown until a move or an operator
+    # says it.
+    state_declaration: Optional[StateDeclaration] = StateDeclaration(id_short="StateDeclaration", variable={
+        "Occupancy": StateVariable(supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                                   Initial=StateVariableInitial(value="0", value_type="xs:int")),
+        "Location": StateVariable(supplemental_semantic_ids=[f"{LAB}Location"]),
+    })
     parameters: ResourceParameters = ResourceParameters(
         id_short="Parameters",
         parameter={"Location": Position()},
@@ -329,6 +343,8 @@ class PlanarShuttle(Shuttle):
                             Operator=EffectOperator(value="assign"),
                             ValueReference=TermValueReference(value=subject_ref("Transport", "MoveToPosition", 1)),
                         )})),
+                        # Nominal, until the time series says how long moves take (D11).
+                        Duration=ExecutionDuration(Value=TermValue(value="3.0", value_type="xs:double")),
                     ),
                 ),
             }),

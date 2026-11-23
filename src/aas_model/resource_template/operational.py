@@ -14,7 +14,7 @@ OutputArguments). Occupy and Release answer with the commandResponse; their
 mappings name it as ResponseSource and the Operation as ResponseSink.
 
 Module control: Occupy and Release are also capabilities of the device
-(``CapabilityDescription/ModuleControl``, the lab's Receiving and Releasing),
+(``CapabilityDescription/ModuleControl``: Occupying and Releasing, named as the skills),
 with what they need and change: occupying needs room (Occupancy below the
 Capacity) and takes one place, releasing gives it back.
 
@@ -60,8 +60,9 @@ from aas_model.submodel_templates.control_component_instance import (
 )
 from aas_model.submodel_templates.variables import LogGroup, StateGroup, Variables
 from aas_model.submodel_templates.execution import (
-    CarrierSubject, ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, PlaceSubject, PreTerms,
-    SelfSubject, StateCondition, StateEffect, Subjects, TermSubject, TermValue, TermValueReference, UnitSubject,
+    CarrierSubject, ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, ExecutionDuration,
+    PlaceSubject, PreTerms, SelfSubject, StateCondition, StateEffect, Subjects, TermSubject, TermValue,
+    TermValueReference, UnitSubject,
 )
 from aas_pydantic.submodel_templates.time_series import Name
 from aas_model.submodel_templates.time_series import (
@@ -150,7 +151,7 @@ class OperationalVariables(Variables):
 # ── Capabilities: what Occupy and Release need and change ───────────────────
 
 class ModuleControlCapabilities(ModuleCapabilitySet):
-    """Occupying (Occupy, the lab's Receiving) and Releasing (Release, Releasing): the device takes a unit off the
+    """Occupying (Occupy) and Releasing (Release): the device takes a unit off the
     shuttle at its transfer point, or puts it back on one. Custody (HeldBy) moves between the shuttle and the device,
     and the device counts the places it fills against its Capacity, which an instance that holds more than one
     product at a time sets.
@@ -160,7 +161,7 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
     are in a call is the call's Grounding."""
     CapabilityContainer: Dict[str, ModuleCapabilityContainer] = {
         "Occupying": ModuleCapabilityContainer(
-            Capability=Capability(supplemental_semantic_ids=[f"{LAB}Receiving"]),
+            Capability=Capability(supplemental_semantic_ids=[f"{LAB}Occupying"]),
             PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={"Capacity": StatedProperty(
                 PropertyProperty={"Capacity": PropertyProperty(
                     value="1", value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Capacity"],
@@ -179,7 +180,8 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                 ]),
                 ConditionSet=ConditionSet(Pre=PreTerms(term={
                     "Term_00": StateCondition(
-                        display_name={"en": "Shuttle at the transfer point"}, supplemental_semantic_ids=[f"{LAB}Location"],
+                        display_name={"en": "Shuttle at the transfer point"},
+                        supplemental_semantic_ids=[f"{LAB}Location"],
                         Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 2)),
                         Operator=ConditionOperator(value="equal"),
                         ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Occupying", 1)),
@@ -212,6 +214,7 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                         Value=TermValue(value="1", value_type="xs:int"),
                     ),
                 })),
+                Duration=ExecutionDuration(Value=TermValue(value="2.0", value_type="xs:double")),   # nominal, s
             ),
         ),
         "Releasing": ModuleCapabilityContainer(
@@ -228,7 +231,8 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                 ]),
                 ConditionSet=ConditionSet(Pre=PreTerms(term={
                     "Term_00": StateCondition(
-                        display_name={"en": "Shuttle at the transfer point"}, supplemental_semantic_ids=[f"{LAB}Location"],
+                        display_name={"en": "Shuttle at the transfer point"},
+                        supplemental_semantic_ids=[f"{LAB}Location"],
                         Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 2)),
                         Operator=ConditionOperator(value="equal"),
                         ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Releasing", 1)),
@@ -260,6 +264,7 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                         Value=TermValue(value="1", value_type="xs:int"),
                     ),
                 })),
+                Duration=ExecutionDuration(Value=TermValue(value="2.0", value_type="xs:double")),   # nominal, s
             ),
         ),
     }

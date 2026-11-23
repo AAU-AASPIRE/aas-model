@@ -125,7 +125,7 @@ def test_build_from_model_resolves_references_without_mutating_resource():
 
     assert resource.model_dump_json() == before
     assert shell.id == f"{BASE_URL}/aas/{resource.id_short}"
-    assert len(shell.submodel) == 8
+    assert len(shell.submodel) == 9                     # with the StateDeclaration of its occupancy
     assert all(reference.resolve(store) is not None for reference in shell.submodel)
     submodels = {obj.id_short: obj for obj in store if isinstance(obj, model.Submodel)}
     assert "CapabilityDescription" in submodels
@@ -248,7 +248,7 @@ def test_build_from_model_does_not_revalidate_or_serialize_the_model(monkeypatch
     monkeypatch.setattr(Resource, "model_validate", unexpected_validation)
     monkeypatch.setattr(Resource, "model_dump", unexpected_validation)
 
-    assert len(build_from_model(resource)) == 9
+    assert len(build_from_model(resource)) == 10     # the shell and its nine submodels, the StateDeclaration among them
 
 
 def test_resource_capability_description_defaults_are_independent():

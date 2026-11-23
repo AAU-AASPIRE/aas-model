@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Write the example AASs as AAS JSON into ``examples/aas/``: the filling module, its components and the 2 mL vial.
+"""Write the example AASs as AAS JSON into ``examples/aas/``: the filling module, its components, the 2 mL vial and a
+batch of it.
 
 One file per AAS (``<idShort>.json``), an AAS environment with the shell and its submodels, as BaSyx loads it.
 ``tests/test_example_line.py`` fails when the checked-in files are not what this script writes. Run from the
@@ -20,11 +21,12 @@ sys.path.insert(0, os.path.join(_ROOT, "src"))
 from basyx.aas.adapter.json import json_serialization  # noqa: E402
 
 from aas_model import build_from_model  # noqa: E402
+from aas_model.batch_instances import BATCH_FACTORIES  # noqa: E402
 from aas_model.product_instances import PRODUCT_FACTORIES  # noqa: E402
 from aas_model.resource_instances.modules import MODULE_FACTORIES  # noqa: E402
 
 OUTPUT = os.path.join(_ROOT, "examples", "aas")
-FACTORIES = {**MODULE_FACTORIES, **PRODUCT_FACTORIES}
+FACTORIES = {**MODULE_FACTORIES, **PRODUCT_FACTORIES, **BATCH_FACTORIES}
 
 
 def documents() -> dict[str, str]:

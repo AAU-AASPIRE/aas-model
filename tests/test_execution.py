@@ -49,7 +49,7 @@ def test_every_operational_device_has_module_control_realized_by_its_packml_skil
     resource = RESOURCE_FACTORIES[name]()
     containers = resource.capability_description.CapabilitySet[MODULE_CONTROL].CapabilityContainer
     assert set(containers) == {"Occupying", "Releasing"}
-    assert containers["Occupying"].Capability.supplemental_semantic_ids == [f"{LAB}Receiving"]
+    assert containers["Occupying"].Capability.supplemental_semantic_ids == [f"{LAB}Occupying"]
     assert containers["Releasing"].Capability.supplemental_semantic_ids == [f"{LAB}Releasing"]
     skills = resource.control_component_instance.Skills.Skill
     for container, skill in (("Occupying", "Occupy"), ("Releasing", "Release")):
@@ -128,7 +128,7 @@ def test_a_shuttle_move_takes_the_shuttle_to_a_place_the_call_names():
     relations = container.CapabilityRelations
     shuttle, place = relations.Subjects.value
     assert [s.display_name["en"] for s in (shuttle, place)] == ["This shuttle", "Target place"]
-    assert place.value.type_ == "ExternalReference" and place.value.key[0].value == VAR_COORDINATE
+    assert place.value.type_ == "ExternalReference" and place.value.key[0].value == f"{LAB}TransferPoint"
     (end,) = relations.EffectSet.End.term.values()
     assert (end.Operator.value, end.supplemental_semantic_ids) == ("assign", [f"{LAB}Location"])
     assert [k.value for k in end.Subject.value.key[-2:]] == ["Subjects", "0"]
@@ -152,8 +152,8 @@ def test_the_filling_modules_transfer_point_is_a_place_a_shuttle_can_be_sent_to(
         for identifiable in build_from_model(factory()):
             store.add(identifiable)
     point = _make_basyx_reference(ModelReference(key=TRANSFER_POINT)).resolve(store)
-    assert point.semantic_id.key[0].value == VAR_COORDINATE                  # what the place subject stands for
-    assert point.supplemental_semantic_id[0].key[0].value == f"{LAB}TransferPoint"
+    assert point.semantic_id.key[0].value == VAR_COORDINATE
+    assert point.supplemental_semantic_id[0].key[0].value == f"{LAB}TransferPoint"   # what a place subject is
     assert point.get_referable("RelativeTo").value.resolve(store).id_short == "ModuleBase"
 
 

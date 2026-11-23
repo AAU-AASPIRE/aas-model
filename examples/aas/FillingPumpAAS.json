@@ -621,6 +621,116 @@
                                   }
                                 }
                               ]
+                            },
+                            {
+                              "displayName": [
+                                {
+                                  "language": "en",
+                                  "text": "Unit no longer weighed"
+                                }
+                              ],
+                              "idShort": "Term_01",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Effect/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "supplementalSemanticIds": [
+                                {
+                                  "keys": [
+                                    {
+                                      "type": "GlobalReference",
+                                      "value": "https://smartproductionlab.aau.dk/semantics/Weighed"
+                                    }
+                                  ],
+                                  "type": "ExternalReference"
+                                }
+                              ],
+                              "value": [
+                                {
+                                  "description": [
+                                    {
+                                      "language": "en",
+                                      "text": "The subject whose property the term is about: an item of Subjects."
+                                    }
+                                  ],
+                                  "idShort": "Subject",
+                                  "modelType": "ReferenceElement",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": {
+                                    "keys": [
+                                      {
+                                        "type": "Submodel",
+                                        "value": "https://smartproductionlab.aau.dk/aas/FillingPumpAAS/submodels/CapabilityDescription"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "AuxiliaryCapabilities"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Dosing"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "CapabilityRelations"
+                                      },
+                                      {
+                                        "type": "SubmodelElementList",
+                                        "value": "Subjects"
+                                      },
+                                      {
+                                        "type": "ReferenceElement",
+                                        "value": "1"
+                                      }
+                                    ],
+                                    "type": "ModelReference"
+                                  }
+                                },
+                                {
+                                  "idShort": "Operator",
+                                  "modelType": "Property",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Effect/Operator/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": "assign",
+                                  "valueType": "xs:string"
+                                },
+                                {
+                                  "idShort": "Value",
+                                  "modelType": "Property",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": "false",
+                                  "valueType": "xs:boolean"
+                                }
+                              ]
                             }
                           ]
                         }

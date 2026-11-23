@@ -55,6 +55,20 @@ EXECUTION_SUBJECT = f"{BASE_URL}/execution/Subject/1/0"
 PRODUCT_ASSET_TYPE = f"{BASE_URL}/Product"
 # What a shuttle is (the asset type of the shuttles): what a subject that is a carrier stands for.
 SHUTTLE_ASSET_TYPE = f"{CSSX}#Shuttle"
+
+# How long an action takes, in seconds, where no Rate of an End effect says it.
+EXECUTION_DURATION = f"{BASE_URL}/execution/Duration/1/0"
+
+# The batch AAS (D10, D13): what is made, the units it consists of, and the goal every unit is to reach.
+BATCH_ASSET_TYPE = f"{BASE_URL}/Batch"
+SM_BATCH_INFORMATION = f"{BASE_URL}/submodels/BatchInformation/1/0"
+SM_BATCH_UNITS = f"{BASE_URL}/submodels/BatchUnits/1/0"
+SM_GOAL = f"{BASE_URL}/submodels/Goal/1/0"
+BATCH_PRODUCT_TYPE = f"{BASE_URL}/batch/ProductType/1/0"
+BATCH_QUANTITY = f"{BASE_URL}/batch/Quantity/1/0"
+BATCH_UNIT_LIST = f"{BASE_URL}/batch/Units/1/0"
+BATCH_UNIT = f"{BASE_URL}/batch/Unit/1/0"
+GOAL_CONDITION = f"{BASE_URL}/goal/Condition/1/0"
 EXECUTION_CONDITION_SET = f"{BASE_URL}/execution/ConditionSet/1/0"
 EXECUTION_PRE = f"{BASE_URL}/execution/ConditionSet/Pre/1/0"
 EXECUTION_INVARIANT = f"{BASE_URL}/execution/ConditionSet/Invariant/1/0"

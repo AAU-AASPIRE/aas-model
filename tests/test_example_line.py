@@ -13,10 +13,11 @@ from aas_model.constants import (
     EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_DURING, EXECUTION_EFFECT, EXECUTION_SUBJECT, LAB,
     OPERATION_VARIABLE_CAPABILITY, OPERATION_VARIABLE_GROUNDING, PRODUCT_ASSET_TYPE,
 )
+from aas_model.batch_instances import BATCH_FACTORIES
 from aas_model.product_instances import PRODUCT_FACTORIES
 from aas_model.resource_instances.modules import MODULE_FACTORIES
 
-FACTORIES = {**MODULE_FACTORIES, **PRODUCT_FACTORIES}
+FACTORIES = {**MODULE_FACTORIES, **PRODUCT_FACTORIES, **BATCH_FACTORIES}
 
 
 def _store() -> model.DictIdentifiableStore:
@@ -190,7 +191,7 @@ def test_every_term_says_in_its_display_name_what_it_states():
             for _, term in _terms(container, kind):
                 assert term.display_name and term.display_name.get("en"), (container.id_short, term.id_short)
                 terms += 1
-    assert terms == 22
+    assert terms == 25
 
 
 def test_the_offered_filling_is_derived_and_bound_to_its_skill():
@@ -417,17 +418,30 @@ class _Ground:
             if isinstance(subject.value, model.ModelReference):
                 assert given == _reference_key(subject.value), (subject.display_name["en"], given)
 
+    @staticmethod
+    def _literal(prop):
+        return prop.value if isinstance(prop.value, bool) else float(prop.value)
+
+    def holds(self, goal, grounding: list) -> bool:
+        """Whether a goal's condition holds for the subjects it is grounded on."""
+        subjects = goal.get_referable("Subjects")
+        for term in goal.get_referable("Condition").value:
+            key = (self._identity(subjects, grounding, term.get_referable("Subject").value), _meaning(term))
+            if self.state.get(key) != self._operand(subjects, grounding, term, {}):
+                return False
+        return True
+
     def _operand(self, subjects, grounding: list, term, parameters: dict):
         named = {e.id_short: e for e in term.value}
         if "Value" in named:
-            return float(named["Value"].value)
+            return self._literal(named["Value"])
         target = named["ValueReference"].value
         if target.key[-2].value == "Subjects":
             return self._identity(subjects, grounding, target)
         resolved = target.resolve(self.store)
         if resolved.id_short in parameters:
             return parameters[resolved.id_short]
-        return float(resolved.value)
+        return self._literal(resolved)
 
     def apply(self, container, grounding: list, parameters: dict | None = None) -> None:
         parameters = parameters or {}
@@ -461,9 +475,10 @@ class _Ground:
 def test_a_shuttle_brings_a_vial_the_module_takes_it_and_fills_it():
     """The line's predicates chain: each step's preconditions are what the steps before made true, matched by the
     properties' semantic ids and the subjects' identities. MoveToPosition puts the shuttle at the filling module's
-    transfer point; Receiving needs exactly that and the vial on the shuttle, and hands it to the module; Filling
+    transfer point; Occupying needs exactly that and the vial on the shuttle, and hands it to the module; Filling
     needs the vial held by the module."""
     from aas_model.resource_instances import RESOURCE_FACTORIES
+    from aas_model.batch_instances.vial_2ml_batch import AAS_ID as BATCH
     from aas_model.resource_instances.modules.filling_module import MODULE, TRANSFER_POINT
     from aas_pydantic import ModelReference
 
@@ -472,27 +487,115 @@ def test_a_shuttle_brings_a_vial_the_module_takes_it_and_fills_it():
     for identifiable in build_from_model(shuttle):
         store.add(identifiable)
     vial, place = "urn:batch:1/unit/17", _reference_key(ModelReference(key=TRANSFER_POINT))
+    state_initial = {(vial, f"{LAB}Weighed"): False}
     module = _submodel(store, MODULE, "CapabilityDescription")
     move = _submodel(store, shuttle.id, "CapabilityDescription").get_referable(["Transport", "MoveToPosition"])
     state = {(vial, f"{LAB}HeldBy"): shuttle.id, (vial, f"{LAB}ContentVolume"): 0.0,
-             (MODULE, f"{LAB}Occupancy"): 0.0}
+             (MODULE, f"{LAB}Occupancy"): 0.0, **state_initial}
     line = _Ground(store, state)
 
     # Each call's Grounding: who the capability's subjects are, in their order (fixed ones as the model states them).
-    receiving = module.get_referable(["ModuleControl", "Receiving"])
+    occupying = module.get_referable(["ModuleControl", "Occupying"])
     handover = [MODULE, place, shuttle.id, vial]
     with pytest.raises(AssertionError, match="Shuttle at the transfer point"):
-        line.apply(receiving, handover)                                     # not there yet
+        line.apply(occupying, handover)                                     # not there yet
     with pytest.raises(AssertionError, match="Transfer point"):
-        line.apply(receiving, [MODULE, "elsewhere", shuttle.id, vial])      # a fixed subject given otherwise
+        line.apply(occupying, [MODULE, "elsewhere", shuttle.id, vial])      # a fixed subject given otherwise
     line.apply(move, [shuttle.id, place])                                   # the shuttle drives to the module
     assert state[(shuttle.id, f"{LAB}Location")] == place
-    line.apply(receiving, handover)                                         # the module takes the vial
+    line.apply(occupying, handover)                                         # the module takes the vial
     assert state[(vial, f"{LAB}HeldBy")] == MODULE and state[(MODULE, f"{LAB}Occupancy")] == 1.0
     line.apply(module.get_referable(["OfferedCapabilities", "Filling"]), [MODULE, vial], {"Volume": 2.0})
     assert state[(vial, f"{LAB}ContentVolume")] == 2.0 and state[(vial, f"{LAB}FillWeight")] == "known"
     line.apply(module.get_referable(["ModuleControl", "Releasing"]), handover)
     assert state[(vial, f"{LAB}HeldBy")] == shuttle.id and state[(MODULE, f"{LAB}Occupancy")] == 0.0
+    # The batch's goal, applied to this unit, now holds; for a unit that was not filled, it does not.
+    goal = _submodel(store, BATCH, "Goal")
+    assert line.holds(goal, [vial]) and not line.holds(goal, ["urn:batch:1/unit/18"])
+
+
+def test_the_batch_names_its_product_its_units_and_the_goal_each_unit_is_to_reach():
+    from aas_model.batch_instances.vial_2ml_batch import AAS_ID as BATCH, BATCH_ID
+    from aas_model.product_instances.vial_2ml import AAS_ID as VIAL
+
+    store = _store()
+    information = _submodel(store, BATCH, "BatchInformation")
+    assert information.get_referable("ProductType").value.resolve(store).id == VIAL
+    units = _submodel(store, BATCH, "BatchUnits").get_referable("Units")
+    assert isinstance(units, model.SubmodelElementList)
+    iris = [unit.value.key[0].value for unit in units.value]
+    assert len(iris) == int(information.get_referable("Quantity").value) == 3
+    assert all(isinstance(unit.value, model.ExternalReference) for unit in units.value)
+    assert iris == [f"{BATCH_ID}/unit/{n}" for n in (1, 2, 3)]
+
+    goal = _submodel(store, BATCH, "Goal")
+    (each,) = goal.get_referable("Subjects").value
+    assert _is_unit(each) and each.display_name["en"] == "Each unit"
+    terms = list(goal.get_referable("Condition").value)
+    assert {_meaning(t) for t in terms} == {f"{LAB}ContentVolume", f"{LAB}Weighed"}
+    assert all(t.get_referable("Subject").value.resolve(store) is each for t in terms)
+    fill_volume = goal.get_referable(["Condition", "Term_00", "ValueReference"]).value.resolve(store)
+    assert fill_volume.value == 2.0 and _meaning(fill_volume) == f"{LAB}FillVolume"   # the vial's required volume
+    declared = {_meaning(v) for v in _submodel(store, VIAL, "StateDeclaration").submodel_element}
+    assert {_meaning(t) for t in terms} <= declared
+
+
+def test_every_capability_of_the_line_says_how_long_it_takes():
+    """A planner of durative actions needs a duration for each: a Duration, or the Rate of an End effect (an axis at
+    its speed, a dose at its flow rate); a module's specialization takes its component's. Filling's is the sum of its
+    steps: 2 x 40 mm at 12.5 mm/s, 2 mL at 1 mL/s, and the weighing's 0.2 s."""
+    from aas_model.resource_instances import RESOURCE_FACTORIES
+
+    store = _store()
+    for identifiable in build_from_model(RESOURCE_FACTORIES["planarShuttle1"]()):
+        store.add(identifiable)
+    shuttle_move = _submodel(store, RESOURCE_FACTORIES["planarShuttle1"]().id, "CapabilityDescription").get_referable(
+        ["Transport", "MoveToPosition"])
+    timed = {}
+    for container in (*_module_containers(store, every=True), shuttle_move):
+        relations = container.get_referable("CapabilityRelations")
+        if _has(relations, "Duration"):
+            timed[container.id_short] = "Duration"
+        elif any(_has(term, "Rate") for when, term in _terms(container, "EffectSet") if when == "End"):
+            timed[container.id_short] = "Rate"
+        elif _has(relations, "GeneralizedBySet"):
+            timed[container.id_short] = "specializes"
+    assert set(timed) == {c.id_short for c in (*_module_containers(store, every=True), shuttle_move)}
+    assert timed["Positioning"] in ("Rate", "specializes") and timed["MoveToPosition"] == "Duration"
+
+    from aas_model.resource_instances.modules.filling_module import MODULE
+    duration = _submodel(store, MODULE, "CapabilityDescription").get_referable(
+        ["OfferedCapabilities", "Filling", "CapabilityRelations", "Duration"])
+    values = {use.id_short: float(use.value.resolve(store).value) for use in duration.get_referable("Uses").value}
+    values["Volume"] = 2.0                                            # the call's parameter
+    assert values["Position"] == 40.0 and values["Speed"] == 12.5 and values["Weighing"] == 0.2
+    assert eval(duration.get_referable("Formula").value, {"__builtins__": {}}, values) == pytest.approx(8.6)
+
+
+def test_a_fond_planner_finds_the_outcomes_a_filling_can_have():
+    """Non-determinism is generated from what the AASs state (D23): failure outcomes from the errors the module's
+    skills can answer with, and the in/out-of-tolerance split of a measured result from the product's requirement
+    on it, recorded in a FillResult the product declares."""
+    from aas_model.product_instances.vial_2ml import AAS_ID as VIAL
+    from aas_model.resource_instances.modules.filling_module import MODULE
+
+    store = _store()
+    errors = _submodel(store, MODULE, "Skills").get_referable("Errors")
+    codes = {error.id_short: error.value for error in errors.value}
+    assert len(codes) == 4 and len(set(codes.values())) == 4                  # one outcome each, told apart
+
+    filling = _submodel(store, MODULE, "CapabilityDescription").get_referable(["OfferedCapabilities", "Filling"])
+    measured = {_meaning(t) for when, t in _terms(filling, "EffectSet")
+                if t.get_referable("Operator").value == "measured" and _is_unit(_subject(store, t))}
+    assert measured == {f"{LAB}FillWeight"}
+    required = _submodel(store, VIAL, "CapabilityDescription").get_referable(["RequiredCapabilities", "Filling"])
+    assert _meaning(required.get_referable("Capability")) == _meaning(filling.get_referable("Capability"))
+    bounds = {_meaning(entry.get_referable("Value")): entry.get_referable("Value")
+              for entry in required.get_referable("PropertySet").value}
+    for meaning in measured:                                                  # each measured result has bounds
+        assert isinstance(bounds[meaning], model.Range) and bounds[meaning].min < bounds[meaning].max
+    declared = {_meaning(v) for v in _submodel(store, VIAL, "StateDeclaration").submodel_element}
+    assert f"{LAB}FillResult" in declared
 
 
 def test_the_checked_in_example_files_are_what_the_export_writes():

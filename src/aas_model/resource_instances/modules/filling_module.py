@@ -19,9 +19,9 @@ Who says what:
   container in the nest, which is why they are the module's. Each is a specialization of the component's: carried
   out by the same primitive, it inherits the component's properties, conditions and effects, narrows their values
   and adds conditions, never widens or contradicts them (``tests/test_example_line.py`` checks this).
-- **Module control**: the module takes the unit off a shuttle at its transfer point (Receiving, realized by Occupy)
+- **Module control**: the module takes the unit off a shuttle at its transfer point (Occupying, realized by Occupy)
   and puts it back on one (Releasing, by Release). Custody (HeldBy) moves between the shuttle and the module, so a
-  shuttle's move to the transfer point, Receiving and Filling chain: each one's preconditions are what the one
+  shuttle's move to the transfer point, Occupying and Filling chain: each one's preconditions are what the one
   before made true.
 - **What the module offers**, Filling, realized by Dispensing and composed of the module's three capabilities,
   with conditions and effects **derived** from theirs and the composite's steps: the net effect, and as
@@ -62,7 +62,8 @@ from aas_model.submodel_templates.control_component_instance import (
     CapabilityVariable, GroundingVariable, ParameterVariable,
 )
 from aas_model.submodel_templates.execution import (
-    CarrierSubject, ConditionOperator, ConditionSet, DuringTerms, EffectOperator, EffectSet, EndTerms, ExecutionSubject,
+    CarrierSubject, ConditionOperator, ConditionSet, DuringTerms, EffectOperator, EffectSet, EndTerms,
+    ExecutionDuration, ExecutionSubject,
     FormulaUse,
     FormulaUses, InvariantTerms, PreTerms, Rate, SelfSubject, StateCondition, StateEffect, Subjects, TermFormula,
     TermSubject, TermValue, TermValueReference, UnitSubject,
@@ -118,7 +119,7 @@ SCALE_WEIGHING = (Key(type_="Submodel", value=f"{SCALE}/submodels/CapabilityDesc
 OCCUPY = (MODULE_SKILLS, Key(type_=SMC, value="Occupy"))
 RELEASE = (MODULE_SKILLS, Key(type_=SMC, value="Release"))
 MODULE_CONTROL = "ModuleControl"
-RECEIVING = (MODULE_CAPABILITIES, Key(type_=SMC, value=MODULE_CONTROL), Key(type_=SMC, value="Receiving"))
+OCCUPYING = (MODULE_CAPABILITIES, Key(type_=SMC, value=MODULE_CONTROL), Key(type_=SMC, value="Occupying"))
 RELEASING = (MODULE_CAPABILITIES, Key(type_=SMC, value=MODULE_CONTROL), Key(type_=SMC, value="Releasing"))
 
 # The composite, its Operation and its steps.
@@ -270,6 +271,11 @@ def filling_pump() -> Component:
                         ValueReference=TermValueReference(value=ModelReference(
                             key=(*DISPENSE_START, Key(type_="Property", value="Volume")))),
                         Rate=Rate(value=ModelReference(key=(*DISPENSE_START, Key(type_="Property", value="FlowRate")))),
+                    ), "Term_01": StateEffect(
+                        display_name={"en": "Unit no longer weighed"}, supplemental_semantic_ids=[f"{LAB}Weighed"],
+                        Subject=TermSubject(value=_subject(PUMP_DOSING, 1)),
+                        Operator=EffectOperator(value="assign"),
+                        Value=TermValue(value="false", value_type="xs:boolean"),
                     )})),
                 ),
             )}),
@@ -309,11 +315,19 @@ def filling_scale() -> Component:
                         first=ModelReference(key=(*SCALE_WEIGHING, CAPABILITY)), second=ModelReference(key=WEIGH))},
                     Subjects=Subjects(value=[SelfSubject(display_name={"en": "This scale"}),
                                              UnitSubject(display_name={"en": "Unit on the scale"})]),
-                    EffectSet=EffectSet(End=EndTerms(term={"Term_00": StateEffect(
-                        display_name={"en": "Unit's weight known"}, supplemental_semantic_ids=[f"{LAB}FillWeight"],
-                        Subject=TermSubject(value=_subject(SCALE_WEIGHING, 1)),
-                        Operator=EffectOperator(value="measured"),
-                    )})),
+                    EffectSet=EffectSet(End=EndTerms(term={
+                        "Term_00": StateEffect(
+                            display_name={"en": "Unit weighed"}, supplemental_semantic_ids=[f"{LAB}Weighed"],
+                            Subject=TermSubject(value=_subject(SCALE_WEIGHING, 1)),
+                            Operator=EffectOperator(value="assign"),
+                            Value=TermValue(value="true", value_type="xs:boolean")),
+                        "Term_01": StateEffect(
+                            display_name={"en": "Unit's weight known"}, supplemental_semantic_ids=[f"{LAB}FillWeight"],
+                            Subject=TermSubject(value=_subject(SCALE_WEIGHING, 1)),
+                            Operator=EffectOperator(value="measured")),
+                    })),
+                    # The weighing itself: the skill's open-loop time (Completion After).
+                    Duration=ExecutionDuration(Value=TermValue(value="0.2", value_type="xs:double")),
                 ),
             )}),
         }),
@@ -499,16 +513,40 @@ def filling_module() -> Module:
                         Key(type_=SMC, value="Bindings"), Key(type_=SMC, value="Binding_0001"),
                         Key(type_="Property", value="Value")))),
                 ),
+                "Term_02": StateEffect(
+                    display_name={"en": "Unit weighed"}, supplemental_semantic_ids=[f"{LAB}Weighed"],
+                    Subject=TermSubject(value=fill_unit), Operator=EffectOperator(value="assign"),
+                    Value=TermValue(value="true", value_type="xs:boolean"),
+                ),
                 "Term_01": StateEffect(
                     display_name={"en": "Unit's weight known"},
                     supplemental_semantic_ids=[f"{LAB}FillWeight"], Subject=TermSubject(value=fill_unit),
                     Operator=EffectOperator(value="measured"),
                 ),
             })),
+            # The steps one after the other: the needle down to the fill position and up again at the axis's speed,
+            # the dose at the station's flow rate, the weighing.
+            Duration=ExecutionDuration(
+                Formula=TermFormula(value="2 * Position / Speed + Volume / FlowRate + Weighing"),
+                Uses=FormulaUses(use={
+                    "Position": FormulaUse(value=ModelReference(key=(
+                        *DISPENSING_STEPS, Key(type_=SMC, value="Step_0000"), Key(type_=SMC, value="Bindings"),
+                        Key(type_=SMC, value="Binding_0000"), Key(type_="Property", value="Value")))),
+                    "Speed": FormulaUse(value=_property(AXIS_POSITIONING, "Speed")),
+                    "Volume": FormulaUse(value=ModelReference(
+                        key=(*DISPENSING_START, Key(type_="Property", value="Volume")))),
+                    "FlowRate": FormulaUse(value=ModelReference(key=(
+                        *DISPENSING_STEPS, Key(type_=SMC, value="Step_0001"), Key(type_=SMC, value="Bindings"),
+                        Key(type_=SMC, value="Binding_0001"), Key(type_="Property", value="Value")))),
+                    "Weighing": FormulaUse(value=ModelReference(key=(
+                        *SCALE_WEIGHING, Key(type_=SMC, value="CapabilityRelations"),
+                        Key(type_=SMC, value="Duration"), Key(type_="Property", value="Value")))),
+                }),
+            ),
         ),
     )
 
-    # Module control: the module takes the unit off the shuttle at its transfer point (Receiving), and puts it back
+    # Module control: the module takes the unit off the shuttle at its transfer point (Occupying), and puts it back
     # on one (Releasing). Custody moves between the shuttle and the module; the module holds one unit at a time. The
     # transfer point is the module's own coordinate, so its subject is fixed; who the shuttle and the unit are is the
     # call's Grounding.
@@ -528,6 +566,7 @@ def filling_module() -> Module:
                                          UnitSubject(display_name={"en": unit})]),
                 ConditionSet=ConditionSet(Pre=PreTerms(term=pre)),
                 EffectSet=EffectSet(End=EndTerms(term=end)),
+                Duration=ExecutionDuration(Value=TermValue(value="2.0", value_type="xs:double")),   # nominal, s
             ),
         )
 
@@ -537,29 +576,29 @@ def filling_module() -> Module:
             Subject=TermSubject(value=_subject(capability, 2)), Operator=ConditionOperator(value="equal"),
             ValueReference=TermValueReference(value=_subject(capability, 1)))
 
-    receiving = handover(
-        RECEIVING, OCCUPY, "Delivering shuttle", "Unit received", meaning=f"{LAB}Receiving",
+    occupying = handover(
+        OCCUPYING, OCCUPY, "Delivering shuttle", "Unit received", meaning=f"{LAB}Occupying",
         properties={"Capacity": StatedProperty(PropertyProperty={"Value": PropertyProperty(
             value="1", value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Capacity"])})},
         pre={
-            "Term_00": at_transfer_point(RECEIVING),
+            "Term_00": at_transfer_point(OCCUPYING),
             "Term_01": StateCondition(
                 display_name={"en": "Unit on the shuttle"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
-                Subject=TermSubject(value=_subject(RECEIVING, 3)), Operator=ConditionOperator(value="equal"),
-                ValueReference=TermValueReference(value=_subject(RECEIVING, 2))),
+                Subject=TermSubject(value=_subject(OCCUPYING, 3)), Operator=ConditionOperator(value="equal"),
+                ValueReference=TermValueReference(value=_subject(OCCUPYING, 2))),
             "Term_02": StateCondition(
                 display_name={"en": "Has room"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                Subject=TermSubject(value=_subject(RECEIVING, 0)), Operator=ConditionOperator(value="less"),
-                ValueReference=TermValueReference(value=_property(RECEIVING, "Capacity"))),
+                Subject=TermSubject(value=_subject(OCCUPYING, 0)), Operator=ConditionOperator(value="less"),
+                ValueReference=TermValueReference(value=_property(OCCUPYING, "Capacity"))),
         },
         end={
             "Term_00": StateEffect(
                 display_name={"en": "Unit held here"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
-                Subject=TermSubject(value=_subject(RECEIVING, 3)), Operator=EffectOperator(value="assign"),
-                ValueReference=TermValueReference(value=_subject(RECEIVING, 0))),
+                Subject=TermSubject(value=_subject(OCCUPYING, 3)), Operator=EffectOperator(value="assign"),
+                ValueReference=TermValueReference(value=_subject(OCCUPYING, 0))),
             "Term_01": StateEffect(
                 display_name={"en": "Takes a place"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                Subject=TermSubject(value=_subject(RECEIVING, 0)), Operator=EffectOperator(value="increase"),
+                Subject=TermSubject(value=_subject(OCCUPYING, 0)), Operator=EffectOperator(value="increase"),
                 Value=TermValue(value="1", value_type="xs:int")),
         },
     )
@@ -604,7 +643,15 @@ def filling_module() -> Module:
         # Needle down to the fill position, dispense the volume at the station's flow rate, needle up (by
         # homing, so every cycle starts from the switch), weigh. The unit is not sent to the module: the DMP
         # grounds the effects of Filling on it.
-        skills=ModuleSkills(Skill={
+        # The errors a skill's answer can carry (its ErrorID): each is an outcome a FOND plan branches on, beside
+        # success (D23). Codes as the module's program reports them.
+        skills=ModuleSkills(Errors=s.Errors(SkillError={
+            name: s.SkillError(value=code, description=text) for name, code, text in (
+                ("NoContainer", "1", "No container in the nest"),
+                ("AxisFault", "2", "The needle axis did not reach its position"),
+                ("PumpFault", "3", "The pump did not deliver the volume"),
+                ("ScaleUnstable", "4", "The scale did not settle"),
+            )}), Skill={
             **{name: ModuleSkill(
                 supplemental_semantic_ids=[f"{SKILL}/ModuleControl"],
                 SemanticId=s.SemanticId(value=f"{SKILL_TYPE}/{name}"),
@@ -689,6 +736,6 @@ def filling_module() -> Module:
             "OfferedCapabilities": ModuleCapabilitySet(CapabilityContainer={"Filling": filling}),
             AUXILIARY: ModuleCapabilitySet(CapabilityContainer={
                 "Positioning": positioning, "Dosing": dosing, "Weighing": weighing}),
-            MODULE_CONTROL: ModuleCapabilitySet(CapabilityContainer={"Receiving": receiving, "Releasing": releasing}),
+            MODULE_CONTROL: ModuleCapabilitySet(CapabilityContainer={"Occupying": occupying, "Releasing": releasing}),
         }),
     )

@@ -19,11 +19,16 @@ GeneralizedBy) and its ConstraintSet, which the lab leaves as IDTA has it and do
         └── End                  effect terms applied when it ends
 
 **Subjects** is a list (SML) of ReferenceElements, in order, each with a display name saying who it is (its items
-have no idShort; a term references a subject by its index). The value says what the subject is: a ModelReference to an AAS where it is one particular asset (Self, the resource's own AAS; a
-component's AAS), or an ExternalReference to the semantic id of what it stands for where it is only known at run
-time (a unit: the asset type of products) or ranged over by a quantifier. Who a subject is in a call is the call's: the realizing skill's
-Operation carries the capability it executes (``Capability``) and who its subjects are, one item per subject in
-this list's order (``Grounding``); the planner, who chose them, fills both.
+have no idShort; a term references a subject by its index). The value says what the subject is: a ModelReference
+to the AAS or element it is where it is one particular asset or place (Self, the resource's own AAS; a component's
+AAS; a module's own transfer point), or an ExternalReference to the semantic id of what it stands for where it is
+only known at run time (a unit: the asset type of products; a carrier: the asset type of shuttles; a place: a
+transfer point). Who a subject is in a call is the call's: the realizing skill's Operation carries the capability
+it executes (``Capability``) and who its subjects are, one item per subject in this list's order
+(``Grounding``); the planner, who chose them, fills both.
+
+**Duration**, in the CapabilityRelations beside them, says how long the action takes where no Rate of an End
+effect does: a nominal value, or a formula over the capability's properties and the call's parameters.
 
 **Terms.** A term is an SMC whose semantic id says what it is:
 
@@ -59,10 +64,9 @@ from aas_model.constants import (
     EXECUTION_NOT, EXECUTION_ONE_OF, EXECUTION_OR, EXECUTION_OUTCOME, EXECUTION_POST, EXECUTION_PRE,
     EXECUTION_QUANTIFIED_VARIABLE, EXECUTION_RATE, EXECUTION_START, EXECUTION_SUBJECT, EXECUTION_SUBJECTS,
     EXECUTION_TERM_FORMULA, EXECUTION_TERM_SUBJECT, EXECUTION_TERM_VALUE,
-    EXECUTION_TERM_VALUE_REFERENCE, EXECUTION_WHEN, EXECUTION_WHEN_CONDITION, EXECUTION_WHEN_THEN, PRODUCT_ASSET_TYPE,
-    SHUTTLE_ASSET_TYPE,
+    EXECUTION_TERM_VALUE_REFERENCE, EXECUTION_WHEN, EXECUTION_WHEN_CONDITION, EXECUTION_WHEN_THEN, LAB,
+    PRODUCT_ASSET_TYPE, SHUTTLE_ASSET_TYPE, EXECUTION_DURATION,
 )
-from aas_model.submodel_templates.coordinates import VAR_COORDINATE
 
 
 # ── Subjects ─────────────────────────────────────────────────────────────────
@@ -94,10 +98,11 @@ class CarrierSubject(ExecutionSubject):
 
 
 class PlaceSubject(ExecutionSubject):
-    """A place, known only at run time (where a shuttle is sent): what it stands for is a coordinate, the entry of a
-    Coordinates tree that is the place (a module's TransferPoint); which place it is, is the call's Grounding."""
-    description: str = "A place."
-    value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=VAR_COORDINATE),))
+    """A place a shuttle stops at to hand a container over, known only at run time: what it stands for is a
+    transfer point (``lab:TransferPoint``, the meaning of such a coordinate in a module's Coordinates), so a module's
+    base or mount is no place to send a shuttle to; which transfer point it is, is the call's Grounding."""
+    description: str = "A transfer point."
+    value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=f"{LAB}TransferPoint"),))
 
 
 class Subjects(SubmodelElementList):
@@ -331,6 +336,22 @@ class OneOfEffects(SubmodelElementCollection):
 
 
 EffectTerm = Union[StateEffect, EffectAnd, EffectForAll, When, OneOfEffects]
+
+
+# ── Duration ─────────────────────────────────────────────────────────────────
+
+class ExecutionDuration(SubmodelElementCollection):
+    """How long the action takes, in seconds: a nominal ``Value``, or a ``Formula`` over its ``Uses`` (the
+    capability's properties, the call's parameters). Stated where no Rate of an End effect says it; a learned
+    duration from the TSDB replaces a nominal one later (D11)."""
+    id_short: str = "Duration"
+    semantic_id: str = EXECUTION_DURATION
+    description: str = "How long the action takes, in seconds."
+    Value: Optional[TermValue_t] = None
+    Formula: Optional[TermFormula_t] = None
+    Uses: Optional[FormulaUses_t] = None
+
+ExecutionDuration_t: TypeAlias = ExecutionDuration  # a field may share the class's id_short
 
 
 # ── Time points ──────────────────────────────────────────────────────────────

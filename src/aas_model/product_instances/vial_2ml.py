@@ -214,6 +214,13 @@ def vial_2ml() -> Product:
                             min="0.0", max="0.1", value_type="xs:double",
                             supplemental_semantic_ids=[f"{LAB}AbsoluteFillError"],
                             qualifiers=[Qualifier(type_="Unit", value=ML, kind="ConceptQualifier")])}),
+                        # The result a filled vial is checked against: what its weight may be (2.0 mL of a liquid of
+                        # density 1.0 g/mL, at most 0.1 mL off). A planner classifies the measured FillWeight against
+                        # it (FillResult: in or out of tolerance), the outcomes its plan branches on (D23).
+                        "FillWeight": StatedProperty(PropertyRange={"Value": PropertyRange(
+                            min="1.9", max="2.1", value_type="xs:double",
+                            supplemental_semantic_ids=[f"{LAB}FillWeight"],
+                            qualifiers=[Qualifier(type_="Unit", value="g", kind="ConceptQualifier")])}),
                     })},
                 ),
                 "Stoppering": ModuleCapabilityContainer(
@@ -327,6 +334,9 @@ def vial_2ml() -> Product:
             "OutletImmersion": StateVariable(supplemental_semantic_ids=[f"{LAB}OutletImmersion"]),
             "HeldBy": StateVariable(supplemental_semantic_ids=[f"{LAB}HeldBy"]),
             "FillWeight": StateVariable(supplemental_semantic_ids=[f"{LAB}FillWeight"]),
+            # Whether the measured fill is within the requirement (lab:InTolerance / lab:OutOfTolerance): unknown
+            # until the unit is weighed and the result classified.
+            "FillResult": StateVariable(supplemental_semantic_ids=[f"{LAB}FillResult"]),
             "Weighed": StateVariable(supplemental_semantic_ids=[f"{LAB}Weighed"],
                                      Initial=StateVariableInitial(value="false", value_type="xs:boolean")),
             "Stoppered": StateVariable(supplemental_semantic_ids=[f"{LAB}Stoppered"],

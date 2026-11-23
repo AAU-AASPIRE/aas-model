@@ -11,7 +11,8 @@ resource states differently, the stations and the modules (ARSO) alike:
 - a property constraint is a ``BasicConstraint`` expression; the ConstraintSet is otherwise as IDTA has it, and
   the lab does not use it to say what a capability needs and changes;
 - the CapabilityRelations also hold who takes part (``Subjects``), what must hold of them (``ConditionSet``: Pre,
-  Invariant, Post) and what the capability changes (``EffectSet``: Start, During, End), as trees of terms
+  Invariant, Post), what the capability changes (``EffectSet``: Start, During, End), as trees of terms, and how
+  long it takes (``Duration``) where no Rate says it
   (``execution``): what the planners, the behaviour tree and the DMP read.
 
 Everything else keeps its IDTA ids, so a consumer of the standard template reads the container as before and
@@ -29,11 +30,12 @@ from typing import Dict, Optional, TypeAlias
 from aas_pydantic import ModelReference
 from aas_pydantic.submodel_templates import capability_description as cd
 
-from aas_model.submodel_templates.execution import ConditionSet, EffectSet, Subjects
+from aas_model.submodel_templates.execution import ConditionSet, EffectSet, ExecutionDuration, Subjects
 
 ConditionSet_t: TypeAlias = ConditionSet  # the field shares the class's id_short
 EffectSet_t: TypeAlias = EffectSet  # the field shares the class's id_short
 Subjects_t: TypeAlias = Subjects  # the field shares the class's id_short
+Duration_t: TypeAlias = ExecutionDuration  # the field shares the class's id_short
 
 
 class RealizedBySkill(cd.CapabilityRealizedBy):
@@ -76,6 +78,7 @@ class ModuleCapabilityRelations(cd.CapabilityRelations):
     Subjects: Optional[Subjects_t] = None
     ConditionSet: Optional[ConditionSet_t] = None
     EffectSet: Optional[EffectSet_t] = None
+    Duration: Optional[Duration_t] = None
 
 
 class ModuleCapabilityContainer(cd.CapabilityContainer):

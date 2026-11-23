@@ -26,6 +26,7 @@ too (`cell/examples/example_line.py`).
 | `Component` | Instance, `.../Resource/Component/<Kind>` | [Skills](lab-submodels/Skills.md): its primitives, which its module carries out |
 | `ProductionSystem` | Instance, `.../Resource/System` | Hierarchical Structures (its modules, each by its asset id); optional [Variables](#variables-and-coordinates) with the coordinates of its own points |
 | `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md); optional State Declaration (the state of its units that effects change) |
+| `Batch` | Instance, `.../Batch` | Batch Information (the product type AAS, the quantity), Batch Units (an SML of unit IRIs; a unit has no AAS), Goal (Subjects and a condition tree every unit is to reach; the planner reads it, D13) |
 | `Process` | Type, `.../Process` | [Process Information](lab-submodels/ProcessInformation.md), [Bindings](lab-submodels/Bindings.md), [Validation](lab-submodels/Validation.md) |
 
 `Module`, `Component` and `ProductionSystem` are `Resource`s (through `ArsoResource`); a submodel of
@@ -46,7 +47,7 @@ too (`cell/examples/example_line.py`).
     Who a subject is in a call is the call's: the realizing skill's Operation takes `Capability` (which of its
     capabilities the call carries out) and `Grounding` (an SML, one reference per subject in the order of
     Subjects: an AAS or element, or a unit's IRI), filled by the planner and never sent to the device. The planar shuttle's move has the
-    subjects "This shuttle" and "Target place" and ends with the shuttle at that place; a module's Receiving needs a
+    subjects "This shuttle" and "Target place" and ends with the shuttle at that place; a module's Occupying needs a
     shuttle at its transfer point holding the unit, and moves custody (`HeldBy`) to the module, which Filling needs.
   - **ConditionSet:** what must hold of the subjects, Pre (at the start), Invariant (throughout) and Post (at
     the end).
@@ -54,7 +55,12 @@ too (`cell/examples/example_line.py`).
 
   Each holds trees of terms whose kind is their semantic id (Condition, Effect, And, Or, Not, Exists,
   ForAll, When, OneOf), nesting freely; a Condition or Effect names its Subject, and the property as a
-  supplemental semantic id. A term's idShort (`Term_00`) only orders it; its display name says what it states. They are what the planners, the behaviour tree and the DMP read.
+  supplemental semantic id. A term's idShort (`Term_00`) only orders it; its display name says what it states.
+  A **Duration** (a nominal value, or a formula over the capability's properties and the call's parameters) says
+  how long the action takes where no Rate of an End effect does. Whether a state property has one value or a
+  set, and its kind of value, is its meaning's: `lab:cardinality` and `lab:valueType`, proposed for the lab
+  vocabulary in `vocabulary/lab-execution.ttl` (with `Location`, `Occupying`, `FillResult`); every state
+  property the example line uses has both (`tests/test_vocabulary.py`). They are what the planners, the behaviour tree and the DMP read.
 - **Asset Interfaces Description:** one OPC UA interface (`ModuleInterfaces`).
 - **Hierarchical Structures:** parts that have parts in turn (`LocatedNode`). Where a part is, is a
   coordinate, not a statement of the node.
@@ -154,8 +160,8 @@ store = build_from_model(vial)          # a BaSyx object store: the shell and it
 Two of them are written out here too, with the execution model: the filling module and its three components
 (`aas_model.resource_instances.modules`: each component offers its capability in its own AAS, in
 `AuxiliaryCapabilities`; the module states what holds of each in this station, a specialization of the
-component's (GeneralizedBy across the AASs), and the offered Filling derived from them) and the 2 mL vial (`aas_model.product_instances`, with the State Declaration
-of its units); `tests/test_example_line.py` builds them as one line and resolves every reference across them. Their AAS JSON is checked in under `examples/aas/`
+component's (GeneralizedBy across the AASs), and the offered Filling derived from them) the 2 mL vial (`aas_model.product_instances`, with the State Declaration
+of its units) and a batch of three of them with its goal (`aas_model.batch_instances`); `tests/test_example_line.py` builds them as one line and resolves every reference across them. Their AAS JSON is checked in under `examples/aas/`
 (`scripts/export_examples.py`).
 
 The lab's reference instances, written out in full, are in iec61499-mgmt-py: the products
