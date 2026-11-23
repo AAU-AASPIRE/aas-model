@@ -16,7 +16,9 @@ Who says what:
   component's AAS), with the station's values (fill and nest positions, insert depth, clearance) and the
   conditions they set: where the needle has to be, how deep it is in the liquid while dosing, and that nothing
   moves it while the scale weighs. These relate the components to one another and to the container in the
-  nest, which is why they are the module's.
+  nest, which is why they are the module's. Each is a specialization of the component's: carried out by the
+  same primitive, it inherits the component's properties and Execution, narrows their values and adds
+  conditions, never widens or contradicts them (``tests/test_example_line.py`` checks this).
 - **What the module offers**, Filling, realized by Dispensing and composed of the module's three capabilities,
   with an Execution **derived** from theirs and the composite's steps: the net effect, and as preconditions what
   no step provides. modplan's compose is to write it; here it is written out by hand, its Provenance naming what

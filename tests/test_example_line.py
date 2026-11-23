@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import math
 
 import pytest
 from basyx.aas import model
 
 from aas_model import build_from_model
-from aas_model.constants import EXECUTION_DURING, EXECUTION_EFFECT, LAB
+from aas_model.constants import (
+    EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_DURING, EXECUTION_EFFECT, LAB,
+)
 from aas_model.product_instances import PRODUCT_FACTORIES
 from aas_model.resource_instances.modules import MODULE_FACTORIES
 
@@ -55,7 +58,7 @@ def test_every_reference_of_the_capabilities_resolves_in_the_line():
     assert len(references) > 40 and not unresolved
 
 
-def test_each_component_offers_its_capability_and_the_module_generalizes_it():
+def test_each_component_offers_its_capability_and_the_module_specializes_it():
     from aas_model.resource_instances.modules.filling_module import LINEAR_AXIS, MODULE, PUMP, SCALE
 
     store = _store()
@@ -135,6 +138,171 @@ def _unit_properties(node) -> set:
         for child in node:
             found |= _unit_properties(child)
     return found
+
+
+# ── A module's capability specializes its components' and never widens them ─────────────────────────────────────
+
+SPECIALIZES = ("/CapabilityGeneralizedBy/", "/CapabilityComposedOf/")   # the relations whose second is more general
+
+
+def _semantic_id(element) -> str:
+    return element.semantic_id.key[0].value if element.semantic_id else ""
+
+
+def _meaning(element) -> str | None:
+    return element.supplemental_semantic_id[0].key[0].value if element.supplemental_semantic_id else None
+
+
+def _stated(container) -> dict:
+    """A capability container's properties as meaning -> (lowest, highest); a list of choices is left out."""
+    found = {}
+    properties = container.get_referable("PropertySet") if "PropertySet" in {e.id_short for e in container.value} \
+        else ()
+    for property_container in properties:
+        value = property_container.get_referable("Value")
+        if isinstance(value, model.Range):
+            found[_meaning(value)] = (float(value.min), float(value.max))
+        elif isinstance(value, model.Property):
+            found[_meaning(value)] = (float(value.value), float(value.value))
+    return found
+
+
+def _more_general(store, container) -> list:
+    """The capability containers a container specializes or is composed of, all the way up."""
+    found, relations = [], container.get_referable("CapabilityRelations")
+    stack = list(relations.value)
+    while stack:
+        element = stack.pop()
+        if isinstance(element, model.SubmodelElementCollection):
+            stack.extend(element.value)
+        elif isinstance(element, model.RelationshipElement) and any(s in _semantic_id(element) for s in SPECIALIZES):
+            general = element.second.resolve(store).parent
+            found += [general, *_more_general(store, general)]
+    return found
+
+
+def _module_containers(store):
+    from aas_model.resource_instances.modules.filling_module import MODULE
+
+    return [container for capability_set in _submodel(store, MODULE, "CapabilityDescription").submodel_element
+            for container in capability_set.value]
+
+
+def test_the_module_states_its_capabilities_within_what_their_components_offer():
+    """A value the module states for a property is one the capability it specializes, or is made of, allows."""
+    store, compared = _store(), []
+    for container in _module_containers(store):
+        for general in _more_general(store, container):
+            offered = _stated(general)
+            for meaning, (low, high) in _stated(container).items():
+                if meaning in offered:
+                    compared.append((container.id_short, meaning))
+                    assert offered[meaning][0] <= low and high <= offered[meaning][1], (container.id_short, meaning)
+    assert (("Filling", f"{LAB}FillVolume")) in compared
+
+
+def _terms(execution, section: str):
+    """The top-level terms of a section (through And), each with its meaning and what it bounds."""
+    stack = list(execution.get_referable(section.split("/")).value) if _has(execution, section) else []
+    while stack:
+        term = stack.pop()
+        if _semantic_id(term) == EXECUTION_AND:
+            stack.extend(term.value)
+        elif _semantic_id(term) in (EXECUTION_CONDITION, EXECUTION_EFFECT):
+            yield term
+
+
+def _has(element, path: str) -> bool:
+    try:
+        element.get_referable(path.split("/"))
+        return True
+    except KeyError:
+        return False
+
+
+def _bound(term) -> tuple:
+    """What a term holds of its subject: its operator and value, reference or formula."""
+    named = {e.id_short: e for e in term.value}
+    target = named.get("Value") or named.get("Formula") or named.get("ValueReference")
+    return named["Operator"].value, target.value if isinstance(target, model.Property) else str(target.value) \
+        if target else None
+
+
+def test_the_module_adds_to_its_components_executions_and_never_restates_them_otherwise():
+    """What the component's Execution says of a property holds in the module as it is: restated, it is the same."""
+    store, specialized = _store(), 0
+    for container in _module_containers(store):
+        relations = container.get_referable("CapabilityRelations")
+        if not _has(relations, "GeneralizedBySet"):
+            continue
+        general = relations.get_referable(["GeneralizedBySet", "GeneralizedBy"]).second.resolve(store).parent
+        realized = [c.get_referable(["CapabilityRelations", "RealizedBy"]).second.resolve(store)
+                    for c in (container, general)]
+        assert realized[0] is realized[1], container.id_short      # carried out by the same primitive
+        specialized += 1
+        for section in ("Conditions/Pre", "Conditions/Invariant", "Conditions/Post", "Effects/Start",
+                        "Effects/During", "Effects/End"):
+            own = {_meaning(t): _bound(t) for t in _terms(general.get_referable("Execution"), section)}
+            for term in _terms(container.get_referable("Execution"), section):
+                if _meaning(term) in own:
+                    assert _bound(term) == own[_meaning(term)], (container.id_short, section, _meaning(term))
+    assert specialized == 3
+
+
+def _component_offers(store, entity) -> dict:
+    """What the component an entity of the module's structure is offers, over all its capabilities."""
+    shell = next(i for i in store if isinstance(i, model.AssetAdministrationShell)
+                 and i.asset_information.global_asset_id == entity.global_asset_id)
+    offered = {}
+    for capability_set in _submodel(store, shell.id, "CapabilityDescription").submodel_element:
+        for container in capability_set.value:
+            offered |= _stated(container)
+    return offered
+
+
+def _evaluate(store, term, unit: dict) -> float:
+    """A condition's bound as a number: its value, the property it references, or its formula over its Uses."""
+    named = {e.id_short: e for e in term.value}
+    if "Value" in named:
+        return float(named["Value"].value)
+    if "ValueReference" in named:
+        return float(named["ValueReference"].value.resolve(store).value)
+    values = {}
+    for use in named["Uses"].value:
+        used = use.value.resolve(store)
+        values[use.id_short] = float(used.value) if isinstance(used, model.Property) else unit[_meaning(use)]
+    return eval(named["Formula"].value, {"__builtins__": {}}, {"pi": math.pi, **values})
+
+
+SATISFIABLE = {"equal": lambda low, high, b: low <= b <= high, "less": lambda low, high, b: low < b,
+               "lessOrEqual": lambda low, high, b: low <= b, "greater": lambda low, high, b: high > b,
+               "greaterOrEqual": lambda low, high, b: high >= b}
+
+
+def test_the_stations_conditions_on_a_component_leave_it_room_within_what_it_offers():
+    """Each condition the module sets on a component's property, at the vial's dimensions, is one the component can
+    meet: the fill position and the weighing position are within the axis's travel."""
+    from aas_model.product_instances.vial_2ml import AAS_ID
+
+    store, checked = _store(), []
+    unit = {_meaning(v): float(v.get_referable("Initial").value)
+            for v in _submodel(store, AAS_ID, "StateDeclaration").submodel_element if _has(v, "Initial")}
+    for container in _module_containers(store):
+        if not _has(container, "Execution"):
+            continue
+        for section in ("Conditions/Pre", "Conditions/Invariant"):
+            for term in _terms(container.get_referable("Execution"), section):
+                subject = term.get_referable("Subject").value.resolve(store)
+                operator = term.get_referable("Operator").value
+                if subject.get_referable("Role").value != "Component" or operator not in SATISFIABLE:
+                    continue
+                offered = _component_offers(store, subject.get_referable("Binding").value.resolve(store))
+                low, high = offered[_meaning(term)]
+                bound = _evaluate(store, term, unit)
+                assert SATISFIABLE[operator](low, high, bound), (container.id_short, section, operator, bound)
+                checked.append((container.id_short, section))
+    assert sorted(checked) == [("Dosing", "Conditions/Invariant"), ("Dosing", "Conditions/Pre"),
+                               ("Positioning", "Conditions/Invariant"), ("Weighing", "Conditions/Pre")]
 
 
 def test_the_checked_in_example_files_are_what_the_export_writes():
