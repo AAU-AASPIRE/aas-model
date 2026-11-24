@@ -14,14 +14,14 @@ from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_model.resource_template.operational import COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL
 from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
-    skill_ref,
+    skill_ref, state_variable_ref,
 )
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 from aas_model.resource_template.resources import PlanarShuttle
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm, MqttForm
 from aas_model.submodel_templates.control_component_instance import (
-    CapabilityVariable, ExtendedSkill, GroundingVariable, OptionalVariable, ParameterVariable,
+    ExtendedSkill, OptionalVariable, ParameterVariable,
     SkillInterfaceRelationship, SkillOperation,
 )
 from aas_model.submodel_templates.time_series import (
@@ -97,15 +97,13 @@ def _planar_shuttle(number: int, x: float) -> PlanarShuttle:
                 Property(id_short="Uuid", description="The UUID of the command"),
                 Property(id_short="ProductID", description="The product the shuttle carries, echoed for tracing"),
             ],
-            # X, Y, Theta: the pose the device is sent to, in the table's frame. Capability and Grounding: the move and
-            # who it concerns (this shuttle, the target place), which ground its effect; the planner sends the place
-            # there and the pose composed from the place's coordinates. A manual move sends the pose alone and
-            # changes no symbolic state. Neither is sent to the device.
+            # X, Y, Theta: the pose the device is sent to, in the table's frame. A planned move is built from the
+            # target place by MoveToPosition's Translation (the place's projected pose, the served unit's uuid); a
+            # manual move sends a pose and changes no symbolic state.
             input_variable=[
                 *(ParameterVariable(id_short=axis, value_type="xs:double", value="0.0",
                                     supplemental_semantic_ids=[f"{LAB}{meaning}"])
                   for axis, meaning in (("X", "TargetX"), ("Y", "TargetY"), ("Theta", "TargetRz"))),
-                CapabilityVariable(), GroundingVariable(),
             ],
             output_variable=[
                 Property(id_short="State", description="The state of the command being executed"),
@@ -163,10 +161,15 @@ end
         AimcMappingConfiguration(
             id_short="Location", DefaultPollingInterval="0.0",
             Sources=[SourcesItem(SourceId="Location", Source=affordance_ref(MQTT_INTERFACE, "properties", "Location"))],
-            Sinks=[SinksItem(SinkId="Live", Sink=series_segment_ref("Measurements", "Location"))],
+            # The series row, and the position into the state store (StateDeclaration/X, Y; the table's frame is the
+            # line's), where the shuttle's Location is derived from it.
+            Sinks=[SinksItem(SinkId="Live", Sink=series_segment_ref("Measurements", "Location")),
+                   SinksItem(SinkId="X", Sink=state_variable_ref("X")),
+                   SinksItem(SinkId="Y", Sink=state_variable_ref("Y"))],
             Transformation="""function aimc_main(sources)
     local position = sources.Location.Position
-    return { Live = { x = position[1], y = position[2], yaw = position[3] or 0.0 } }
+    return { Live = { x = position[1], y = position[2], yaw = position[3] or 0.0 },
+             X = position[1], Y = position[2] }
 end
 """,
         ),

@@ -17,8 +17,14 @@
 #   this is an annotation, not owl:FunctionalProperty.
 # - lab:valueType "reference": a value that names something (an AAS, an element of one, a unit's IRI). HeldBy
 #   was "string" (an idShort); the execution model states custody as a reference to the holding resource.
-# - lab:Location (new): where a carrier is, as a place (a transfer point).
+# - lab:Location (new): where a carrier is, as a place (a transfer point); derived, never stored (lab:derived).
+# - lab:derived: a state property queries compute from other state, never stored and never written by an effect.
+# - lab:AbsoluteX, lab:AbsoluteY (new): a pose's position in the line's root frame, as the DMP projects it (linked to
+#   the coordinate or data point it is) for queries; lab:placeTolerance: how near a carrier is to be to a place of
+#   that kind to be at it (D36).
 # - lab:Occupying (new): taking a container into custody, as the Occupy skill does; what lab:Receiving named.
+# - lab:OccupiedBy (new): the unit a device serves, the head of its process queue (observed, D36); replaces
+#   lab:Occupancy, a count only effects kept.
 # - lab:FillResult (new), lab:InTolerance, lab:OutOfTolerance: the classification of a measured fill against the
 #   product's requirement, the outcomes a FOND plan branches on (D23, D26).
 #
@@ -28,10 +34,26 @@
 lab:cardinality rdf:type owl:AnnotationProperty ;
   rdfs:comment "Of a state property: single (one value at a time; effects assign) or set (a set of values; effects add and remove)." .
 
+lab:derived rdf:type owl:AnnotationProperty ;
+  rdfs:comment "Of a state property: true where queries compute it from other state; it is never stored, and an effect on it is what the next observation should confirm." .
+
+lab:placeTolerance rdf:type owl:AnnotationProperty ;
+  rdfs:comment "Of a kind of place: the distance in mm within which a carrier's position is at a place of that kind." .
+
 lab:Location rdf:type owl:Class ; rdfs:subClassOf css:Property ;
-  rdfs:label "Location" ; lab:valueType "reference" ; lab:cardinality "single" ;
-  rdfs:comment "Where a carrier is: the place (a module's transfer point) its last move went to." ;
+  rdfs:label "Location" ; lab:valueType "reference" ; lab:cardinality "single" ; lab:derived true ;
+  rdfs:comment "Where a carrier is: the place whose projected position (lab:AbsoluteX, lab:AbsoluteY) is within the place kind's lab:placeTolerance of the carrier's own; none if no place is. Derived, never stored." ;
   lab:characterizes lab:Transporting .
+
+lab:AbsoluteX rdf:type owl:Class ; rdfs:subClassOf css:Property ;
+  rdfs:label "Absolute X" ; lab:valueType "number" ; lab:cardinality "single" ;
+  rdfs:comment "The X of a pose in the line's root frame, mm: a coordinate composed along its RelativeTo chain, or a carrier's reported position." .
+
+lab:AbsoluteY rdf:type owl:Class ; rdfs:subClassOf css:Property ;
+  rdfs:label "Absolute Y" ; lab:valueType "number" ; lab:cardinality "single" ;
+  rdfs:comment "The Y of a pose in the line's root frame, mm: a coordinate composed along its RelativeTo chain, or a carrier's reported position." .
+
+lab:TransferPoint lab:placeTolerance 5.0 .
 
 lab:Occupying rdf:type owl:Class ; rdfs:subClassOf css:Capability ;
   rdfs:label "Occupying" ; owl:equivalentClass lab:Receiving ;
@@ -47,7 +69,9 @@ lab:OutOfTolerance rdf:type owl:NamedIndividual ; rdfs:label "Out of tolerance" 
 
 # Cardinality and value type of the state properties already in the vocabulary that the execution model uses.
 lab:HeldBy lab:valueType "reference" ; lab:cardinality "single" .
-lab:Occupancy lab:valueType "number" ; lab:cardinality "single" .
+lab:OccupiedBy rdf:type owl:Class ; rdfs:subClassOf css:Property ;
+  rdfs:label "Occupied by" ; lab:valueType "reference" ; lab:cardinality "single" ;
+  rdfs:comment "The unit a device serves: the head of its process queue, by the unit's IRI (urn:uuid:<uuid>); none when the queue is empty." .
 lab:Position lab:valueType "number" ; lab:cardinality "single" .
 lab:ContentVolume lab:valueType "number" ; lab:cardinality "single" .
 lab:OutletImmersion lab:valueType "number" ; lab:cardinality "single" .

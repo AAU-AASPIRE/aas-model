@@ -29,15 +29,6 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://smartproductionlab.aau.dk/aas/Vial2mLBatch0001AAS/submodels/BatchUnits"
-            }
-          ],
-          "type": "ModelReference"
-        },
-        {
-          "keys": [
-            {
-              "type": "Submodel",
               "value": "https://smartproductionlab.aau.dk/aas/Vial2mLBatch0001AAS/submodels/Goal"
             }
           ],
@@ -122,123 +113,6 @@
       "description": [
         {
           "language": "en",
-          "text": "The units of the batch, as the MES lists them, appended as units enter the line."
-        }
-      ],
-      "id": "https://smartproductionlab.aau.dk/aas/Vial2mLBatch0001AAS/submodels/BatchUnits",
-      "idShort": "BatchUnits",
-      "modelType": "Submodel",
-      "semanticId": {
-        "keys": [
-          {
-            "type": "GlobalReference",
-            "value": "https://smartproductionlab.aau.dk/submodels/BatchUnits/1/0"
-          }
-        ],
-        "type": "ExternalReference"
-      },
-      "submodelElements": [
-        {
-          "description": [
-            {
-              "language": "en",
-              "text": "The batch's units, one IRI each, in the order the MES lists them."
-            }
-          ],
-          "idShort": "Units",
-          "modelType": "SubmodelElementList",
-          "orderRelevant": true,
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/batch/Units/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "semanticIdListElement": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/batch/Unit/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "typeValueListElement": "ReferenceElement",
-          "value": [
-            {
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/batch/Unit/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/batches/Vial2mL-0001/unit/1"
-                  }
-                ],
-                "type": "ExternalReference"
-              }
-            },
-            {
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/batch/Unit/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/batches/Vial2mL-0001/unit/2"
-                  }
-                ],
-                "type": "ExternalReference"
-              }
-            },
-            {
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/batch/Unit/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/batches/Vial2mL-0001/unit/3"
-                  }
-                ],
-                "type": "ExternalReference"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "description": [
-        {
-          "language": "en",
           "text": "What every unit of the batch is to reach."
         }
       ],
@@ -295,7 +169,7 @@
               "displayName": [
                 {
                   "language": "en",
-                  "text": "Each unit"
+                  "text": "The unit"
                 }
               ],
               "modelType": "ReferenceElement",

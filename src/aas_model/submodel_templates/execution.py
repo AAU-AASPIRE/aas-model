@@ -13,19 +13,42 @@ GeneralizedBy) and its ConstraintSet, which the lab leaves as IDTA has it and do
     │   ├── Pre                  terms, all of which hold at the start
     │   ├── Invariant            ... throughout
     │   └── Post                 ... at the end
-    └── EffectSet
-        ├── Start                effect terms applied when the action starts
-        ├── During               definitions that hold while it runs (assign only)
-        └── End                  effect terms applied when it ends
+    ├── EffectSet
+    │   ├── Start                effect terms applied when the action starts
+    │   ├── During               definitions that hold while it runs (assign only)
+    │   └── End                  effect terms applied when it ends
+    └── Translation              how the behaviour tree calls the realizing skill and reads its answer
+        ├── Call                 Lua: call(subjects, properties) -> the Operation's inputs
+        └── Reply                Lua: reply(outputs, subjects, properties) -> success or failure, and the outcome
 
 **Subjects** is a list (SML) of ReferenceElements, in order, each with a display name saying who it is (its items
 have no idShort; a term references a subject by its index). The value says what the subject is: a ModelReference
 to the AAS or element it is where it is one particular asset or place (Self, the resource's own AAS; a component's
 AAS; a module's own transfer point), or an ExternalReference to the semantic id of what it stands for where it is
 only known at run time (a unit: the asset type of products; a carrier: the asset type of shuttles; a place: a
-transfer point). Who a subject is in a call is the call's: the realizing skill's Operation carries the capability
-it executes (``Capability``) and who its subjects are, one item per subject in this list's order
-(``Grounding``); the planner, who chose them, fills both.
+transfer point; a requirement of the unit's product, ``RequirementSubject``). Who a run-time subject is in a call is
+the behaviour tree's: the planner chose it, and the tree binds it (a unit is the IRI its BT instance minted,
+``urn:uuid:<uuid>``; a requirement is the element of the batch's product type with that meaning). Bind a subject
+to the narrowest element a script needs, never a whole AAS where one element will do.
+
+**Translation** (D34) is what the behaviour tree runs around the call; the DMP never reads it. ``Call`` builds the
+inputs of the realizing Operation (the one ``RealizedBy`` names; a capability the tree executes has exactly one)
+from the subjects and the capability's properties; ``Reply`` reads the Operation's outputs and says whether the
+action succeeded and, where the effects hold a ``OneOf``, which of its outcomes happened. Neither script writes
+state: the tree applies the effects the capability declares, for the outcome the reply chose. The scripts are pure
+functions in the lab's Lua profile (Lua 5.2, the DMP's sandbox: base functions, ``math``, ``string``, ``table``,
+no I/O), over tables the host fills:
+
+- ``subjects[i]``, in this list's order: ``id`` (the bound IRI, or the AAS id or reference of the bound element),
+  ``value`` (the value-only form of the bound element where it is a SubmodelElement: a Range is ``{min, max}``),
+  ``state`` (the subject's state variables in the store, keyed by meaning IRI; references are IRIs);
+- ``properties``: the capability's PropertySet, keyed by meaning IRI (a Range is ``{min, max}``);
+- ``outputs``: the Operation's output and InOut variables, keyed by idShort.
+
+``call`` returns a value for every input and InOut it sends, keyed by the Operation's idShorts (a slot with
+``AcceptsReference`` may take ``{reference = "<key path>"}`` instead, resolved by the DMP, D27); ``reply`` returns
+``{ok = true, outcome = "<Outcome idShort>"}`` (``outcome`` only where there is a OneOf) or
+``{ok = false, error = "<SkillError idShort>"}`` (``error`` where the skill's Errors name the failure).
 
 **Duration**, in the CapabilityRelations beside them, says how long the action takes where no Rate of an End
 effect does: a nominal value, or a formula over the capability's properties and the call's parameters.
@@ -54,7 +77,8 @@ from __future__ import annotations
 from typing import ClassVar, Dict, List, Optional, TypeAlias, Union
 
 from aas_pydantic import (
-    ExternalReference, Key, ModelReference, Property, ReferenceElement, SubmodelElementCollection, SubmodelElementList,
+    Blob, ExternalReference, Key, ModelReference, Property, ReferenceElement, SubmodelElementCollection,
+    SubmodelElementList,
 )
 
 from aas_model.constants import (
@@ -65,7 +89,8 @@ from aas_model.constants import (
     EXECUTION_QUANTIFIED_VARIABLE, EXECUTION_RATE, EXECUTION_START, EXECUTION_SUBJECT, EXECUTION_SUBJECTS,
     EXECUTION_TERM_FORMULA, EXECUTION_TERM_SUBJECT, EXECUTION_TERM_VALUE,
     EXECUTION_TERM_VALUE_REFERENCE, EXECUTION_WHEN, EXECUTION_WHEN_CONDITION, EXECUTION_WHEN_THEN, LAB,
-    PRODUCT_ASSET_TYPE, SHUTTLE_ASSET_TYPE, EXECUTION_DURATION,
+    PRODUCT_ASSET_TYPE, SHUTTLE_ASSET_TYPE, EXECUTION_DURATION, EXECUTION_SUBJECT_REQUIREMENT, EXECUTION_TRANSLATION,
+    EXECUTION_TRANSLATION_CALL, EXECUTION_TRANSLATION_REPLY,
 )
 
 
@@ -85,14 +110,14 @@ class SelfSubject(ExecutionSubject):
 
 class UnitSubject(ExecutionSubject):
     """A unit of a product, known only at run time: what it stands for is the asset type of products; which unit it
-    is, is the call's Grounding."""
+    is, is the IRI its behaviour tree instance minted."""
     description: str = "A unit of a product."
     value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=PRODUCT_ASSET_TYPE),))
 
 
 class CarrierSubject(ExecutionSubject):
     """A carrier, known only at run time (the shuttle that brings or takes a unit): what it stands for is the asset
-    type of shuttles; which shuttle it is, is the call's Grounding."""
+    type of shuttles; which shuttle it is, the behaviour tree binds as the planner chose."""
     description: str = "A carrier."
     value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=SHUTTLE_ASSET_TYPE),))
 
@@ -100,9 +125,23 @@ class CarrierSubject(ExecutionSubject):
 class PlaceSubject(ExecutionSubject):
     """A place a shuttle stops at to hand a container over, known only at run time: what it stands for is a
     transfer point (``lab:TransferPoint``, the meaning of such a coordinate in a module's Coordinates), so a module's
-    base or mount is no place to send a shuttle to; which transfer point it is, is the call's Grounding."""
+    base or mount is no place to send a shuttle to; which transfer point it is, the behaviour tree binds as the
+    planner chose."""
     description: str = "A transfer point."
     value: ExternalReference = ExternalReference(key=(Key(type_="GlobalReference", value=f"{LAB}TransferPoint"),))
+
+
+class RequirementSubject(ExecutionSubject):
+    """What the unit's product requires: a property of one of its required capabilities, whose meaning is the
+    reference's (the vial's required ``lab:FillWeight``). Known once the batch is: the behaviour tree binds it, when it
+    is built, to the element of the batch's product type with that meaning. A script reads its value (a Range:
+    ``{min, max}``)."""
+    description: str = "A requirement of the unit's product."
+    supplemental_semantic_ids: List[str] = [EXECUTION_SUBJECT_REQUIREMENT]
+
+    @classmethod
+    def of(cls, meaning: str, **kwargs) -> "RequirementSubject":
+        return cls(value=ExternalReference(key=(Key(type_="GlobalReference", value=meaning),)), **kwargs)
 
 
 class Subjects(SubmodelElementList):
@@ -113,7 +152,7 @@ class Subjects(SubmodelElementList):
     type_value_list_element: str = "ReferenceElement"
     semantic_id_list_element: str = EXECUTION_SUBJECT
     item_type: ClassVar = ExecutionSubject
-    value: List[Union[SelfSubject, UnitSubject, CarrierSubject, PlaceSubject, ExecutionSubject]] = []
+    value: List[Union[SelfSubject, UnitSubject, CarrierSubject, PlaceSubject, RequirementSubject, ExecutionSubject]] = []
 
 Subjects_t: TypeAlias = Subjects  # a field may share the class's id_short
 
@@ -142,11 +181,12 @@ ConditionOperator_t: TypeAlias = ConditionOperator  # a field may share the clas
 
 
 class EffectOperator(Property):
-    """What the effect does to the property. ``measured``: the value becomes known (no operand); add and
-    remove are for set-valued properties."""
+    """What the effect does to the property. ``measured``: the value becomes known (no operand); ``clear``: the
+    property has no value afterwards (no operand: a station no longer occupied); add and remove are for set-valued
+    properties."""
     id_short: str = "Operator"
     semantic_id: str = EXECUTION_EFFECT_OPERATOR
-    FORM_CHOICES = ("assign", "increase", "decrease", "measured", "add", "remove")
+    FORM_CHOICES = ("assign", "increase", "decrease", "measured", "clear", "add", "remove")
 
 EffectOperator_t: TypeAlias = EffectOperator  # a field may share the class's id_short
 
@@ -324,7 +364,7 @@ class When(SubmodelElementCollection):
 
 class Outcome(SubmodelElementCollection):
     """One possible outcome and its effects; what it means (in tolerance, out of tolerance) rides as a
-    supplemental semantic id."""
+    supplemental semantic id. The Translation's Reply names the outcome that happened by its idShort."""
     semantic_id: str = EXECUTION_OUTCOME
     term: Dict[str, "EffectTerm"] = {}
 
@@ -352,6 +392,46 @@ class ExecutionDuration(SubmodelElementCollection):
     Uses: Optional[FormulaUses_t] = None
 
 ExecutionDuration_t: TypeAlias = ExecutionDuration  # a field may share the class's id_short
+
+
+# ── Translation ──────────────────────────────────────────────────────────────
+
+class TranslationCall(Blob):
+    """Lua, ``call(subjects, properties)``: the inputs of the realizing Operation, keyed by its idShorts."""
+    id_short: str = "Call"
+    semantic_id: str = EXECUTION_TRANSLATION_CALL
+    content_type: str = "text/plain"
+    description: str = ("How the behaviour tree builds the inputs of the realizing Operation from the subjects and the "
+                        "capability's properties. Must contain a \"call(subjects, properties)\" function in Lua.")
+
+TranslationCall_t: TypeAlias = TranslationCall  # a field may share the class's id_short
+
+
+class TranslationReply(Blob):
+    """Lua, ``reply(outputs, subjects, properties)``: success or failure (with the skill error), and the outcome."""
+    id_short: str = "Reply"
+    semantic_id: str = EXECUTION_TRANSLATION_REPLY
+    content_type: str = "text/plain"
+    description: str = ("How the behaviour tree reads the realizing Operation's outputs: whether the action succeeded, "
+                        "which of its outcomes happened, or which of the skill's errors it failed with. Must contain a "
+                        "\"reply(outputs, subjects, properties)\" function in Lua.")
+
+TranslationReply_t: TypeAlias = TranslationReply  # a field may share the class's id_short
+
+
+class Translation(SubmodelElementCollection):
+    """How the behaviour tree calls the realizing skill and reads its answer (D34). Neither script writes state."""
+    id_short: str = "Translation"
+    semantic_id: str = EXECUTION_TRANSLATION
+    description: str = "How the behaviour tree calls the realizing skill and reads its answer."
+    Call: TranslationCall_t
+    Reply: TranslationReply_t
+
+    @classmethod
+    def lua(cls, call: str, reply: str) -> "Translation":
+        return cls(Call=TranslationCall(value=call), Reply=TranslationReply(value=reply))
+
+Translation_t: TypeAlias = Translation  # a field may share the class's id_short
 
 
 # ── Time points ──────────────────────────────────────────────────────────────
@@ -433,7 +513,7 @@ EffectSet_t: TypeAlias = EffectSet  # a field may share the class's id_short
 
 
 # ── Resolve forward references (the term tree is recursive) ──
-for _model in (Subjects, StateCondition, StateEffect, And, Or, Not, Body, Exists, ForAll, EffectAnd, EffectBody,
+for _model in (Translation, Subjects, StateCondition, StateEffect, And, Or, Not, Body, Exists, ForAll, EffectAnd, EffectBody,
                EffectForAll, WhenCondition, WhenThen, When, Outcome, OneOfEffects, PreTerms, InvariantTerms, PostTerms,
                ConditionSet, StartTerms, DuringTerms, EndTerms, EffectSet):
     _model.model_rebuild()

@@ -27,10 +27,13 @@ from aas_model.submodel_templates.capability_description import (
 )
 from aas_model.submodel_templates.execution import (
     ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, ExecutionDuration, PlaceSubject, PreTerms,
-    SelfSubject,
-    StateCondition, StateEffect, Subjects, TermSubject, TermValue, TermValueReference, UnitSubject,
+    RequirementSubject, SelfSubject,
+    StateCondition, StateEffect, Subjects, TermSubject, TermValue, TermValueReference, Translation, UnitSubject,
 )
-from aas_model.submodel_templates.state_declaration import StateDeclaration, StateVariable, StateVariableInitial
+from aas_model.submodel_templates.state_declaration import (
+    StateDeclaration, StateVariable,
+)
+from aas_model.resource_template.translations import COMMAND_STATE_REPLY, LAB_PREFIX, UNIT_UUID
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription
 from aas_model.submodel_templates.control_component_instance import ResourceControlComponentInstance
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
@@ -127,12 +130,17 @@ class PhysicalResource(Resource):
     parameters: ResourceParameters = ResourceParameters(id_short="Parameters")
 
 
+def occupied_by() -> StateVariable:
+    """Who an operational device serves: the head of its process queue. Observed: the station-state mapping sinks
+    it here (D36)."""
+    return StateVariable(supplemental_semantic_ids=[f"{LAB}OccupiedBy"])
+
+
 class OperationalResource(PhysicalResource):
     """Operational physical asset, without an assumed native protocol. Every one has module control (Occupy,
-    Release), so it declares how many units it holds: state no data point reports, kept in the state store."""
+    Release) and reports its process queue, so it declares who it serves: the unit at the head of the queue."""
     state_declaration: Optional[StateDeclaration] = StateDeclaration(id_short="StateDeclaration", variable={
-        "Occupancy": StateVariable(supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                                   Initial=StateVariableInitial(value="0", value_type="xs:int")),
+        "OccupiedBy": occupied_by(),
     })
 
 
@@ -215,8 +223,8 @@ class CappingStation(ProcessingStation):
 
 
 class DispensingStation(ProcessingStation):
-    """Fills a unit (the lab's Filling): it needs the unit empty. What the unit ends holding is the instance's (the
-    EffectSet); which unit a call fills is the call's Grounding."""
+    """Fills a unit (the lab's Filling): it needs the unit empty. What the unit ends holding, and how a call is built
+    (the Translation), is the instance's, whose Operation it is; the volume is what the unit's product requires."""
     asset_type: str = f"{CSSX}#DispensingSystem"
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
@@ -227,8 +235,11 @@ class DispensingStation(ProcessingStation):
                         semantic_id=f"{CSSX}#Dispensing", supplemental_semantic_ids=[f"{LAB}Filling"],
                     ),
                     CapabilityRelations=ModuleCapabilityRelations(
-                        Subjects=Subjects(value=[SelfSubject(display_name={"en": "This station"}),
-                                                UnitSubject(display_name={"en": "Unit being filled"})]),
+                        Subjects=Subjects(value=[
+                            SelfSubject(display_name={"en": "This station"}),
+                            UnitSubject(display_name={"en": "Unit being filled"}),
+                            RequirementSubject.of(f"{LAB}FillVolume", display_name={"en": "Required fill volume"}),
+                        ]),
                         ConditionSet=ConditionSet(Pre=PreTerms(term={"Term_00": StateCondition(
                             display_name={"en": "Unit empty"}, supplemental_semantic_ids=[f"{LAB}ContentVolume"],
                             Subject=TermSubject(value=subject_ref("Processing", "Dispensing", 1)),
@@ -298,19 +309,36 @@ class Shuttle(TransportResource):
     asset_type: str = SHUTTLE_ASSET_TYPE
 
 
+# MoveToPosition's call: the place's pose in the line's frame (its projected AbsoluteX/Y), on behalf of the unit the
+# shuttle serves (the head of its queue, whose uuid every command it runs for the unit carries). The table's frame is
+# the line's; the heading stays 0 until places state one.
+MOVE_TO_PLACE_CALL = LAB_PREFIX + UNIT_UUID + """function call(subjects, properties)
+  local shuttle, place = subjects[1], subjects[2]
+  local unit = shuttle.state[LAB .. "OccupiedBy"]
+  if unit == nil then error("the shuttle serves no unit") end
+  return {
+    Uuid = unit_uuid({ id = unit }), ProductID = unit,
+    X = place.state[LAB .. "AbsoluteX"], Y = place.state[LAB .. "AbsoluteY"], Theta = 0.0,
+  }
+end
+"""
+
+
 class PlanarShuttle(Shuttle):
     """A planar shuttle with the shared PackML contract over MQTT; the instance binds MoveToPosition.
 
     Native Position arrays and operation X/Y/Theta use millimetres and radians.
     """
     asset_type: str = f"{CSSX}#PlanarTableShuttle"
-    # Where the shuttle is, as a place (the transfer point its last move went to): asserted by the DMP when a move
-    # ends, not reported; the reported pose is a time series. No initial value: unknown until a move or an operator
-    # says it.
+    # Who the shuttle serves (the head of its process queue), and where it is: its reported position, sunk into the
+    # state store by the mapping that writes its Location series (observed, mm in the table's frame), and the
+    # place that position is at (Location: derived by query from the places' projected positions, never stored; D36).
+    # A move's effect on Location is not written; the behaviour tree waits until the reported position confirms it.
     state_declaration: Optional[StateDeclaration] = StateDeclaration(id_short="StateDeclaration", variable={
-        "Occupancy": StateVariable(supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                                   Initial=StateVariableInitial(value="0", value_type="xs:int")),
+        "OccupiedBy": occupied_by(),
         "Location": StateVariable(supplemental_semantic_ids=[f"{LAB}Location"]),
+        # Observed: the Location mapping sinks the reported position here, beside its series row.
+        **{axis: StateVariable(supplemental_semantic_ids=[f"{LAB}Absolute{axis}"]) for axis in ("X", "Y")},
     })
     parameters: ResourceParameters = ResourceParameters(
         id_short="Parameters",
@@ -345,6 +373,7 @@ class PlanarShuttle(Shuttle):
                         )})),
                         # Nominal, until the time series says how long moves take (D11).
                         Duration=ExecutionDuration(Value=TermValue(value="3.0", value_type="xs:double")),
+                        Translation=Translation.lua(MOVE_TO_PLACE_CALL, COMMAND_STATE_REPLY),
                     ),
                 ),
             }),

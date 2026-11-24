@@ -3619,7 +3619,7 @@
       "description": [
         {
           "language": "en",
-          "text": "The state variables of this subject that effects change, and the store they are kept in."
+          "text": "The state variables of this subject, of which kind each is, and the store they are kept in."
         }
       ],
       "id": "https://smartproductionlab.aau.dk/aas/Vial2mLAAS/submodels/StateDeclaration",

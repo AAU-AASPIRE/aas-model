@@ -50,6 +50,9 @@ LAB = f"{BASE_URL}/semantics/"
 
 EXECUTION_SUBJECTS = f"{BASE_URL}/execution/Subjects/1/0"
 EXECUTION_SUBJECT = f"{BASE_URL}/execution/Subject/1/0"
+# A subject that is what the unit's product requires (a property of one of its required capabilities, found by its
+# meaning): bound when the behaviour tree is built, from the batch's product type.
+EXECUTION_SUBJECT_REQUIREMENT = f"{BASE_URL}/execution/Subject/Requirement/1/0"
 
 # What a unit of any product is (the asset type of a product type AAS): what a subject that is a unit stands for.
 PRODUCT_ASSET_TYPE = f"{BASE_URL}/Product"
@@ -59,15 +62,13 @@ SHUTTLE_ASSET_TYPE = f"{CSSX}#Shuttle"
 # How long an action takes, in seconds, where no Rate of an End effect says it.
 EXECUTION_DURATION = f"{BASE_URL}/execution/Duration/1/0"
 
-# The batch AAS (D10, D13): what is made, the units it consists of, and the goal every unit is to reach.
+# The batch AAS (D10, D13): what is made, how many, and the goal every unit is to reach. Units are not listed: each
+# BT instance mints the IRI of the unit it makes (urn:uuid:<uuid>, D35).
 BATCH_ASSET_TYPE = f"{BASE_URL}/Batch"
 SM_BATCH_INFORMATION = f"{BASE_URL}/submodels/BatchInformation/1/0"
-SM_BATCH_UNITS = f"{BASE_URL}/submodels/BatchUnits/1/0"
 SM_GOAL = f"{BASE_URL}/submodels/Goal/1/0"
 BATCH_PRODUCT_TYPE = f"{BASE_URL}/batch/ProductType/1/0"
 BATCH_QUANTITY = f"{BASE_URL}/batch/Quantity/1/0"
-BATCH_UNIT_LIST = f"{BASE_URL}/batch/Units/1/0"
-BATCH_UNIT = f"{BASE_URL}/batch/Unit/1/0"
 GOAL_CONDITION = f"{BASE_URL}/goal/Condition/1/0"
 EXECUTION_CONDITION_SET = f"{BASE_URL}/execution/ConditionSet/1/0"
 EXECUTION_PRE = f"{BASE_URL}/execution/ConditionSet/Pre/1/0"
@@ -101,18 +102,22 @@ EXECUTION_WHEN_THEN = f"{BASE_URL}/execution/When/Then/1/0"
 EXECUTION_ONE_OF = f"{BASE_URL}/execution/OneOf/1/0"
 EXECUTION_OUTCOME = f"{BASE_URL}/execution/OneOf/Outcome/1/0"
 
-# The role of an Operation variable (D27): a parameter the payload is built from, or, never sent to the device, the
-# capability a call carries out and its grounding: who each of that capability's subjects is in this call.
-OPERATION_VARIABLE_PARAMETER = f"{BASE_URL}/aas/OperationVariable/Parameter/1/0"
-OPERATION_VARIABLE_CAPABILITY = f"{BASE_URL}/aas/OperationVariable/Capability/1/0"
-OPERATION_VARIABLE_GROUNDING = f"{BASE_URL}/aas/OperationVariable/Grounding/1/0"
-OPERATION_VARIABLE_GROUNDED_SUBJECT = f"{BASE_URL}/aas/OperationVariable/Grounding/Subject/1/0"
+# How the behaviour tree calls the realizing skill and reads its answer (D34): two Lua scripts in the capability's
+# CapabilityRelations, beside its Subjects, conditions and effects.
+EXECUTION_TRANSLATION = f"{BASE_URL}/execution/Translation/1/0"
+EXECUTION_TRANSLATION_CALL = f"{BASE_URL}/execution/Translation/Call/1/0"
+EXECUTION_TRANSLATION_REPLY = f"{BASE_URL}/execution/Translation/Reply/1/0"
 
-# The StateDeclaration submodel: the state variables of a subject that are not observed, and where they are kept.
+# The role of an Operation variable (D27): a parameter the payload is built from.
+OPERATION_VARIABLE_PARAMETER = f"{BASE_URL}/aas/OperationVariable/Parameter/1/0"
+# A parameter that may be sent as a reference, resolved by the DMP at the call (D27).
+OPERATION_VARIABLE_ACCEPTS_REFERENCE = f"{BASE_URL}/aas/OperationVariable/AcceptsReference/1/0"
+
+# The StateDeclaration submodel: the state variables of a subject, of which kind each is, and where they are kept.
 SM_STATE_DECLARATION = f"{BASE_URL}/submodels/StateDeclaration/1/0"
 STATE_VARIABLE = f"{BASE_URL}/state/StateVariable/1/0"
 STATE_VARIABLE_INITIAL = f"{BASE_URL}/state/StateVariable/Initial/1/0"
-STATE_VARIABLE_OBSERVED = f"{BASE_URL}/state/StateVariable/Observed/1/0"
+STATE_VARIABLE_SUBJECT = f"{BASE_URL}/state/StateVariable/Subject/1/0"
 STATE_SPARQL_TARGET = f"{BASE_URL}/state/SparqlTarget/1/0"
 STATE_SPARQL_TARGET_ENDPOINT = f"{BASE_URL}/state/SparqlTarget/Endpoint/1/0"
 STATE_SPARQL_TARGET_GRAPH = f"{BASE_URL}/state/SparqlTarget/Graph/1/0"
@@ -131,6 +136,7 @@ AID_SUBMODEL_ID = "{aas_id}/submodels/AssetInterfacesDescription"
 CCI_SUBMODEL_ID = "{aas_id}/submodels/ControlComponentInstance"
 CONTROL_COMPONENT_TYPE_SUBMODEL_ID = "{aas_id}/submodels/ControlComponentType"
 VARIABLES_SUBMODEL_ID = "{aas_id}/submodels/Variables"
+STATE_DECLARATION_SUBMODEL_ID = "{aas_id}/submodels/StateDeclaration"
 CAPABILITIES_SUBMODEL_ID = "{aas_id}/submodels/CapabilityDescription"
 HIERARCHICAL_STRUCTURES_SUBMODEL_ID = "{aas_id}/submodels/HierarchicalStructures"
 

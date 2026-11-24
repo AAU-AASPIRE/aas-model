@@ -11,17 +11,24 @@ from aas_model.resource_template.operational import (
     OperationalOpcuaInterfaces, OperationalOpcuaMappings, OperationalVariables,
 )
 from aas_model.resource_template.resources import DispensingStation
+from aas_model.resource_template.translations import COMMAND_STATE_REPLY, UNIT_UUID
+
+# Dispensing's call: the volume the unit's product requires, for the unit whose uuid holds the station's queue.
+DISPENSING_CALL = UNIT_UUID + """function call(subjects, properties)
+  return { Uuid = unit_uuid(subjects[2]), Volume = subjects[3].value }
+end
+"""
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.resource_template.references import (
     OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
     skill_ref, subject_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    CapabilityVariable, ExtendedSkill, GroundingVariable, OptionalVariable, ParameterVariable,
+    AcceptsReference, ExtendedSkill, OptionalVariable, ParameterVariable,
     SkillInterfaceRelationship, SkillOperation,
 )
 from aas_model.submodel_templates.execution import (
-    EffectOperator, EffectSet, EndTerms, StateEffect, TermSubject, TermValueReference,
+    EffectOperator, EffectSet, EndTerms, StateEffect, TermSubject, TermValueReference, Translation,
 )
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.capability_description import RealizedBySkill
@@ -106,10 +113,8 @@ def ima_dispensing() -> DispensingStation:
             input_variable=[
                 ParameterVariable(
                     id_short="Volume", value="1.0", value_type="xs:double", description="The volume to dispense in ml",
-                    supplemental_semantic_ids=[f"{LAB}Volume"],
+                    supplemental_semantic_ids=[f"{LAB}Volume"], qualifiers=[AcceptsReference()],
                 ),
-                # Not sent to the station: which capability the call carries out and who its subjects are.
-                CapabilityVariable(), GroundingVariable(),
             ],
             in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
             output_variable=[
@@ -129,7 +134,7 @@ def ima_dispensing() -> DispensingStation:
     reply = ("Uuid", "State", "Outcome")
     mappings.append(AimcMappingConfiguration(
         id_short=name, DefaultPollingInterval="0.0",
-        # Every input the device is sent is a Source; Capability and Grounding are the DMP's, never the device's.
+        # Every input the device is sent is a Source.
         Sources=[SourcesItem(SourceId=member, Source=operation_variable_ref(name, member)) for member in command],
         Sinks=[SinksItem(SinkId=member,
             Sink=action_member_ref(OPCUA_INTERFACE, name, "input", member),
@@ -154,14 +159,16 @@ def ima_dispensing() -> DispensingStation:
     relations = container.CapabilityRelations
     relations.CapabilityRealizedBy[f"RealizedBy_{name}"] = RealizedBySkill(
         id_short=f"RealizedBy_{name}", first=capability_ref("Processing", name), second=skill_ref(name))
-    # The type says Filling needs the unit empty; this station's call says which unit (its Grounding) and how much:
-    # the unit ends holding the Volume it was given.
+    # The type says Filling needs the unit empty; this station's call fills the unit with the volume its product
+    # requires (the Translation: the unit's uuid is the command's, its claim on the station): the unit ends holding the
+    # Volume it was given.
     relations.EffectSet = EffectSet(End=EndTerms(term={"Term_00": StateEffect(
         display_name={"en": "Unit holds the volume"}, supplemental_semantic_ids=[f"{LAB}ContentVolume"],
         Subject=TermSubject(value=subject_ref("Processing", name, 1)),
         Operator=EffectOperator(value="increase"),
         ValueReference=TermValueReference(value=operation_variable_ref(name, "Volume")),
     )}))
+    relations.Translation = Translation.lua(DISPENSING_CALL, COMMAND_STATE_REPLY)
 
     # Weight: the scale's reading, sampled every 100 ms while it changes.
     weight = load_schema(f"{SCHEMA_BASE}/weight.schema.json")["properties"]["Weight"]

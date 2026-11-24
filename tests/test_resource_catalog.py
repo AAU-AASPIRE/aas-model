@@ -180,8 +180,8 @@ def test_motion_schema_operation_and_mapping_describe_the_same_payload():
     assert [(v.id_short, v.value_type) for v in skill.operation.input_variable[:3]] == [
         ("X", "xs:double"), ("Y", "xs:double"), ("Theta", "xs:double"),
     ]
-    # The capability and its grounding (who the move concerns) are, like ProductID, not sent to the device.
-    assert [v.id_short for v in skill.operation.input_variable[3:]] == ["Capability", "Grounding"]
+    # Only the pose: which place, and on whose behalf, is the capability's Translation's to turn into it.
+    assert not skill.operation.input_variable[3:]
     action = shuttle.asset_interfaces_description.InterfaceTemplateForMQTT[
         "interface_mqtt"
     ].InteractionMetadata.actions.property_name["MoveToPosition"]

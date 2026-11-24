@@ -455,7 +455,473 @@
             ],
             "type": "ExternalReference"
           },
-          "typeValueListElement": "SubmodelElementCollection"
+          "typeValueListElement": "SubmodelElementCollection",
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "A MappingConfiguration defines one logical unit of sources (inputs) and sinks (outputs) that are in relation to one another. The relation can be expressed via a transformation."
+                }
+              ],
+              "displayName": [
+                {
+                  "language": "en",
+                  "text": "TransferPoint"
+                }
+              ],
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The DefaultPollingInterval defines the default time interval in seconds for fetching new data from the synchronous data sources defined in this MappingConfiguration. It must be greater than zero for synchronous protocols (e.g. HTTP) that need polling and is ignored for asynchronous protocols (e.g. MQTT)."
+                    }
+                  ],
+                  "idShort": "DefaultPollingInterval",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/DefaultPollingInterval"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "0.0",
+                  "valueType": "xs:double"
+                },
+                {
+                  "contentType": "text/plain",
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The transformation allows for transforming incoming data before writing it to the sinks. The transformation must contain an \"aimc_main(sources)\" entrypoint function in Lua."
+                    }
+                  ],
+                  "idShort": "Transformation",
+                  "modelType": "Blob",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Transformation"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "ZnVuY3Rpb24gYWltY19tYWluKHNvdXJjZXMpCiAgbG9jYWwgYmFzZSwgcG9pbnQgPSBzb3VyY2VzLk1vZHVsZUJhc2UsIHNvdXJjZXMuVHJhbnNmZXJQb2ludAogIGxvY2FsIHlhdyA9IG1hdGgucmFkKHRvbnVtYmVyKGJhc2UuWWF3KSBvciAwKQogIGxvY2FsIHgsIHkgPSB0b251bWJlcihwb2ludC5YKSBvciAwLCB0b251bWJlcihwb2ludC5ZKSBvciAwCiAgcmV0dXJuIHsKICAgIFRyYW5zZmVyUG9pbnRYID0gKHRvbnVtYmVyKGJhc2UuWCkgb3IgMCkgKyB4ICogbWF0aC5jb3MoeWF3KSAtIHkgKiBtYXRoLnNpbih5YXcpLAogICAgVHJhbnNmZXJQb2ludFkgPSAodG9udW1iZXIoYmFzZS5ZKSBvciAwKSArIHggKiBtYXRoLnNpbih5YXcpICsgeSAqIG1hdGguY29zKHlhdyksCiAgfQplbmQK"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "This list includes all data sources that are used in this MappingConfiguration."
+                    }
+                  ],
+                  "idShort": "Sources",
+                  "modelType": "SubmodelElementList",
+                  "orderRelevant": false,
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sources"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "semanticIdListElement": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Source"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "typeValueListElement": "SubmodelElementCollection",
+                  "value": [
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "A data source is defined by a Source reference, PollingInterval and SourceId."
+                        }
+                      ],
+                      "displayName": [
+                        {
+                          "language": "en",
+                          "text": "TransferPoint"
+                        }
+                      ],
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Source"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This holds a reference to the respective SubmodelElement used as data source. A data source can be any SubmodelElement including those defined in the InteractionMetadata of AID Submodels for fetching live-data from assets."
+                            }
+                          ],
+                          "idShort": "Source",
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Source/Source"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "Submodel",
+                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "Measurements"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "Coordinates"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "TransferPoint"
+                              }
+                            ],
+                            "type": "ModelReference"
+                          }
+                        },
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This is a unique and non-empty identifier that facilitates data access in the Lua transformation or establishes a relationship to a corresponding sink when no transformation is given. It must only be unique with respect to the Sources-list of the parent MappingConfiguration and not globally."
+                            }
+                          ],
+                          "idShort": "SourceId",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Source/SourceId"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "TransferPoint",
+                          "valueType": "xs:string"
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "A data source is defined by a Source reference, PollingInterval and SourceId."
+                        }
+                      ],
+                      "displayName": [
+                        {
+                          "language": "en",
+                          "text": "ModuleBase"
+                        }
+                      ],
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Source"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This holds a reference to the respective SubmodelElement used as data source. A data source can be any SubmodelElement including those defined in the InteractionMetadata of AID Submodels for fetching live-data from assets."
+                            }
+                          ],
+                          "idShort": "Source",
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Source/Source"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "Submodel",
+                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "Measurements"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "Coordinates"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "ModuleBase"
+                              }
+                            ],
+                            "type": "ModelReference"
+                          }
+                        },
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This is a unique and non-empty identifier that facilitates data access in the Lua transformation or establishes a relationship to a corresponding sink when no transformation is given. It must only be unique with respect to the Sources-list of the parent MappingConfiguration and not globally."
+                            }
+                          ],
+                          "idShort": "SourceId",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Source/SourceId"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ModuleBase",
+                          "valueType": "xs:string"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "This list includes all data sinks that are used in this MappingConfiguration."
+                    }
+                  ],
+                  "idShort": "Sinks",
+                  "modelType": "SubmodelElementList",
+                  "orderRelevant": true,
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sinks"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "semanticIdListElement": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sink"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "typeValueListElement": "SubmodelElementCollection",
+                  "value": [
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "A data sink is defined by a Sink reference and SinkId."
+                        }
+                      ],
+                      "displayName": [
+                        {
+                          "language": "en",
+                          "text": "TransferPointX"
+                        }
+                      ],
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sink"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This holds a reference to the respective SubmodelElement used as data sink for live-data."
+                            }
+                          ],
+                          "idShort": "Sink",
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sink/Sink"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "Submodel",
+                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/StateDeclaration"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "TransferPointX"
+                              }
+                            ],
+                            "type": "ModelReference"
+                          }
+                        },
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This is a unique and non-empty identifier that facilitates data writing in the Lua transformation or establishes a relationship to a corresponding source when no transformation is given. It must only be unique with respect to the Sinks-list of the containing MappingConfiguration and not globally."
+                            }
+                          ],
+                          "idShort": "SinkId",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sink/SinkId"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "TransferPointX",
+                          "valueType": "xs:string"
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "A data sink is defined by a Sink reference and SinkId."
+                        }
+                      ],
+                      "displayName": [
+                        {
+                          "language": "en",
+                          "text": "TransferPointY"
+                        }
+                      ],
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sink"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This holds a reference to the respective SubmodelElement used as data sink for live-data."
+                            }
+                          ],
+                          "idShort": "Sink",
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sink/Sink"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "Submodel",
+                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/StateDeclaration"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "TransferPointY"
+                              }
+                            ],
+                            "type": "ModelReference"
+                          }
+                        },
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "This is a unique and non-empty identifier that facilitates data writing in the Lua transformation or establishes a relationship to a corresponding source when no transformation is given. It must only be unique with respect to the Sinks-list of the containing MappingConfiguration and not globally."
+                            }
+                          ],
+                          "idShort": "SinkId",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/AssetInterfacesMappingConfiguration/2/0/MappingConfiguration/Sink/SinkId"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "TransferPointY",
+                          "valueType": "xs:string"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -1173,6 +1639,94 @@
                               {
                                 "type": "GlobalReference",
                                 "value": "https://smartproductionlab.aau.dk/Product"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        },
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "A requirement of the unit's product."
+                            }
+                          ],
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Required fill volume"
+                            }
+                          ],
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://smartproductionlab.aau.dk/execution/Subject/Requirement/1/0"
+                                }
+                              ],
+                              "type": "ExternalReference"
+                            }
+                          ],
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/semantics/FillVolume"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        },
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "A requirement of the unit's product."
+                            }
+                          ],
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Required fill weight"
+                            }
+                          ],
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://smartproductionlab.aau.dk/execution/Subject/Requirement/1/0"
+                                }
+                              ],
+                              "type": "ExternalReference"
+                            }
+                          ],
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/semantics/FillWeight"
                               }
                             ],
                             "type": "ExternalReference"
@@ -1915,6 +2469,299 @@
                                   "valueType": "xs:string"
                                 }
                               ]
+                            },
+                            {
+                              "displayName": [
+                                {
+                                  "language": "en",
+                                  "text": "Fill classified"
+                                }
+                              ],
+                              "idShort": "Term_03",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/OneOf/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": [
+                                {
+                                  "idShort": "InTolerance",
+                                  "modelType": "SubmodelElementCollection",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/OneOf/Outcome/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "supplementalSemanticIds": [
+                                    {
+                                      "keys": [
+                                        {
+                                          "type": "GlobalReference",
+                                          "value": "https://smartproductionlab.aau.dk/semantics/InTolerance"
+                                        }
+                                      ],
+                                      "type": "ExternalReference"
+                                    }
+                                  ],
+                                  "value": [
+                                    {
+                                      "displayName": [
+                                        {
+                                          "language": "en",
+                                          "text": "Fill in tolerance"
+                                        }
+                                      ],
+                                      "idShort": "Term_00",
+                                      "modelType": "SubmodelElementCollection",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Effect/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "supplementalSemanticIds": [
+                                        {
+                                          "keys": [
+                                            {
+                                              "type": "GlobalReference",
+                                              "value": "https://smartproductionlab.aau.dk/semantics/FillResult"
+                                            }
+                                          ],
+                                          "type": "ExternalReference"
+                                        }
+                                      ],
+                                      "value": [
+                                        {
+                                          "description": [
+                                            {
+                                              "language": "en",
+                                              "text": "The subject whose property the term is about: an item of Subjects."
+                                            }
+                                          ],
+                                          "idShort": "Subject",
+                                          "modelType": "ReferenceElement",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": {
+                                            "keys": [
+                                              {
+                                                "type": "Submodel",
+                                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "OfferedCapabilities"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "Filling"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "CapabilityRelations"
+                                              },
+                                              {
+                                                "type": "SubmodelElementList",
+                                                "value": "Subjects"
+                                              },
+                                              {
+                                                "type": "ReferenceElement",
+                                                "value": "1"
+                                              }
+                                            ],
+                                            "type": "ModelReference"
+                                          }
+                                        },
+                                        {
+                                          "idShort": "Operator",
+                                          "modelType": "Property",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Effect/Operator/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": "assign",
+                                          "valueType": "xs:string"
+                                        },
+                                        {
+                                          "idShort": "Value",
+                                          "modelType": "Property",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": "https://smartproductionlab.aau.dk/semantics/InTolerance",
+                                          "valueType": "xs:anyURI"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "idShort": "OutOfTolerance",
+                                  "modelType": "SubmodelElementCollection",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/OneOf/Outcome/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "supplementalSemanticIds": [
+                                    {
+                                      "keys": [
+                                        {
+                                          "type": "GlobalReference",
+                                          "value": "https://smartproductionlab.aau.dk/semantics/OutOfTolerance"
+                                        }
+                                      ],
+                                      "type": "ExternalReference"
+                                    }
+                                  ],
+                                  "value": [
+                                    {
+                                      "displayName": [
+                                        {
+                                          "language": "en",
+                                          "text": "Fill out of tolerance"
+                                        }
+                                      ],
+                                      "idShort": "Term_00",
+                                      "modelType": "SubmodelElementCollection",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Effect/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "supplementalSemanticIds": [
+                                        {
+                                          "keys": [
+                                            {
+                                              "type": "GlobalReference",
+                                              "value": "https://smartproductionlab.aau.dk/semantics/FillResult"
+                                            }
+                                          ],
+                                          "type": "ExternalReference"
+                                        }
+                                      ],
+                                      "value": [
+                                        {
+                                          "description": [
+                                            {
+                                              "language": "en",
+                                              "text": "The subject whose property the term is about: an item of Subjects."
+                                            }
+                                          ],
+                                          "idShort": "Subject",
+                                          "modelType": "ReferenceElement",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": {
+                                            "keys": [
+                                              {
+                                                "type": "Submodel",
+                                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "OfferedCapabilities"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "Filling"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "CapabilityRelations"
+                                              },
+                                              {
+                                                "type": "SubmodelElementList",
+                                                "value": "Subjects"
+                                              },
+                                              {
+                                                "type": "ReferenceElement",
+                                                "value": "1"
+                                              }
+                                            ],
+                                            "type": "ModelReference"
+                                          }
+                                        },
+                                        {
+                                          "idShort": "Operator",
+                                          "modelType": "Property",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Effect/Operator/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": "assign",
+                                          "valueType": "xs:string"
+                                        },
+                                        {
+                                          "idShort": "Value",
+                                          "modelType": "Property",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": "https://smartproductionlab.aau.dk/semantics/OutOfTolerance",
+                                          "valueType": "xs:anyURI"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         }
@@ -2196,6 +3043,69 @@
                               }
                             }
                           ]
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "How the behaviour tree calls the realizing skill and reads its answer."
+                        }
+                      ],
+                      "idShort": "Translation",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Translation/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree builds the inputs of the realizing Operation from the subjects and the capability's properties. Must contain a \"call(subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Call",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Call/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ZnVuY3Rpb24gY2FsbChzdWJqZWN0cywgcHJvcGVydGllcykKICByZXR1cm4geyBWb2x1bWUgPSBzdWJqZWN0c1szXS52YWx1ZSB9CmVuZAo="
+                        },
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree reads the realizing Operation's outputs: whether the action succeeded, which of its outcomes happened, or which of the skill's errors it failed with. Must contain a \"reply(outputs, subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Reply",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Reply/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "bG9jYWwgRVJST1JTID0geyBbMV0gPSAiTm9Db250YWluZXIiLCBbMl0gPSAiQXhpc0ZhdWx0IiwgWzNdID0gIlB1bXBGYXVsdCIsIFs0XSA9ICJTY2FsZVVuc3RhYmxlIiB9CmZ1bmN0aW9uIHJlcGx5KG91dHB1dHMsIHN1YmplY3RzLCBwcm9wZXJ0aWVzKQogIGlmIG91dHB1dHMuRXJyb3JJRCB+PSAwIHRoZW4gcmV0dXJuIHsgb2sgPSBmYWxzZSwgZXJyb3IgPSBFUlJPUlNbb3V0cHV0cy5FcnJvcklEXSB9IGVuZAogIGxvY2FsIHJlcXVpcmVkID0gc3ViamVjdHNbNF0udmFsdWUKICBpZiBvdXRwdXRzLldlaWdodCA+PSByZXF1aXJlZC5taW4gYW5kIG91dHB1dHMuV2VpZ2h0IDw9IHJlcXVpcmVkLm1heCB0aGVuCiAgICByZXR1cm4geyBvayA9IHRydWUsIG91dGNvbWUgPSAiSW5Ub2xlcmFuY2UiIH0KICBlbmQKICByZXR1cm4geyBvayA9IHRydWUsIG91dGNvbWUgPSAiT3V0T2ZUb2xlcmFuY2UiIH0KZW5kCg=="
                         }
                       ]
                     }
@@ -4900,80 +5810,6 @@
                   "description": [
                     {
                       "language": "en",
-                      "text": "Set of properties describing the capability in more detail, if existing."
-                    }
-                  ],
-                  "idShort": "PropertySet",
-                  "modelType": "SubmodelElementCollection",
-                  "semanticId": {
-                    "keys": [
-                      {
-                        "type": "GlobalReference",
-                        "value": "https://admin-shell.io/idta/CapabilityDescription/PropertySet/1/0"
-                      }
-                    ],
-                    "type": "ExternalReference"
-                  },
-                  "value": [
-                    {
-                      "description": [
-                        {
-                          "language": "en",
-                          "text": "Information for a certain property as defined by CapabilityPropertyType and its descriptive elements."
-                        }
-                      ],
-                      "idShort": "Capacity",
-                      "modelType": "SubmodelElementCollection",
-                      "semanticId": {
-                        "keys": [
-                          {
-                            "type": "GlobalReference",
-                            "value": "https://admin-shell.io/idta/CapabilityDescription/PropertyContainer/1/0"
-                          }
-                        ],
-                        "type": "ExternalReference"
-                      },
-                      "value": [
-                        {
-                          "description": [
-                            {
-                              "language": "en",
-                              "text": "Property with a value describing an information data point. A valueId shall be set to define the semantic for the value."
-                            }
-                          ],
-                          "idShort": "Value",
-                          "modelType": "Property",
-                          "semanticId": {
-                            "keys": [
-                              {
-                                "type": "GlobalReference",
-                                "value": "https://admin-shell.io/idta/CapabilityPropertyType/Property/1/0"
-                              }
-                            ],
-                            "type": "ExternalReference"
-                          },
-                          "supplementalSemanticIds": [
-                            {
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://smartproductionlab.aau.dk/semantics/Capacity"
-                                }
-                              ],
-                              "type": "ExternalReference"
-                            }
-                          ],
-                          "value": "1",
-                          "valueType": "xs:int"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "description": [
-                    {
-                      "language": "en",
                       "text": "Collection of relationships for the capability, if existing."
                     }
                   ],
@@ -5529,143 +6365,6 @@
                                   }
                                 }
                               ]
-                            },
-                            {
-                              "displayName": [
-                                {
-                                  "language": "en",
-                                  "text": "Has room"
-                                }
-                              ],
-                              "idShort": "Term_02",
-                              "modelType": "SubmodelElementCollection",
-                              "semanticId": {
-                                "keys": [
-                                  {
-                                    "type": "GlobalReference",
-                                    "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
-                                  }
-                                ],
-                                "type": "ExternalReference"
-                              },
-                              "supplementalSemanticIds": [
-                                {
-                                  "keys": [
-                                    {
-                                      "type": "GlobalReference",
-                                      "value": "https://smartproductionlab.aau.dk/semantics/Occupancy"
-                                    }
-                                  ],
-                                  "type": "ExternalReference"
-                                }
-                              ],
-                              "value": [
-                                {
-                                  "description": [
-                                    {
-                                      "language": "en",
-                                      "text": "The subject whose property the term is about: an item of Subjects."
-                                    }
-                                  ],
-                                  "idShort": "Subject",
-                                  "modelType": "ReferenceElement",
-                                  "semanticId": {
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
-                                      }
-                                    ],
-                                    "type": "ExternalReference"
-                                  },
-                                  "value": {
-                                    "keys": [
-                                      {
-                                        "type": "Submodel",
-                                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
-                                      },
-                                      {
-                                        "type": "SubmodelElementCollection",
-                                        "value": "ModuleControl"
-                                      },
-                                      {
-                                        "type": "SubmodelElementCollection",
-                                        "value": "Occupying"
-                                      },
-                                      {
-                                        "type": "SubmodelElementCollection",
-                                        "value": "CapabilityRelations"
-                                      },
-                                      {
-                                        "type": "SubmodelElementList",
-                                        "value": "Subjects"
-                                      },
-                                      {
-                                        "type": "ReferenceElement",
-                                        "value": "0"
-                                      }
-                                    ],
-                                    "type": "ModelReference"
-                                  }
-                                },
-                                {
-                                  "idShort": "Operator",
-                                  "modelType": "Property",
-                                  "semanticId": {
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
-                                      }
-                                    ],
-                                    "type": "ExternalReference"
-                                  },
-                                  "value": "less",
-                                  "valueType": "xs:string"
-                                },
-                                {
-                                  "idShort": "ValueReference",
-                                  "modelType": "ReferenceElement",
-                                  "semanticId": {
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://smartproductionlab.aau.dk/execution/Term/ValueReference/1/0"
-                                      }
-                                    ],
-                                    "type": "ExternalReference"
-                                  },
-                                  "value": {
-                                    "keys": [
-                                      {
-                                        "type": "Submodel",
-                                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
-                                      },
-                                      {
-                                        "type": "SubmodelElementCollection",
-                                        "value": "ModuleControl"
-                                      },
-                                      {
-                                        "type": "SubmodelElementCollection",
-                                        "value": "Occupying"
-                                      },
-                                      {
-                                        "type": "SubmodelElementCollection",
-                                        "value": "PropertySet"
-                                      },
-                                      {
-                                        "type": "SubmodelElementCollection",
-                                        "value": "Capacity"
-                                      },
-                                      {
-                                        "type": "Property",
-                                        "value": "Value"
-                                      }
-                                    ],
-                                    "type": "ModelReference"
-                                  }
-                                }
-                              ]
                             }
                           ]
                         }
@@ -5850,7 +6549,7 @@
                               "displayName": [
                                 {
                                   "language": "en",
-                                  "text": "Takes a place"
+                                  "text": "Serves the unit"
                                 }
                               ],
                               "idShort": "Term_01",
@@ -5869,7 +6568,7 @@
                                   "keys": [
                                     {
                                       "type": "GlobalReference",
-                                      "value": "https://smartproductionlab.aau.dk/semantics/Occupancy"
+                                      "value": "https://smartproductionlab.aau.dk/semantics/OccupiedBy"
                                     }
                                   ],
                                   "type": "ExternalReference"
@@ -5936,23 +6635,50 @@
                                     ],
                                     "type": "ExternalReference"
                                   },
-                                  "value": "increase",
+                                  "value": "assign",
                                   "valueType": "xs:string"
                                 },
                                 {
-                                  "idShort": "Value",
-                                  "modelType": "Property",
+                                  "idShort": "ValueReference",
+                                  "modelType": "ReferenceElement",
                                   "semanticId": {
                                     "keys": [
                                       {
                                         "type": "GlobalReference",
-                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                        "value": "https://smartproductionlab.aau.dk/execution/Term/ValueReference/1/0"
                                       }
                                     ],
                                     "type": "ExternalReference"
                                   },
-                                  "value": "1",
-                                  "valueType": "xs:int"
+                                  "value": {
+                                    "keys": [
+                                      {
+                                        "type": "Submodel",
+                                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "ModuleControl"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Occupying"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "CapabilityRelations"
+                                      },
+                                      {
+                                        "type": "SubmodelElementList",
+                                        "value": "Subjects"
+                                      },
+                                      {
+                                        "type": "ReferenceElement",
+                                        "value": "3"
+                                      }
+                                    ],
+                                    "type": "ModelReference"
+                                  }
                                 }
                               ]
                             }
@@ -5993,6 +6719,69 @@
                           },
                           "value": "2.0",
                           "valueType": "xs:double"
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "How the behaviour tree calls the realizing skill and reads its answer."
+                        }
+                      ],
+                      "idShort": "Translation",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Translation/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree builds the inputs of the realizing Operation from the subjects and the capability's properties. Must contain a \"call(subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Call",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Call/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ZnVuY3Rpb24gY2FsbChzdWJqZWN0cywgcHJvcGVydGllcykKICByZXR1cm4ge30KZW5kCg=="
+                        },
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree reads the realizing Operation's outputs: whether the action succeeded, which of its outcomes happened, or which of the skill's errors it failed with. Must contain a \"reply(outputs, subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Reply",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Reply/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ZnVuY3Rpb24gcmVwbHkob3V0cHV0cywgc3ViamVjdHMsIHByb3BlcnRpZXMpCiAgcmV0dXJuIHsgb2sgPSB0cnVlIH0KZW5kCg=="
                         }
                       ]
                     }
@@ -6593,6 +7382,143 @@
                                   }
                                 }
                               ]
+                            },
+                            {
+                              "displayName": [
+                                {
+                                  "language": "en",
+                                  "text": "Serves the unit"
+                                }
+                              ],
+                              "idShort": "Term_02",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "supplementalSemanticIds": [
+                                {
+                                  "keys": [
+                                    {
+                                      "type": "GlobalReference",
+                                      "value": "https://smartproductionlab.aau.dk/semantics/OccupiedBy"
+                                    }
+                                  ],
+                                  "type": "ExternalReference"
+                                }
+                              ],
+                              "value": [
+                                {
+                                  "description": [
+                                    {
+                                      "language": "en",
+                                      "text": "The subject whose property the term is about: an item of Subjects."
+                                    }
+                                  ],
+                                  "idShort": "Subject",
+                                  "modelType": "ReferenceElement",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": {
+                                    "keys": [
+                                      {
+                                        "type": "Submodel",
+                                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "ModuleControl"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Releasing"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "CapabilityRelations"
+                                      },
+                                      {
+                                        "type": "SubmodelElementList",
+                                        "value": "Subjects"
+                                      },
+                                      {
+                                        "type": "ReferenceElement",
+                                        "value": "0"
+                                      }
+                                    ],
+                                    "type": "ModelReference"
+                                  }
+                                },
+                                {
+                                  "idShort": "Operator",
+                                  "modelType": "Property",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": "equal",
+                                  "valueType": "xs:string"
+                                },
+                                {
+                                  "idShort": "ValueReference",
+                                  "modelType": "ReferenceElement",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Term/ValueReference/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": {
+                                    "keys": [
+                                      {
+                                        "type": "Submodel",
+                                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/CapabilityDescription"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "ModuleControl"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Releasing"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "CapabilityRelations"
+                                      },
+                                      {
+                                        "type": "SubmodelElementList",
+                                        "value": "Subjects"
+                                      },
+                                      {
+                                        "type": "ReferenceElement",
+                                        "value": "3"
+                                      }
+                                    ],
+                                    "type": "ModelReference"
+                                  }
+                                }
+                              ]
                             }
                           ]
                         }
@@ -6777,7 +7703,7 @@
                               "displayName": [
                                 {
                                   "language": "en",
-                                  "text": "Gives a place back"
+                                  "text": "Free again"
                                 }
                               ],
                               "idShort": "Term_01",
@@ -6796,7 +7722,7 @@
                                   "keys": [
                                     {
                                       "type": "GlobalReference",
-                                      "value": "https://smartproductionlab.aau.dk/semantics/Occupancy"
+                                      "value": "https://smartproductionlab.aau.dk/semantics/OccupiedBy"
                                     }
                                   ],
                                   "type": "ExternalReference"
@@ -6863,23 +7789,8 @@
                                     ],
                                     "type": "ExternalReference"
                                   },
-                                  "value": "decrease",
+                                  "value": "clear",
                                   "valueType": "xs:string"
-                                },
-                                {
-                                  "idShort": "Value",
-                                  "modelType": "Property",
-                                  "semanticId": {
-                                    "keys": [
-                                      {
-                                        "type": "GlobalReference",
-                                        "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
-                                      }
-                                    ],
-                                    "type": "ExternalReference"
-                                  },
-                                  "value": "1",
-                                  "valueType": "xs:int"
                                 }
                               ]
                             }
@@ -6920,6 +7831,69 @@
                           },
                           "value": "2.0",
                           "valueType": "xs:double"
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "How the behaviour tree calls the realizing skill and reads its answer."
+                        }
+                      ],
+                      "idShort": "Translation",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Translation/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree builds the inputs of the realizing Operation from the subjects and the capability's properties. Must contain a \"call(subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Call",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Call/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ZnVuY3Rpb24gY2FsbChzdWJqZWN0cywgcHJvcGVydGllcykKICByZXR1cm4ge30KZW5kCg=="
+                        },
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree reads the realizing Operation's outputs: whether the action succeeded, which of its outcomes happened, or which of the skill's errors it failed with. Must contain a \"reply(outputs, subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Reply",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Reply/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ZnVuY3Rpb24gcmVwbHkob3V0cHV0cywgc3ViamVjdHMsIHByb3BlcnRpZXMpCiAgcmV0dXJuIHsgb2sgPSB0cnVlIH0KZW5kCg=="
                         }
                       ]
                     }
@@ -7470,95 +8444,6 @@
                     }
                   ],
                   "idShort": "Start",
-                  "inputVariables": [
-                    {
-                      "value": {
-                        "description": [
-                          {
-                            "language": "en",
-                            "text": "The capability this call carries out."
-                          }
-                        ],
-                        "idShort": "Capability",
-                        "modelType": "ReferenceElement",
-                        "qualifiers": [
-                          {
-                            "kind": "ConceptQualifier",
-                            "semanticId": {
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Optional/1/0"
-                                }
-                              ],
-                              "type": "ExternalReference"
-                            },
-                            "type": "Optional",
-                            "value": "true",
-                            "valueType": "xs:boolean"
-                          }
-                        ],
-                        "semanticId": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Capability/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        }
-                      }
-                    },
-                    {
-                      "value": {
-                        "description": [
-                          {
-                            "language": "en",
-                            "text": "Who the capability's subjects are in this call, in their order."
-                          }
-                        ],
-                        "idShort": "Grounding",
-                        "modelType": "SubmodelElementList",
-                        "orderRelevant": true,
-                        "qualifiers": [
-                          {
-                            "kind": "ConceptQualifier",
-                            "semanticId": {
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Optional/1/0"
-                                }
-                              ],
-                              "type": "ExternalReference"
-                            },
-                            "type": "Optional",
-                            "value": "true",
-                            "valueType": "xs:boolean"
-                          }
-                        ],
-                        "semanticId": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Grounding/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        },
-                        "semanticIdListElement": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Grounding/Subject/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        },
-                        "typeValueListElement": "ReferenceElement"
-                      }
-                    }
-                  ],
                   "modelType": "Operation",
                   "qualifiers": [
                     {
@@ -7651,95 +8536,6 @@
                     }
                   ],
                   "idShort": "Start",
-                  "inputVariables": [
-                    {
-                      "value": {
-                        "description": [
-                          {
-                            "language": "en",
-                            "text": "The capability this call carries out."
-                          }
-                        ],
-                        "idShort": "Capability",
-                        "modelType": "ReferenceElement",
-                        "qualifiers": [
-                          {
-                            "kind": "ConceptQualifier",
-                            "semanticId": {
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Optional/1/0"
-                                }
-                              ],
-                              "type": "ExternalReference"
-                            },
-                            "type": "Optional",
-                            "value": "true",
-                            "valueType": "xs:boolean"
-                          }
-                        ],
-                        "semanticId": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Capability/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        }
-                      }
-                    },
-                    {
-                      "value": {
-                        "description": [
-                          {
-                            "language": "en",
-                            "text": "Who the capability's subjects are in this call, in their order."
-                          }
-                        ],
-                        "idShort": "Grounding",
-                        "modelType": "SubmodelElementList",
-                        "orderRelevant": true,
-                        "qualifiers": [
-                          {
-                            "kind": "ConceptQualifier",
-                            "semanticId": {
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Optional/1/0"
-                                }
-                              ],
-                              "type": "ExternalReference"
-                            },
-                            "type": "Optional",
-                            "value": "true",
-                            "valueType": "xs:boolean"
-                          }
-                        ],
-                        "semanticId": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Grounding/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        },
-                        "semanticIdListElement": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Grounding/Subject/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        },
-                        "typeValueListElement": "ReferenceElement"
-                      }
-                    }
-                  ],
                   "modelType": "Operation",
                   "qualifiers": [
                     {
@@ -7843,6 +8639,23 @@
                         ],
                         "idShort": "Volume",
                         "modelType": "Property",
+                        "qualifiers": [
+                          {
+                            "kind": "ConceptQualifier",
+                            "semanticId": {
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/AcceptsReference/1/0"
+                                }
+                              ],
+                              "type": "ExternalReference"
+                            },
+                            "type": "AcceptsReference",
+                            "value": "true",
+                            "valueType": "xs:boolean"
+                          }
+                        ],
                         "semanticId": {
                           "keys": [
                             {
@@ -7866,96 +8679,48 @@
                         "value": "1.0",
                         "valueType": "xs:double"
                       }
-                    },
-                    {
-                      "value": {
-                        "description": [
-                          {
-                            "language": "en",
-                            "text": "The capability this call carries out."
-                          }
-                        ],
-                        "idShort": "Capability",
-                        "modelType": "ReferenceElement",
-                        "qualifiers": [
-                          {
-                            "kind": "ConceptQualifier",
-                            "semanticId": {
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Optional/1/0"
-                                }
-                              ],
-                              "type": "ExternalReference"
-                            },
-                            "type": "Optional",
-                            "value": "true",
-                            "valueType": "xs:boolean"
-                          }
-                        ],
-                        "semanticId": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Capability/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        }
-                      }
-                    },
-                    {
-                      "value": {
-                        "description": [
-                          {
-                            "language": "en",
-                            "text": "Who the capability's subjects are in this call, in their order."
-                          }
-                        ],
-                        "idShort": "Grounding",
-                        "modelType": "SubmodelElementList",
-                        "orderRelevant": true,
-                        "qualifiers": [
-                          {
-                            "kind": "ConceptQualifier",
-                            "semanticId": {
-                              "keys": [
-                                {
-                                  "type": "GlobalReference",
-                                  "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Optional/1/0"
-                                }
-                              ],
-                              "type": "ExternalReference"
-                            },
-                            "type": "Optional",
-                            "value": "true",
-                            "valueType": "xs:boolean"
-                          }
-                        ],
-                        "semanticId": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Grounding/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        },
-                        "semanticIdListElement": {
-                          "keys": [
-                            {
-                              "type": "GlobalReference",
-                              "value": "https://smartproductionlab.aau.dk/aas/OperationVariable/Grounding/Subject/1/0"
-                            }
-                          ],
-                          "type": "ExternalReference"
-                        },
-                        "typeValueListElement": "ReferenceElement"
-                      }
                     }
                   ],
                   "modelType": "Operation",
+                  "outputVariables": [
+                    {
+                      "value": {
+                        "description": [
+                          {
+                            "language": "en",
+                            "text": "0, or the code of one of the module's Errors"
+                          }
+                        ],
+                        "idShort": "ErrorID",
+                        "modelType": "Property",
+                        "valueType": "xs:int"
+                      }
+                    },
+                    {
+                      "value": {
+                        "description": [
+                          {
+                            "language": "en",
+                            "text": "What the unit weighed after filling, g"
+                          }
+                        ],
+                        "idShort": "Weight",
+                        "modelType": "Property",
+                        "supplementalSemanticIds": [
+                          {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/semantics/Weight"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        ],
+                        "valueType": "xs:double"
+                      }
+                    }
+                  ],
                   "qualifiers": [
                     {
                       "kind": "ConceptQualifier",
@@ -8867,7 +9632,7 @@
       "description": [
         {
           "language": "en",
-          "text": "The state variables of this subject that effects change, and the store they are kept in."
+          "text": "The state variables of this subject, of which kind each is, and the store they are kept in."
         }
       ],
       "id": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/StateDeclaration",
@@ -8884,7 +9649,7 @@
       },
       "submodelElements": [
         {
-          "idShort": "Occupancy",
+          "idShort": "OccupiedBy",
           "modelType": "SubmodelElementCollection",
           "semanticId": {
             "keys": [
@@ -8900,7 +9665,31 @@
               "keys": [
                 {
                   "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/Occupancy"
+                  "value": "https://smartproductionlab.aau.dk/semantics/OccupiedBy"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ]
+        },
+        {
+          "idShort": "TransferPointX",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/semantics/AbsoluteX"
                 }
               ],
               "type": "ExternalReference"
@@ -8911,22 +9700,107 @@
               "description": [
                 {
                   "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
+                  "text": "The element this variable is about, where it is not the AAS it is declared on (a place)."
                 }
               ],
-              "idShort": "Initial",
-              "modelType": "Property",
+              "idShort": "Subject",
+              "modelType": "ReferenceElement",
               "semanticId": {
                 "keys": [
                   {
                     "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
                   }
                 ],
                 "type": "ExternalReference"
               },
-              "value": "0",
-              "valueType": "xs:int"
+              "value": {
+                "keys": [
+                  {
+                    "type": "Submodel",
+                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "Measurements"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "Coordinates"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "TransferPoint"
+                  }
+                ],
+                "type": "ModelReference"
+              }
+            }
+          ]
+        },
+        {
+          "idShort": "TransferPointY",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "https://smartproductionlab.aau.dk/semantics/AbsoluteY"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "The element this variable is about, where it is not the AAS it is declared on (a place)."
+                }
+              ],
+              "idShort": "Subject",
+              "modelType": "ReferenceElement",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": {
+                "keys": [
+                  {
+                    "type": "Submodel",
+                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "Measurements"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "Coordinates"
+                  },
+                  {
+                    "type": "SubmodelElementCollection",
+                    "value": "TransferPoint"
+                  }
+                ],
+                "type": "ModelReference"
+              }
             }
           ]
         },

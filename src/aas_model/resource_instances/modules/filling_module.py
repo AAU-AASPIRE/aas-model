@@ -58,18 +58,20 @@ from aas_model.submodel_templates.capability_description import (
     ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
     RealizedBySkill, StatedProperty, StatedPropertySet,
 )
-from aas_model.submodel_templates.control_component_instance import (
-    CapabilityVariable, GroundingVariable, ParameterVariable,
-)
+from aas_model.submodel_templates.control_component_instance import AcceptsReference, ParameterVariable
 from aas_model.submodel_templates.execution import (
     CarrierSubject, ConditionOperator, ConditionSet, DuringTerms, EffectOperator, EffectSet, EndTerms,
     ExecutionDuration, ExecutionSubject,
     FormulaUse,
-    FormulaUses, InvariantTerms, PreTerms, Rate, SelfSubject, StateCondition, StateEffect, Subjects, TermFormula,
-    TermSubject, TermValue, TermValueReference, UnitSubject,
+    FormulaUses, InvariantTerms, OneOfEffects, Outcome, PreTerms, Rate, RequirementSubject, SelfSubject,
+    StateCondition, StateEffect, Subjects, TermFormula, TermSubject, TermValue, TermValueReference, Translation,
+    UnitSubject,
 )
+from aas_model.resource_template.translations import COMPLETED_REPLY, NO_INPUTS_CALL
+from aas_model.submodel_templates import Aimc, AimcMappingConfiguration, AimcMappingConfigurations
+from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SinksItem, SourcesItem
 from aas_model.submodel_templates.state_declaration import (
-    StateDeclaration, StateVariable, StateVariableInitial, StateVariableObserved,
+    StateDeclaration, StateVariable, StateVariableSubject,
 )
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, TimeSeriesCollection, TimeSeriesMetadata, TimeSeriesRecord,
@@ -133,7 +135,47 @@ DOSING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, v
 WEIGHING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Weighing"))
 FILLING = (MODULE_CAPABILITIES, Key(type_=SMC, value="OfferedCapabilities"), Key(type_=SMC, value="Filling"))
 
+# The errors the module's answer can carry (its ErrorID): each is an outcome a FOND plan branches on, beside success
+# (D23). Codes as the module's program reports them; Filling's reply names them.
+ERRORS = (
+    ("NoContainer", "1", "No container in the nest"),
+    ("AxisFault", "2", "The needle axis did not reach its position"),
+    ("PumpFault", "3", "The pump did not deliver the volume"),
+    ("ScaleUnstable", "4", "The scale did not settle"),
+)
+
+# Filling's Translation: the module is sent the volume the unit's product requires; its answer is a failure where it
+# reports an error, and otherwise the unit's weight classified against the weight the product requires.
+FILLING_CALL = """function call(subjects, properties)
+  return { Volume = subjects[3].value }
+end
+"""
+FILLING_REPLY = "local ERRORS = { " + ", ".join(f'[{code}] = "{name}"' for name, code, _ in ERRORS) + """ }
+function reply(outputs, subjects, properties)
+  if outputs.ErrorID ~= 0 then return { ok = false, error = ERRORS[outputs.ErrorID] } end
+  local required = subjects[4].value
+  if outputs.Weight >= required.min and outputs.Weight <= required.max then
+    return { ok = true, outcome = "InTolerance" }
+  end
+  return { ok = true, outcome = "OutOfTolerance" }
+end
+"""
+
 # The axis as a part of the module, and the record of where it is.
+# The module's state, and the Lua that composes its transfer point into the line's frame (the base's pose, then the
+# point relative to it; yaw in degrees).
+MODULE_STATE = Key(type_="Submodel", value=f"{MODULE}/submodels/StateDeclaration")
+TRANSFER_POINT_TRANSFORMATION = """function aimc_main(sources)
+  local base, point = sources.ModuleBase, sources.TransferPoint
+  local yaw = math.rad(tonumber(base.Yaw) or 0)
+  local x, y = tonumber(point.X) or 0, tonumber(point.Y) or 0
+  return {
+    TransferPointX = (tonumber(base.X) or 0) + x * math.cos(yaw) - y * math.sin(yaw),
+    TransferPointY = (tonumber(base.Y) or 0) + x * math.sin(yaw) + y * math.cos(yaw),
+  }
+end
+"""
+
 # The module's coordinates: its base, and the transfer point a shuttle is sent to.
 COORDINATES = (MODULE_VARIABLES, Key(type_=SMC, value="Measurements"), Key(type_=SMC, value="Coordinates"))
 MODULE_BASE = (*COORDINATES, Key(type_=SMC, value="ModuleBase"))
@@ -192,10 +234,9 @@ def filling_linear_axis() -> Component:
             ),
         }),
         state_declaration=StateDeclaration(id_short="StateDeclaration", variable={
-            "Position": StateVariable(
-                supplemental_semantic_ids=[f"{LAB}Position"],
-                Observed=StateVariableObserved(value=ModelReference(key=AXIS_POSITION_FIELD)),
-            ),
+            # Observed once the module's interface is mapped: the mapping that writes the module's LinearAxis
+            # series (AXIS_POSITION_FIELD) sinks the position here too.
+            "Position": StateVariable(supplemental_semantic_ids=[f"{LAB}Position"]),
         }),
         # What the axis does wherever it is built in: it ends where it was sent, at its speed.
         capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
@@ -461,8 +502,10 @@ def filling_module() -> Module:
     # it needs and changes is derived from theirs (and so from the components' they specialize) and from the steps:
     # what they add up to for the unit, the components' state hidden (every cycle starts and ends at rest): the
     # unit empty and in the module's custody, then holding the volume it was given, dosed at the station's flow
-    # rate (the step's constant), and its weight known. Written by hand until modplan's compose derives it; the
-    # validator re-derives it from the parts (ComposedOf) and the steps (RealizedBy) and compares.
+    # rate (the step's constant), and its weight known, which classifies the fill against what the product requires
+    # (the outcomes: in or out of tolerance, the Translation's reply says which). Written by hand until modplan's
+    # compose derives it; the validator re-derives it from the parts (ComposedOf) and the steps (RealizedBy) and
+    # compares. The volume and the weight the product requires are subjects, bound when the behaviour tree is built.
     fill_unit = _subject(FILLING, 1)
     filling = ModuleCapabilityContainer(
         Capability=Capability(supplemental_semantic_ids=[f"{LAB}Filling"]),
@@ -487,8 +530,12 @@ def filling_module() -> Module:
                                            second=ModelReference(key=(*path, CAPABILITY)))
                 for part, path in (("Positioning", POSITIONING), ("Dosing", DOSING), ("Weighing", WEIGHING))
             })}),
-            Subjects=Subjects(value=[SelfSubject(display_name={"en": "This module"}),
-                                     UnitSubject(display_name={"en": "Unit being filled"})]),
+            Subjects=Subjects(value=[
+                SelfSubject(display_name={"en": "This module"}),
+                UnitSubject(display_name={"en": "Unit being filled"}),
+                RequirementSubject.of(f"{LAB}FillVolume", display_name={"en": "Required fill volume"}),
+                RequirementSubject.of(f"{LAB}FillWeight", display_name={"en": "Required fill weight"}),
+            ]),
             ConditionSet=ConditionSet(
                 Pre=PreTerms(term={"Term_00": StateCondition(
                     display_name={"en": "Unit empty"},
@@ -523,6 +570,13 @@ def filling_module() -> Module:
                     supplemental_semantic_ids=[f"{LAB}FillWeight"], Subject=TermSubject(value=fill_unit),
                     Operator=EffectOperator(value="measured"),
                 ),
+                "Term_03": OneOfEffects(display_name={"en": "Fill classified"}, outcome={
+                    result: Outcome(supplemental_semantic_ids=[f"{LAB}{result}"], term={"Term_00": StateEffect(
+                        display_name={"en": text}, supplemental_semantic_ids=[f"{LAB}FillResult"],
+                        Subject=TermSubject(value=fill_unit), Operator=EffectOperator(value="assign"),
+                        Value=TermValue(value=f"{LAB}{result}", value_type="xs:anyURI"))})
+                    for result, text in (("InTolerance", "Fill in tolerance"), ("OutOfTolerance", "Fill out of tolerance"))
+                }),
             })),
             # The steps one after the other: the needle down to the fill position and up again at the axis's speed,
             # the dose at the station's flow rate, the weighing.
@@ -543,21 +597,21 @@ def filling_module() -> Module:
                         Key(type_=SMC, value="Duration"), Key(type_="Property", value="Value")))),
                 }),
             ),
+            Translation=Translation.lua(FILLING_CALL, FILLING_REPLY),
         ),
     )
 
     # Module control: the module takes the unit off the shuttle at its transfer point (Occupying), and puts it back
-    # on one (Releasing). Custody moves between the shuttle and the module; the module holds one unit at a time. The
-    # transfer point is the module's own coordinate, so its subject is fixed; who the shuttle and the unit are is the
-    # call's Grounding.
+    # on one (Releasing). Custody moves between the shuttle and the module; the module serves one unit at a time. The
+    # transfer point is the module's own coordinate, so its subject is fixed; who the shuttle and the unit are, the
+    # behaviour tree binds as the planner chose. The module's Occupy and Release take and answer nothing.
     transfer_point = ExecutionSubject(display_name={"en": "Transfer point"},
                                       value=ModelReference(key=TRANSFER_POINT))
 
-    def handover(capability: tuple, skill: tuple, carrier: str, unit: str, pre: dict, end: dict, meaning: str,
-                 properties: dict) -> ModuleCapabilityContainer:
+    def handover(capability: tuple, skill: tuple, carrier: str, unit: str, pre: dict, end: dict,
+                 meaning: str) -> ModuleCapabilityContainer:
         return ModuleCapabilityContainer(
             Capability=Capability(supplemental_semantic_ids=[meaning]),
-            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer=properties)} if properties else {},
             CapabilityRelations=ModuleCapabilityRelations(
                 CapabilityRealizedBy={"RealizedBy": RealizedBySkill(first=ModelReference(key=(*capability, CAPABILITY)),
                                                                     second=ModelReference(key=skill))},
@@ -567,6 +621,7 @@ def filling_module() -> Module:
                 ConditionSet=ConditionSet(Pre=PreTerms(term=pre)),
                 EffectSet=EffectSet(End=EndTerms(term=end)),
                 Duration=ExecutionDuration(Value=TermValue(value="2.0", value_type="xs:double")),   # nominal, s
+                Translation=Translation.lua(NO_INPUTS_CALL, COMPLETED_REPLY),
             ),
         )
 
@@ -578,18 +633,12 @@ def filling_module() -> Module:
 
     occupying = handover(
         OCCUPYING, OCCUPY, "Delivering shuttle", "Unit received", meaning=f"{LAB}Occupying",
-        properties={"Capacity": StatedProperty(PropertyProperty={"Value": PropertyProperty(
-            value="1", value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Capacity"])})},
         pre={
             "Term_00": at_transfer_point(OCCUPYING),
             "Term_01": StateCondition(
                 display_name={"en": "Unit on the shuttle"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
                 Subject=TermSubject(value=_subject(OCCUPYING, 3)), Operator=ConditionOperator(value="equal"),
                 ValueReference=TermValueReference(value=_subject(OCCUPYING, 2))),
-            "Term_02": StateCondition(
-                display_name={"en": "Has room"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                Subject=TermSubject(value=_subject(OCCUPYING, 0)), Operator=ConditionOperator(value="less"),
-                ValueReference=TermValueReference(value=_property(OCCUPYING, "Capacity"))),
         },
         end={
             "Term_00": StateEffect(
@@ -597,19 +646,23 @@ def filling_module() -> Module:
                 Subject=TermSubject(value=_subject(OCCUPYING, 3)), Operator=EffectOperator(value="assign"),
                 ValueReference=TermValueReference(value=_subject(OCCUPYING, 0))),
             "Term_01": StateEffect(
-                display_name={"en": "Takes a place"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                Subject=TermSubject(value=_subject(OCCUPYING, 0)), Operator=EffectOperator(value="increase"),
-                Value=TermValue(value="1", value_type="xs:int")),
+                display_name={"en": "Serves the unit"}, supplemental_semantic_ids=[f"{LAB}OccupiedBy"],
+                Subject=TermSubject(value=_subject(OCCUPYING, 0)), Operator=EffectOperator(value="assign"),
+                ValueReference=TermValueReference(value=_subject(OCCUPYING, 3))),
         },
     )
     releasing = handover(
-        RELEASING, RELEASE, "Collecting shuttle", "Unit released", meaning=f"{LAB}Releasing", properties={},
+        RELEASING, RELEASE, "Collecting shuttle", "Unit released", meaning=f"{LAB}Releasing",
         pre={
             "Term_00": at_transfer_point(RELEASING),
             "Term_01": StateCondition(
                 display_name={"en": "Unit held here"}, supplemental_semantic_ids=[f"{LAB}HeldBy"],
                 Subject=TermSubject(value=_subject(RELEASING, 3)), Operator=ConditionOperator(value="equal"),
                 ValueReference=TermValueReference(value=_subject(RELEASING, 0))),
+            "Term_02": StateCondition(
+                display_name={"en": "Serves the unit"}, supplemental_semantic_ids=[f"{LAB}OccupiedBy"],
+                Subject=TermSubject(value=_subject(RELEASING, 0)), Operator=ConditionOperator(value="equal"),
+                ValueReference=TermValueReference(value=_subject(RELEASING, 3))),
         },
         end={
             "Term_00": StateEffect(
@@ -617,9 +670,8 @@ def filling_module() -> Module:
                 Subject=TermSubject(value=_subject(RELEASING, 3)), Operator=EffectOperator(value="assign"),
                 ValueReference=TermValueReference(value=_subject(RELEASING, 2))),
             "Term_01": StateEffect(
-                display_name={"en": "Gives a place back"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                Subject=TermSubject(value=_subject(RELEASING, 0)), Operator=EffectOperator(value="decrease"),
-                Value=TermValue(value="1", value_type="xs:int")),
+                display_name={"en": "Free again"}, supplemental_semantic_ids=[f"{LAB}OccupiedBy"],
+                Subject=TermSubject(value=_subject(RELEASING, 0)), Operator=EffectOperator(value="clear")),
         },
     )
 
@@ -628,11 +680,29 @@ def filling_module() -> Module:
         nameplate=LabNameplate(
             ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Filling module"}),
         ),
-        # The module's state no data point reports: how many units it holds (module control counts it).
+        # The module's state: who it serves, and where its transfer point is in the line's frame (observed: the
+        # TransferPoint mapping below sinks it, so a query can tell whether a shuttle is at it; D36). The module reports no process queue, so who it serves is asserted by the
+        # tree that occupies it until it does (plan, open question 24).
         state_declaration=StateDeclaration(id_short="StateDeclaration", variable={
-            "Occupancy": StateVariable(supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                                       Initial=StateVariableInitial(value="0", value_type="xs:int")),
+            "OccupiedBy": StateVariable(supplemental_semantic_ids=[f"{LAB}OccupiedBy"]),
+            **{f"TransferPoint{axis}": StateVariable(
+                supplemental_semantic_ids=[f"{LAB}Absolute{axis}"],
+                Subject=StateVariableSubject(value=ModelReference(key=TRANSFER_POINT)),
+            ) for axis in ("X", "Y")},
         }),
+        # The transfer point's position in the line's frame, into the state store: the coordinate and the base it is
+        # relative to are the mapping's sources (static elements, read again when one changes), composed in its Lua.
+        asset_interfaces_mapping_configuration=Aimc(
+            id_short="AssetInterfacesMappingConfiguration", MappingConfigurations=AimcMappingConfigurations(value=[
+                AimcMappingConfiguration(
+                    id_short="TransferPoint", DefaultPollingInterval="0.0",
+                    Sources=[SourcesItem(SourceId="TransferPoint", Source=ModelReference(key=TRANSFER_POINT)),
+                             SourcesItem(SourceId="ModuleBase", Source=ModelReference(key=MODULE_BASE))],
+                    Sinks=[SinksItem(SinkId=f"TransferPoint{axis}", Sink=ModelReference(key=(
+                        MODULE_STATE, Key(type_=SMC, value=f"TransferPoint{axis}")))) for axis in ("X", "Y")],
+                    Transformation=TRANSFER_POINT_TRANSFORMATION,
+                ),
+            ])),
         hierarchical_structures=LocatedStructures(EntryNode=LocatedEntryNode(Node={
             "LinearAxis": LocatedNode(global_asset_id=LINEAR_AXIS),
             "Pump": LocatedNode(global_asset_id=PUMP),
@@ -641,23 +711,15 @@ def filling_module() -> Module:
 
         # ── Skills: the composite the module offers ──────────────────────────────────────────────────────────
         # Needle down to the fill position, dispense the volume at the station's flow rate, needle up (by
-        # homing, so every cycle starts from the switch), weigh. The unit is not sent to the module: the DMP
-        # grounds the effects of Filling on it.
-        # The errors a skill's answer can carry (its ErrorID): each is an outcome a FOND plan branches on, beside
-        # success (D23). Codes as the module's program reports them.
+        # homing, so every cycle starts from the switch), weigh. The unit is not sent to the module: the behaviour
+        # tree applies the effects of Filling to it. The errors its answer can carry are ERRORS.
         skills=ModuleSkills(Errors=s.Errors(SkillError={
-            name: s.SkillError(value=code, description=text) for name, code, text in (
-                ("NoContainer", "1", "No container in the nest"),
-                ("AxisFault", "2", "The needle axis did not reach its position"),
-                ("PumpFault", "3", "The pump did not deliver the volume"),
-                ("ScaleUnstable", "4", "The scale did not settle"),
-            )}), Skill={
+            name: s.SkillError(value=code, description=text) for name, code, text in ERRORS}), Skill={
             **{name: ModuleSkill(
                 supplemental_semantic_ids=[f"{SKILL}/ModuleControl"],
                 SemanticId=s.SemanticId(value=f"{SKILL_TYPE}/{name}"),
                 Start=s.Start(semantic_id=f"{SKILL}/Start", SkillOperation={"Start": s.SkillOperation(
-                    id_short="Start", semantic_id=f"{SKILL}/Start",
-                    input_variable=[CapabilityVariable(), GroundingVariable()])}),
+                    id_short="Start", semantic_id=f"{SKILL}/Start")}),
             ) for name in ("Occupy", "Release")},
             "Dispensing": ModuleSkill(
             supplemental_semantic_ids=[f"{SKILL}/Composite"],
@@ -668,8 +730,14 @@ def filling_module() -> Module:
                     id_short="Start", semantic_id=f"{SKILL}/Start", input_variable=[
                         ParameterVariable(id_short="Volume", value="1.0", value_type="xs:double",
                                           supplemental_semantic_ids=[f"{LAB}FillVolume"],
-                                          description="Fill volume, mL"),
-                        CapabilityVariable(), GroundingVariable(),
+                                          qualifiers=[AcceptsReference()], description="Fill volume, mL"),
+                    ], output_variable=[
+                        # The module's answer: its error code (0, or one of its Errors) and what the unit weighed,
+                        # which Filling's reply classifies (D23, D34).
+                        Property(id_short="ErrorID", value_type="xs:int",
+                                 description="0, or the code of one of the module's Errors"),
+                        Property(id_short="Weight", value_type="xs:double", supplemental_semantic_ids=[f"{LAB}Weight"],
+                                 description="What the unit weighed after filling, g"),
                     ])},
                 Steps=s.Steps(SkillStep={
                     "Step_0000": s.SkillStep(

@@ -977,7 +977,7 @@
       "description": [
         {
           "language": "en",
-          "text": "The state variables of this subject that effects change, and the store they are kept in."
+          "text": "The state variables of this subject, of which kind each is, and the store they are kept in."
         }
       ],
       "id": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/StateDeclaration",
@@ -1014,56 +1014,6 @@
                 }
               ],
               "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The data point that reports this variable (a Record field of a Variables series)."
-                }
-              ],
-              "idShort": "Observed",
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Observed/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "Submodel",
-                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "Measurements"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "LinearAxis"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "Metadata"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "Record"
-                  },
-                  {
-                    "type": "Property",
-                    "value": "Position"
-                  }
-                ],
-                "type": "ModelReference"
-              }
             }
           ]
         },

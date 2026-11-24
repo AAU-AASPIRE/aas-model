@@ -25,8 +25,8 @@ too (`cell/examples/example_line.py`).
 | `Module` | Instance, `.../Resource/Module` | Nameplate, Hierarchical Structures (its components), Asset Interfaces Description (one OPC UA server), Asset Interfaces Mapping Configuration, [Skills](lab-submodels/Skills.md), [Variables](#variables-and-coordinates), Capability Description (offered; optional); optional [Control Configuration](lab-submodels/ControlConfiguration.md) and [Parameters](lab-submodels/Parameters.md) |
 | `Component` | Instance, `.../Resource/Component/<Kind>` | [Skills](lab-submodels/Skills.md): its primitives, which its module carries out |
 | `ProductionSystem` | Instance, `.../Resource/System` | Hierarchical Structures (its modules, each by its asset id); optional [Variables](#variables-and-coordinates) with the coordinates of its own points |
-| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md); optional State Declaration (the state of its units that effects change) |
-| `Batch` | Instance, `.../Batch` | Batch Information (the product type AAS, the quantity), Batch Units (an SML of unit IRIs; a unit has no AAS), Goal (Subjects and a condition tree every unit is to reach; the planner reads it, D13) |
+| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md); optional State Declaration (the state of its units: asserted, observed or derived, D36) |
+| `Batch` | Instance, `.../Batch` | Batch Information (the product type AAS, the quantity), Goal (Subjects and a condition tree every unit is to reach; the planner reads it, D13). Units are not listed: each BT instance mints the IRI of the unit it makes (`urn:uuid:<uuid>`, D10, D35), whose uuid the stations queue |
 | `Process` | Type, `.../Process` | [Process Information](lab-submodels/ProcessInformation.md), [Bindings](lab-submodels/Bindings.md), [Validation](lab-submodels/Validation.md) |
 
 `Module`, `Component` and `ProductionSystem` are `Resource`s (through `ArsoResource`); a submodel of
@@ -39,19 +39,28 @@ too (`cell/examples/example_line.py`).
   the variable of the module it is (`SameAs`); a property constraint is a `BasicConstraint` expression. A
   property may list the values a module takes (IDTA's `SubmodelElementList` kind: the containers vial,
   syringe, cartridge). The ConstraintSet is otherwise as IDTA has it; the lab does not use it to say what a
-  capability needs and changes. That is in three SMCs of the CapabilityRelations
-  (`submodel_templates.execution`):
+  capability needs and changes. That is in the CapabilityRelations (`submodel_templates.execution`), which the
+  planners and the behaviour tree read and the DMP does not:
   - **Subjects:** who takes part, an ordered list (SML) of ReferenceElements, each with a display name
     ("Container in the nest"); a term references a subject by its index. Its value is the AAS it is (Self, a component), or an external reference to the semantic id of what it stands
-    for where it is only known at run time (a unit: the products' asset type; a place: a coordinate).
-    Who a subject is in a call is the call's: the realizing skill's Operation takes `Capability` (which of its
-    capabilities the call carries out) and `Grounding` (an SML, one reference per subject in the order of
-    Subjects: an AAS or element, or a unit's IRI), filled by the planner and never sent to the device. The planar shuttle's move has the
+    for where it is only known at run time (a unit: the products' asset type; a place: a coordinate; a requirement
+    of the unit's product, `RequirementSubject`: the meaning of the required property). Who a run-time subject is,
+    the behaviour tree binds: a unit is the IRI its tree instance minted (`urn:uuid:<uuid>`), a requirement the
+    element of the batch's product type with that meaning. The planar shuttle's move has the
     subjects "This shuttle" and "Target place" and ends with the shuttle at that place; a module's Occupying needs a
     shuttle at its transfer point holding the unit, and moves custody (`HeldBy`) to the module, which Filling needs.
   - **ConditionSet:** what must hold of the subjects, Pre (at the start), Invariant (throughout) and Post (at
     the end).
   - **EffectSet:** what changes, Start, During (definitions while it runs) and End.
+  - **Translation** (D34): two Lua scripts the behaviour tree runs around the call. `Call` builds the realizing
+    Operation's inputs from the subjects and the capability's properties (the unit's uuid for a station's command,
+    the volume the product requires, the place's projected pose); `Reply` reads its outputs and says whether the
+    action succeeded and which outcome of a OneOf happened (Filling's weight against the product's required
+    FillWeight), or which of the skill's Errors it failed with. Neither writes state: the tree applies the declared
+    effects of that outcome. A capability the tree runs is realized by exactly one skill, whose Operation holds only
+    what the device's action takes and answers; the DMP maps it to the action and back and reads nothing else. A
+    parameter with the `AcceptsReference` qualifier may be sent as a ReferenceElement under its own idShort, which
+    the DMP resolves at the call (D27).
 
   Each holds trees of terms whose kind is their semantic id (Condition, Effect, And, Or, Not, Exists,
   ForAll, When, OneOf), nesting freely; a Condition or Effect names its Subject, and the property as a
@@ -78,7 +87,7 @@ too (`cell/examples/example_line.py`).
 | Process Information | `https://smartproductionlab.aau.dk/ProcessInformation/1/0/Submodel` | `templates/process/ProcessInformation.json` | `submodel_templates.process.process_information` | [Process Information](lab-submodels/ProcessInformation.md) |
 | Bindings | `https://smartproductionlab.aau.dk/ProcessBindings/1/0/Submodel` | `templates/process/Bindings.json` | `submodel_templates.process.bindings` | [Bindings](lab-submodels/Bindings.md) |
 | Validation | `https://smartproductionlab.aau.dk/ProcessValidation/1/0/Submodel` | `templates/process/Validation.json` | `submodel_templates.process.validation` | [Validation](lab-submodels/Validation.md) |
-| State Declaration | `https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0` | none (hand-written classes) | `submodel_templates.state_declaration` | the state of a subject that effects change, its initial values and the store it is kept in |
+| State Declaration | `https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0` | none (hand-written classes) | `submodel_templates.state_declaration` | the state variables of a subject (asserted, written by the behaviour tree; observed, a linked projection: an AIMC mapping of the same AAS sinks into it, as into a time-series segment, its Lua converting the reported value where needed, as a station's process queue into `OccupiedBy`; derived, computed by query), its initial values and the store they are kept in |
 | Variables, with Coordinates | `https://smartproductionlab.aau.dk/submodels/Variables/1/0` | none (hand-written classes) | `submodel_templates.variables`, `submodel_templates.coordinates` | [below](#variables-and-coordinates) |
 
 **How they are made:**

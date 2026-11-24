@@ -11,13 +11,12 @@ from basyx.aas import model
 from aas_model import build_from_model
 from aas_model.constants import (
     EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_EFFECT, EXECUTION_FOR_ALL, EXECUTION_ONE_OF, EXECUTION_OR,
-    EXECUTION_WHEN, LAB, OPERATION_VARIABLE_CAPABILITY, OPERATION_VARIABLE_GROUNDING, OPERATION_VARIABLE_PARAMETER,
-    PRODUCT_ASSET_TYPE,
+    EXECUTION_SUBJECT_REQUIREMENT, EXECUTION_WHEN, LAB, OPERATION_VARIABLE_ACCEPTS_REFERENCE,
+    OPERATION_VARIABLE_PARAMETER, PRODUCT_ASSET_TYPE,
 )
 from aas_model.resource_instances import RESOURCE_FACTORIES
 from aas_model.resource_template.operational import MODULE_CONTROL, OperationalCapabilityDescription
 from aas_model.submodel_templates.capability_description import ModuleCapabilityDescription
-from aas_model.submodel_templates.control_component_instance import OPERATION_VARIABLE_OPTIONAL
 from aas_model.submodel_templates.execution import (
     And, Body, ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, ForAll, OneOfEffects, Or,
     Outcome, PreTerms, QuantifiedVariable, StateCondition, StateEffect, TermValue, When, WhenCondition, WhenThen,
@@ -81,16 +80,25 @@ def test_module_control_states_what_it_needs_and_changes_in_its_relations():
     store = build_from_model(RESOURCE_FACTORIES["imaDispensing"]())
     relations = _capability_description(store).get_referable([MODULE_CONTROL, "Occupying", "CapabilityRelations"])
     pre = {t.display_name["en"]: t for t in relations.get_referable(["ConditionSet", "Pre"]).value}
-    assert set(pre) == {"Shuttle at the transfer point", "Unit on the shuttle", "Has room"}
-    room = pre["Has room"]
-    assert room.supplemental_semantic_id[0].key[0].value == f"{LAB}Occupancy"
-    assert room.get_referable("Subject").value.resolve(store).display_name["en"] == "This device"
-    assert room.get_referable("ValueReference").value.resolve(store).value == 1          # the Capacity
+    assert set(pre) == {"Shuttle at the transfer point", "Unit on the shuttle"}         # the queue arbitrates
     end = {t.display_name["en"]: t for t in relations.get_referable(["EffectSet", "End"]).value}
     assert end["Unit held here"].get_referable("Operator").value == "assign"
-    assert end["Takes a place"].get_referable("Operator").value == "increase"
+    served = end["Serves the unit"]                                                     # observed: the tree waits
+    assert served.supplemental_semantic_id[0].key[0].value == f"{LAB}OccupiedBy"
+    assert served.get_referable("Subject").value.resolve(store).display_name["en"] == "This device"
+    assert served.get_referable("ValueReference").value.resolve(store).display_name["en"] == "Unit received"
+    releasing = _capability_description(store).get_referable([MODULE_CONTROL, "Releasing", "CapabilityRelations"])
+    pre = {t.display_name["en"] for t in releasing.get_referable(["ConditionSet", "Pre"]).value}
+    assert "Serves the unit" in pre
+    end = {t.display_name["en"]: t for t in releasing.get_referable(["EffectSet", "End"]).value}
+    assert end["Free again"].get_referable("Operator").value == "clear"
+    # The skill's Operation is the device's command and nothing more; the Translation builds it from the subjects.
     occupy = RESOURCE_FACTORIES["imaDispensing"]().control_component_instance.Skills.Skill["Occupy"].operation
-    assert [v.id_short for v in occupy.input_variable] == ["Capability", "Grounding"]   # what and who a call is
+    assert not occupy.input_variable and [v.id_short for v in occupy.in_output_variable] == ["Uuid"]
+    assert [v.id_short for v in occupy.output_variable] == ["State"]
+    translation = relations.get_referable("Translation")
+    assert b"function call(" in translation.get_referable("Call").value
+    assert b"function reply(" in translation.get_referable("Reply").value
 
 
 def test_dispensing_binds_the_unit_and_the_volume_of_its_operation():
@@ -107,19 +115,22 @@ def test_dispensing_binds_the_unit_and_the_volume_of_its_operation():
     assert [key.value for key in end.ValueReference.value.key[-2:]] == ["operation", "Volume"]
     assert relations.CapabilityRealizedBy                              # the instance added its skill
 
-    variables = {v.id_short: v for v in resource.control_component_instance.Skills.Skill["Dispensing"].operation
-                 .input_variable}
-    assert variables["Capability"].semantic_id == OPERATION_VARIABLE_CAPABILITY
-    assert variables["Grounding"].semantic_id == OPERATION_VARIABLE_GROUNDING              # which unit: the call's
-    assert all(any(q.semantic_id == OPERATION_VARIABLE_OPTIONAL for q in variables[name].qualifiers)
-               for name in ("Capability", "Grounding"))
+    required = relations.Subjects.value[2]                                # the volume the product requires
+    assert EXECUTION_SUBJECT_REQUIREMENT in required.supplemental_semantic_ids
+    assert required.value.type_ == "ExternalReference" and required.value.key[0].value == f"{LAB}FillVolume"
+    assert relations.Translation is not None                              # the call: unit's uuid, that volume
+
+    operation = resource.control_component_instance.Skills.Skill["Dispensing"].operation
+    variables = {v.id_short: v for v in operation.input_variable}
+    assert set(variables) == {"Volume"}                                   # the device's, nothing else
     assert variables["Volume"].semantic_id == OPERATION_VARIABLE_PARAMETER
     assert variables["Volume"].supplemental_semantic_ids == [f"{LAB}Volume"]
+    assert any(q.semantic_id == OPERATION_VARIABLE_ACCEPTS_REFERENCE for q in variables["Volume"].qualifiers)
 
 
 def test_a_shuttle_move_takes_the_shuttle_to_a_place_the_call_names():
     """MoveToPosition's subjects are the shuttle and the target place; it ends with the shuttle at that place. The
-    place is the call's: its Grounding, beside the pose the device is sent to."""
+    place is the call's: the Translation sends the device the place's pose, and nothing else of the call."""
     from aas_model.submodel_templates.coordinates import VAR_COORDINATE
 
     resource = RESOURCE_FACTORIES["planarShuttle1"]()
@@ -135,7 +146,8 @@ def test_a_shuttle_move_takes_the_shuttle_to_a_place_the_call_names():
     assert [k.value for k in end.ValueReference.value.key[-2:]] == ["Subjects", "1"]
 
     operation = resource.control_component_instance.Skills.Skill["MoveToPosition"].operation
-    assert [v.id_short for v in operation.input_variable] == ["X", "Y", "Theta", "Capability", "Grounding"]
+    assert [v.id_short for v in operation.input_variable] == ["X", "Y", "Theta"]
+    assert relations.Translation is not None
 
 
 def test_the_filling_modules_transfer_point_is_a_place_a_shuttle_can_be_sent_to():

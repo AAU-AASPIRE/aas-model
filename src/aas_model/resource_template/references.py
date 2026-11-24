@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from aas_pydantic import Key, ModelReference
 
-from aas_model.constants import AID_SUBMODEL_ID, CAPABILITIES_SUBMODEL_ID, CCI_SUBMODEL_ID, VARIABLES_SUBMODEL_ID
+from aas_model.constants import (
+    AID_SUBMODEL_ID, CAPABILITIES_SUBMODEL_ID, CCI_SUBMODEL_ID, STATE_DECLARATION_SUBMODEL_ID, VARIABLES_SUBMODEL_ID,
+)
 
 # The idShorts of an asset's one interface per protocol. No protocol is a default: every reference into the AID
 # names its interface.
@@ -57,6 +59,13 @@ def variable_ref(*path: str) -> ModelReference:
     the Variables submodel stores: the resolver checks reference key types against the repository."""
     return ModelReference(key=(Key(type_="Submodel", value=VARIABLES_SUBMODEL_ID), *_collections(*path[:-1]),
                                Key(type_="Property", value=path[-1])))
+
+
+def state_variable_ref(name: str) -> ModelReference:
+    """A state variable of the resource's StateDeclaration: the sink of a mapping that keeps it in the state store
+    (observed state, D36), as a series segment is the sink of one that keeps a time series."""
+    return ModelReference(key=(Key(type_="Submodel", value=STATE_DECLARATION_SUBMODEL_ID),
+                               Key(type_="SubmodelElementCollection", value=name)))
 
 
 def series_segment_ref(group: str, series: str, segment: str = "Live") -> ModelReference:

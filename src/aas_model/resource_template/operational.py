@@ -15,8 +15,13 @@ mappings name it as ResponseSource and the Operation as ResponseSink.
 
 Module control: Occupy and Release are also capabilities of the device
 (``CapabilityDescription/ModuleControl``: Occupying and Releasing, named as the skills),
-with what they need and change: occupying needs room (Occupancy below the
-Capacity) and takes one place, releasing gives it back.
+with what they need and change: occupying hands the unit to the device, which
+then serves it (OccupiedBy); releasing hands it back and frees the device. The
+station's process queue arbitrates between units: Occupy answers SUCCESS once the
+unit's uuid is at its head. Who the device serves is observed: the station-state
+mapping sinks the queue's head into the state store as well as the series row
+(StateDeclaration/OccupiedBy), and the behaviour tree waits for it rather than
+writing it.
 
 State: ``Variables/State/Station`` records the PackML state and the process
 queue over time (measurement ``station_state``); the AAS holds the series, not
@@ -35,10 +40,9 @@ speaks. Pydantic deep-copies defaults per constructed model.
 from typing import Dict
 
 from aas_pydantic import Capability, Property
-from aas_pydantic.submodel_templates.capability_description import PropertyProperty
 from aas_model.submodel_templates.capability_description import (
     ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
-    RealizedBySkill, StatedProperty, StatedPropertySet,
+    RealizedBySkill,
 )
 from aas_pydantic.submodel_templates.asset_interfaces_description import (
     Base, ContentType, EndpointMetadata, Title, securityDefinitions, security_t,
@@ -56,22 +60,23 @@ from aas_model.submodel_templates.aid import (
 )
 from aas_model.submodel_templates.control_component_instance import (
     ExtendedSkill, ExtendedSkills, ResourceControlComponentInstance, ResourceEndpoints, SkillInterfaceRelationship,
-    CapabilityVariable, GroundingVariable, SkillOperation,
+    SkillOperation,
 )
 from aas_model.submodel_templates.variables import LogGroup, StateGroup, Variables
 from aas_model.submodel_templates.execution import (
     CarrierSubject, ConditionOperator, ConditionSet, EffectOperator, EffectSet, EndTerms, ExecutionDuration,
     PlaceSubject, PreTerms, SelfSubject, StateCondition, StateEffect, Subjects, TermSubject, TermValue,
-    TermValueReference, UnitSubject,
+    TermValueReference, Translation, UnitSubject,
 )
+from aas_model.resource_template.translations import COMMAND_STATE_REPLY, command_for_unit
 from aas_pydantic.submodel_templates.time_series import Name
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, RecordReference, TimeSeriesCollection, TimeSeriesMetadata,
     TimeSeriesRecord, TimeSeriesSegments,
 )
 from aas_model.resource_template.references import (
-    MQTT_INTERFACE, OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_property_ref, capability_ref,
-    operation_ref, operation_variable_ref, series_segment_ref, skill_ref, subject_ref,
+    MQTT_INTERFACE, OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_ref,
+    operation_ref, operation_variable_ref, series_segment_ref, skill_ref, state_variable_ref, subject_ref,
 )
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_pydantic.aas_model import AasIdString
@@ -152,22 +157,16 @@ class OperationalVariables(Variables):
 
 class ModuleControlCapabilities(ModuleCapabilitySet):
     """Occupying (Occupy) and Releasing (Release): the device takes a unit off the
-    shuttle at its transfer point, or puts it back on one. Custody (HeldBy) moves between the shuttle and the device,
-    and the device counts the places it fills against its Capacity, which an instance that holds more than one
-    product at a time sets.
+    shuttle at its transfer point, or puts it back on one. Custody (HeldBy, asserted: the unit's) moves between the
+    shuttle and the device; who the device serves (OccupiedBy, observed: the head of its process queue) is the unit
+    until it is released. The station's queue makes one unit wait for another, so occupying needs no free device.
 
     The transfer point is the device's own coordinate: an instance that declares it binds the subject to it (a
-    ModelReference), as the filling module does; until then it is a place, grounded at run time. Who the subjects
-    are in a call is the call's Grounding."""
+    ModelReference), as the filling module does; until then it is a place, bound at run time. Both calls carry the
+    unit's uuid (the Translation), the claim the station queues."""
     CapabilityContainer: Dict[str, ModuleCapabilityContainer] = {
         "Occupying": ModuleCapabilityContainer(
             Capability=Capability(supplemental_semantic_ids=[f"{LAB}Occupying"]),
-            PropertySet={"PropertySet": StatedPropertySet(PropertyContainer={"Capacity": StatedProperty(
-                PropertyProperty={"Capacity": PropertyProperty(
-                    value="1", value_type="xs:int", supplemental_semantic_ids=[f"{LAB}Capacity"],
-                    description="How many products the device holds at a time.",
-                )},
-            )})},
             CapabilityRelations=ModuleCapabilityRelations(
                 CapabilityRealizedBy={"RealizedBy_Occupy": RealizedBySkill(
                     first=capability_ref(MODULE_CONTROL, "Occupying"), second=skill_ref("Occupy"),
@@ -192,13 +191,6 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                         Operator=ConditionOperator(value="equal"),
                         ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Occupying", 2)),
                     ),
-                    "Term_02": StateCondition(
-                        display_name={"en": "Has room"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
-                        Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 0)),
-                        Operator=ConditionOperator(value="less"),
-                        ValueReference=TermValueReference(
-                            value=capability_property_ref(MODULE_CONTROL, "Occupying", "Capacity")),
-                    ),
                 })),
                 EffectSet=EffectSet(End=EndTerms(term={
                     "Term_00": StateEffect(
@@ -208,13 +200,14 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                         ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Occupying", 0)),
                     ),
                     "Term_01": StateEffect(
-                        display_name={"en": "Takes a place"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        display_name={"en": "Serves the unit"}, supplemental_semantic_ids=[f"{LAB}OccupiedBy"],
                         Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Occupying", 0)),
-                        Operator=EffectOperator(value="increase"),
-                        Value=TermValue(value="1", value_type="xs:int"),
+                        Operator=EffectOperator(value="assign"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Occupying", 3)),
                     ),
                 })),
                 Duration=ExecutionDuration(Value=TermValue(value="2.0", value_type="xs:double")),   # nominal, s
+                Translation=Translation.lua(command_for_unit(3), COMMAND_STATE_REPLY),
             ),
         ),
         "Releasing": ModuleCapabilityContainer(
@@ -244,10 +237,10 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                         ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Releasing", 0)),
                     ),
                     "Term_02": StateCondition(
-                        display_name={"en": "Holds one"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        display_name={"en": "Serves the unit"}, supplemental_semantic_ids=[f"{LAB}OccupiedBy"],
                         Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 0)),
-                        Operator=ConditionOperator(value="greater"),
-                        Value=TermValue(value="0", value_type="xs:int"),
+                        Operator=ConditionOperator(value="equal"),
+                        ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Releasing", 3)),
                     ),
                 })),
                 EffectSet=EffectSet(End=EndTerms(term={
@@ -258,13 +251,13 @@ class ModuleControlCapabilities(ModuleCapabilitySet):
                         ValueReference=TermValueReference(value=subject_ref(MODULE_CONTROL, "Releasing", 2)),
                     ),
                     "Term_01": StateEffect(
-                        display_name={"en": "Gives a place back"}, supplemental_semantic_ids=[f"{LAB}Occupancy"],
+                        display_name={"en": "Free again"}, supplemental_semantic_ids=[f"{LAB}OccupiedBy"],
                         Subject=TermSubject(value=subject_ref(MODULE_CONTROL, "Releasing", 0)),
-                        Operator=EffectOperator(value="decrease"),
-                        Value=TermValue(value="1", value_type="xs:int"),
+                        Operator=EffectOperator(value="clear"),
                     ),
                 })),
                 Duration=ExecutionDuration(Value=TermValue(value="2.0", value_type="xs:double")),   # nominal, s
+                Translation=Translation.lua(command_for_unit(3), COMMAND_STATE_REPLY),
             ),
         ),
     }
@@ -299,8 +292,6 @@ class OperationalMqttControlComponent(ResourceControlComponentInstance):
             interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
             operation=SkillOperation(
                 in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
-                # Who it acts on (the unit, the shuttle) and the capability: never sent to the device.
-                input_variable=[CapabilityVariable(), GroundingVariable()],
                 output_variable=[Property(id_short="State", description="The state of the command being executed")],
             ),
         ) for name in LOGGED_SKILLS},
@@ -324,8 +315,6 @@ class OperationalOpcuaControlComponent(ResourceControlComponentInstance):
             interface_reference=affordance_ref(OPCUA_INTERFACE, "actions", name),
             operation=SkillOperation(
                 in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
-                # Who it acts on (the unit, the shuttle) and the capability: never sent to the device.
-                input_variable=[CapabilityVariable(), GroundingVariable()],
                 output_variable=[Property(id_short="State", description="The state of the command being executed")],
             ),
         ) for name in LOGGED_SKILLS},
@@ -454,16 +443,24 @@ end
 """
 
 
-# One row into Variables/State/Station. The occupation queue is written as JSON array text: the field is a
-# string, and an empty Lua table would not encode as an array.
+# One row into Variables/State/Station and, into the state store, who the station serves: the unit whose uuid is at
+# the head of the queue (units are urn:uuid:<uuid>, D35), none when it is empty. The occupation queue is written as
+# JSON array text: the field is a string, and an empty Lua table would not encode as an array.
 _STATE_TRANSFORMATION = """function aimc_main(sources)
     local queue = {queue} or {{}}
-    return {{ Live = {{
-        PackMLState = {state},
-        OccupationState = (#queue == 0) and "[]" or json.encode(queue),
-    }} }}
+    return {{
+        Live = {{
+            PackMLState = {state},
+            OccupationState = (#queue == 0) and "[]" or json.encode(queue),
+        }},
+        OccupiedBy = queue[1] and ("urn:uuid:" .. queue[1]) or nil,
+    }}
 end
 """
+
+# The sinks of the station-state mapping: the series, and the state store (StateDeclaration/OccupiedBy).
+_STATE_SINKS = [SinksItem(SinkId="Live", Sink=series_segment_ref("State", "Station")),
+                SinksItem(SinkId="OccupiedBy", Sink=state_variable_ref("OccupiedBy"))]
 
 
 class OperationalMqttMappings(Aimc):
@@ -472,7 +469,7 @@ class OperationalMqttMappings(Aimc):
             id_short="StationState", DefaultPollingInterval="0.0",
             Sources=[SourcesItem(SourceId="StationState",
                                  Source=affordance_ref(MQTT_INTERFACE, "properties", "StationState"))],
-            Sinks=[SinksItem(SinkId="Live", Sink=series_segment_ref("State", "Station"))],
+            Sinks=_STATE_SINKS,
             Transformation=_STATE_TRANSFORMATION.format(
                 queue="sources.StationState.ProcessQueue", state="sources.StationState.State"),
         ),
@@ -507,7 +504,7 @@ class OperationalOpcuaMappings(Aimc):
             id_short="StationState", DefaultPollingInterval="0.0",
             Sources=[SourcesItem(SourceId=name, Source=affordance_ref(OPCUA_INTERFACE, "properties", name))
                      for name in ("State", "ProcessQueue")],
-            Sinks=[SinksItem(SinkId="Live", Sink=series_segment_ref("State", "Station"))],
+            Sinks=_STATE_SINKS,
             Transformation=_STATE_TRANSFORMATION.format(queue="sources.ProcessQueue", state="sources.State"),
         ),
         # Each skill: the Operation's Uuid into its action's command; Occupy and Release also answer.

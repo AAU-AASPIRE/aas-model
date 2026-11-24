@@ -10,8 +10,8 @@ from basyx.aas import model
 
 from aas_model import build_from_model
 from aas_model.constants import (
-    EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_DURING, EXECUTION_EFFECT, EXECUTION_SUBJECT, LAB,
-    OPERATION_VARIABLE_CAPABILITY, OPERATION_VARIABLE_GROUNDING, PRODUCT_ASSET_TYPE,
+    EXECUTION_AND, EXECUTION_CONDITION, EXECUTION_DURING, EXECUTION_EFFECT, EXECUTION_ONE_OF, EXECUTION_SUBJECT, LAB,
+    PRODUCT_ASSET_TYPE, STATE_VARIABLE,
 )
 from aas_model.batch_instances import BATCH_FACTORIES
 from aas_model.product_instances import PRODUCT_FACTORIES
@@ -164,24 +164,74 @@ def test_subjects_are_an_aas_or_the_semantic_id_of_what_they_stand_for():
     assert _asset(store, own).id == LINEAR_AXIS                                        # Self: its own AAS
 
 
-def test_every_skill_a_call_can_ground_carries_the_capability_and_its_grounding():
-    """A skill realizing a capability with subjects takes the capability a call carries out and who its subjects are
-    (Grounding, in the order of the capability's Subjects) as Operation inputs; a primitive, which its module runs,
-    takes neither."""
-    store, grounded, primitives = _store(), set(), set()
+def test_every_capability_the_tree_runs_translates_its_call_and_the_skill_is_the_devices_alone():
+    """A capability realized by a skill the behaviour tree invokes carries a Translation (Call and Reply, D34), and that
+    skill's Operation holds only what the device's action takes and answers; a capability realized by a primitive,
+    which its module runs, has none. Each capability is realized by exactly one skill."""
+    store, translated, primitives = _store(), set(), set()
     for container in _module_containers(store, every=True):
         relations = container.get_referable("CapabilityRelations")
-        skill = relations.get_referable("RealizedBy").second.resolve(store)
-        inputs = {_semantic_id(v): v for v in skill.get_referable(["Start", "Start"]).input_variable}
+        (realized_by,) = [e for e in relations.value if isinstance(e, model.RelationshipElement)
+                          and e.id_short.startswith("RealizedBy")]
+        skill = realized_by.second.resolve(store)
+        operation = skill.get_referable(["Start", "Start"])
+        assert not any(isinstance(v, model.SubmodelElementCollection) for v in operation.input_variable)
         if any(r.key[0].value.endswith("/Primitive") for r in skill.supplemental_semantic_id):
-            assert OPERATION_VARIABLE_GROUNDING not in inputs
+            assert not _has(container, "CapabilityRelations/Translation"), container.id_short
             primitives.add(skill.id_short)
             continue
-        assert inputs[OPERATION_VARIABLE_CAPABILITY].id_short == "Capability", container.id_short
-        grounding = inputs[OPERATION_VARIABLE_GROUNDING]
-        assert isinstance(grounding, model.SubmodelElementList) and not grounding.value      # filled by a call
-        grounded.add(skill.id_short)
-    assert grounded == {"Dispensing", "Occupy", "Release"} and primitives == {"MoveAxis", "Dispense", "Weigh"}
+        translation = relations.get_referable("Translation")
+        assert b"function call(" in translation.get_referable("Call").value, container.id_short
+        assert b"function reply(" in translation.get_referable("Reply").value, container.id_short
+        translated.add(skill.id_short)
+    assert translated == {"Dispensing", "Occupy", "Release"} and primitives == {"MoveAxis", "Dispense", "Weigh"}
+
+
+def _state_sinks(store, aas: str) -> dict:
+    """Which mapping of an AAS's AIMC sinks into each of its state variables (by idShort): its observed state."""
+    sunk: dict = {}
+    aimc = _submodel(store, aas, "AssetInterfacesMappingConfiguration")
+    for mapping in aimc.get_referable("MappingConfigurations").value:
+        for sink in mapping.get_referable("Sinks").value:
+            target = sink.get_referable("Sink").value.resolve(store)
+            if _semantic_id(target) == STATE_VARIABLE:
+                assert target.id_short not in sunk, f"{target.id_short}: sunk by two mappings"
+                sunk[target.id_short] = mapping
+    return sunk
+
+
+def test_places_and_shuttles_project_their_positions_and_location_is_derived():
+    """Linked projections (D36): the state store is one more sink of a mapping. The filling module's TransferPoint
+    mapping composes the coordinate with the base it is relative to into the transfer point's position; the shuttle's
+    Location mapping sinks its reported position beside the series row, its station-state mapping who it serves. The
+    shuttle's Location is derived from the positions by query, never sunk."""
+    from aas_model.resource_instances import RESOURCE_FACTORIES
+    from aas_model.resource_instances.modules.filling_module import MODULE
+
+    store = _store()
+    shuttle = RESOURCE_FACTORIES["planarShuttle1"]()
+    for identifiable in build_from_model(shuttle):
+        store.add(identifiable)
+
+    def variables(aas: str) -> dict:
+        return {_meaning(v): v for v in _submodel(store, aas, "StateDeclaration").submodel_element}
+
+    place, sunk = variables(MODULE), _state_sinks(store, MODULE)
+    for axis in ("X", "Y"):
+        projected = place[f"{LAB}Absolute{axis}"]
+        mapping = sunk[projected.id_short]
+        sources = {s.get_referable("SourceId").value: s.get_referable("Source").value.resolve(store)
+                   for s in mapping.get_referable("Sources").value}
+        assert {_meaning(c) for c in sources.values()} == {f"{LAB}TransferPoint", f"{LAB}ModuleBase"}
+        assert projected.get_referable("Subject").value.resolve(store) is sources["TransferPoint"]  # the place
+    own, sunk = variables(shuttle.id), _state_sinks(store, shuttle.id)
+    def sink_ids(mapping) -> set:
+        return {s.get_referable("SinkId").value for s in mapping.get_referable("Sinks").value}
+
+    assert sunk["X"] is sunk["Y"] and sink_ids(sunk["X"]) == {"Live", "X", "Y"}    # beside the series row
+    assert sink_ids(sunk["OccupiedBy"]) == {"Live", "OccupiedBy"}                  # the queue's head, beside the row
+    location = own[f"{LAB}Location"]
+    assert location.id_short not in sunk and not any(e.id_short == "Initial" for e in location.value)  # derived
 
 
 def test_every_term_says_in_its_display_name_what_it_states():
@@ -191,7 +241,7 @@ def test_every_term_says_in_its_display_name_what_it_states():
             for _, term in _terms(container, kind):
                 assert term.display_name and term.display_name.get("en"), (container.id_short, term.id_short)
                 terms += 1
-    assert terms == 25
+    assert terms == 26
 
 
 def test_the_offered_filling_is_derived_and_bound_to_its_skill():
@@ -420,7 +470,12 @@ class _Ground:
 
     @staticmethod
     def _literal(prop):
-        return prop.value if isinstance(prop.value, bool) else float(prop.value)
+        if isinstance(prop.value, bool):
+            return prop.value
+        try:
+            return float(prop.value)
+        except ValueError:
+            return str(prop.value)                                          # a URI: lab:InTolerance
 
     def holds(self, goal, grounding: list) -> bool:
         """Whether a goal's condition holds for the subjects it is grounded on."""
@@ -443,7 +498,10 @@ class _Ground:
             return parameters[resolved.id_short]
         return self._literal(resolved)
 
-    def apply(self, container, grounding: list, parameters: dict | None = None) -> None:
+    def apply(self, container, grounding: list, parameters: dict | None = None, outcome: str | None = None) -> None:
+        """Checks Pre and Invariant, then applies the End effects, those of ``outcome`` where they hold a OneOf (what
+        the Translation's reply chose). Observed variables (OccupiedBy) are applied here as the DMP's mapping's next
+        observation would show them."""
         parameters = parameters or {}
         relations = container.get_referable("CapabilityRelations")
         subjects = relations.get_referable("Subjects")
@@ -460,16 +518,24 @@ class _Ground:
         for when, term in _terms(container, "EffectSet"):
             if when != "End":
                 continue
-            key = (self._identity(subjects, grounding, term.get_referable("Subject").value), _meaning(term))
-            operator = term.get_referable("Operator").value
-            if operator == "measured":
-                self.state[key] = "known"
-                continue
-            value = self._operand(subjects, grounding, term, parameters)
-            if operator == "assign":
-                self.state[key] = value
-            else:
-                self.state[key] = (self.state.get(key) or 0) + (value if operator == "increase" else -value)
+            effects = list(term.get_referable(outcome).value) if _semantic_id(term) == EXECUTION_ONE_OF else [term]
+            for effect in effects:
+                self._effect(subjects, grounding, effect, parameters)
+
+    def _effect(self, subjects, grounding: list, term, parameters: dict) -> None:
+        key = (self._identity(subjects, grounding, term.get_referable("Subject").value), _meaning(term))
+        operator = term.get_referable("Operator").value
+        if operator == "measured":
+            self.state[key] = "known"
+            return
+        if operator == "clear":
+            self.state.pop(key, None)
+            return
+        value = self._operand(subjects, grounding, term, parameters)
+        if operator == "assign":
+            self.state[key] = value
+        else:
+            self.state[key] = (self.state.get(key) or 0) + (value if operator == "increase" else -value)
 
 
 def test_a_shuttle_brings_a_vial_the_module_takes_it_and_fills_it():
@@ -486,12 +552,11 @@ def test_a_shuttle_brings_a_vial_the_module_takes_it_and_fills_it():
     shuttle = RESOURCE_FACTORIES["planarShuttle1"]()
     for identifiable in build_from_model(shuttle):
         store.add(identifiable)
-    vial, place = "urn:batch:1/unit/17", _reference_key(ModelReference(key=TRANSFER_POINT))
+    vial, place = "urn:uuid:7f3a9c2e-5b1d-4e8a-9f60-2d4c8b1a0e57", _reference_key(ModelReference(key=TRANSFER_POINT))
     state_initial = {(vial, f"{LAB}Weighed"): False}
     module = _submodel(store, MODULE, "CapabilityDescription")
     move = _submodel(store, shuttle.id, "CapabilityDescription").get_referable(["Transport", "MoveToPosition"])
-    state = {(vial, f"{LAB}HeldBy"): shuttle.id, (vial, f"{LAB}ContentVolume"): 0.0,
-             (MODULE, f"{LAB}Occupancy"): 0.0, **state_initial}
+    state = {(vial, f"{LAB}HeldBy"): shuttle.id, (vial, f"{LAB}ContentVolume"): 0.0, **state_initial}
     line = _Ground(store, state)
 
     # Each call's Grounding: who the capability's subjects are, in their order (fixed ones as the model states them).
@@ -504,33 +569,35 @@ def test_a_shuttle_brings_a_vial_the_module_takes_it_and_fills_it():
     line.apply(move, [shuttle.id, place])                                   # the shuttle drives to the module
     assert state[(shuttle.id, f"{LAB}Location")] == place
     line.apply(occupying, handover)                                         # the module takes the vial
-    assert state[(vial, f"{LAB}HeldBy")] == MODULE and state[(MODULE, f"{LAB}Occupancy")] == 1.0
-    line.apply(module.get_referable(["OfferedCapabilities", "Filling"]), [MODULE, vial], {"Volume": 2.0})
+    assert state[(vial, f"{LAB}HeldBy")] == MODULE and state[(MODULE, f"{LAB}OccupiedBy")] == vial
+    # Filling's subjects include what the vial requires (bound when the tree is built); the reply chose the outcome.
+    filling = [MODULE, vial, "vial:RequiredFillVolume", "vial:RequiredFillWeight"]
+    line.apply(module.get_referable(["OfferedCapabilities", "Filling"]), filling, {"Volume": 2.0}, "InTolerance")
     assert state[(vial, f"{LAB}ContentVolume")] == 2.0 and state[(vial, f"{LAB}FillWeight")] == "known"
+    assert state[(vial, f"{LAB}FillResult")] == f"{LAB}InTolerance"
     line.apply(module.get_referable(["ModuleControl", "Releasing"]), handover)
-    assert state[(vial, f"{LAB}HeldBy")] == shuttle.id and state[(MODULE, f"{LAB}Occupancy")] == 0.0
+    assert state[(vial, f"{LAB}HeldBy")] == shuttle.id and (MODULE, f"{LAB}OccupiedBy") not in state
     # The batch's goal, applied to this unit, now holds; for a unit that was not filled, it does not.
     goal = _submodel(store, BATCH, "Goal")
-    assert line.holds(goal, [vial]) and not line.holds(goal, ["urn:batch:1/unit/18"])
+    assert line.holds(goal, [vial]) and not line.holds(goal, ["urn:uuid:00000000-0000-4000-8000-000000000018"])
 
 
-def test_the_batch_names_its_product_its_units_and_the_goal_each_unit_is_to_reach():
-    from aas_model.batch_instances.vial_2ml_batch import AAS_ID as BATCH, BATCH_ID
+def test_the_batch_names_its_product_how_many_and_the_goal_each_unit_is_to_reach():
+    """Products are modelled at batch level only (D10): the batch lists no units; each BT instance mints the IRI of
+    the unit it makes (D35)."""
+    from aas_model.batch_instances.vial_2ml_batch import AAS_ID as BATCH
     from aas_model.product_instances.vial_2ml import AAS_ID as VIAL
 
     store = _store()
     information = _submodel(store, BATCH, "BatchInformation")
     assert information.get_referable("ProductType").value.resolve(store).id == VIAL
-    units = _submodel(store, BATCH, "BatchUnits").get_referable("Units")
-    assert isinstance(units, model.SubmodelElementList)
-    iris = [unit.value.key[0].value for unit in units.value]
-    assert len(iris) == int(information.get_referable("Quantity").value) == 3
-    assert all(isinstance(unit.value, model.ExternalReference) for unit in units.value)
-    assert iris == [f"{BATCH_ID}/unit/{n}" for n in (1, 2, 3)]
+    assert int(information.get_referable("Quantity").value) == 3
+    submodels = {s.id_short for s in store if isinstance(s, model.Submodel) and s.id.startswith(BATCH)}
+    assert submodels == {"BatchInformation", "Goal"}
 
     goal = _submodel(store, BATCH, "Goal")
     (each,) = goal.get_referable("Subjects").value
-    assert _is_unit(each) and each.display_name["en"] == "Each unit"
+    assert _is_unit(each) and each.display_name["en"] == "The unit"
     terms = list(goal.get_referable("Condition").value)
     assert {_meaning(t) for t in terms} == {f"{LAB}ContentVolume", f"{LAB}Weighed"}
     assert all(t.get_referable("Subject").value.resolve(store) is each for t in terms)
@@ -573,9 +640,10 @@ def test_every_capability_of_the_line_says_how_long_it_takes():
 
 
 def test_a_fond_planner_finds_the_outcomes_a_filling_can_have():
-    """Non-determinism is generated from what the AASs state (D23): failure outcomes from the errors the module's
-    skills can answer with, and the in/out-of-tolerance split of a measured result from the product's requirement
-    on it, recorded in a FillResult the product declares."""
+    """Non-determinism is stated in the AASs (D23): failure outcomes from the errors the module's skills can answer
+    with, and the in/out-of-tolerance split of a measured result, Filling's OneOf, recorded in a FillResult the product
+    declares. Which outcome happened, the Translation's reply says, from the measured result and the product's
+    requirement on it, a subject of Filling."""
     from aas_model.product_instances.vial_2ml import AAS_ID as VIAL
     from aas_model.resource_instances.modules.filling_module import MODULE
 
@@ -585,9 +653,14 @@ def test_a_fond_planner_finds_the_outcomes_a_filling_can_have():
     assert len(codes) == 4 and len(set(codes.values())) == 4                  # one outcome each, told apart
 
     filling = _submodel(store, MODULE, "CapabilityDescription").get_referable(["OfferedCapabilities", "Filling"])
-    measured = {_meaning(t) for when, t in _terms(filling, "EffectSet")
-                if t.get_referable("Operator").value == "measured" and _is_unit(_subject(store, t))}
+    measured = {_meaning(t) for when, t in _terms(filling, "EffectSet") if _semantic_id(t) == EXECUTION_EFFECT
+                and t.get_referable("Operator").value == "measured" and _is_unit(_subject(store, t))}
     assert measured == {f"{LAB}FillWeight"}
+    (one_of,) = [t for _, t in _terms(filling, "EffectSet") if _semantic_id(t) == EXECUTION_ONE_OF]
+    results = {o.id_short: o.get_referable("Term_00").get_referable("Value").value for o in one_of.value}
+    assert results == {"InTolerance": f"{LAB}InTolerance", "OutOfTolerance": f"{LAB}OutOfTolerance"}
+    subjects = filling.get_referable(["CapabilityRelations", "Subjects"]).value
+    assert {s.value.key[0].value for s in subjects[2:]} == {f"{LAB}FillVolume", f"{LAB}FillWeight"}
     required = _submodel(store, VIAL, "CapabilityDescription").get_referable(["RequiredCapabilities", "Filling"])
     assert _meaning(required.get_referable("Capability")) == _meaning(filling.get_referable("Capability"))
     bounds = {_meaning(entry.get_referable("Value")): entry.get_referable("Value")

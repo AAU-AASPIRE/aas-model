@@ -9,7 +9,7 @@ These models follow the same pattern as aas_pydantic generated templates:
 Modules:
     aid                    — DMP-extended AID (MQTT + generic WoT action layer)
     capability_description — IDTA Capability Description, with conditions as state constraints, Subjects, EffectSet
-    execution              — what a capability needs and changes: subjects, term trees, the EffectSet
+    execution              — what a capability needs and changes: subjects, term trees, the EffectSet, Translation
     state_declaration      — StateDeclaration submodel: state no data point reports, and its store
     control_component_instance — Extended CCI Skill; Operation variable roles (subject, parameter)
     variables              — Variables submodel (custom, not yet IDTA)
@@ -99,9 +99,11 @@ from .capability_description import (
     ModuleCapabilityDescription,
     ModuleCapabilitySet,
 )
-from .execution import EffectSet, Subjects
+from .execution import EffectSet, RequirementSubject, Subjects, Translation
 from .state_declaration import StateDeclaration, StateVariable
-from .control_component_instance import CapabilityVariable, GroundingVariable, ParameterVariable
+from .control_component_instance import (
+    AcceptsReference, ParameterVariable,
+)
 from .variables import Variables
 from .parameters import Parameters
 # The AIMC submodel is the GENERATED IDTA template + the DMP extension
@@ -160,11 +162,12 @@ __all__ = [
     "ModuleCapabilitySet",
     "EffectSet",
     "Subjects",
+    "RequirementSubject",
+    "Translation",
     "StateDeclaration",
     "StateVariable",
     "ParameterVariable",
-    "CapabilityVariable",
-    "GroundingVariable",
+    "AcceptsReference",
     # Skills
     "ExtendedSkill",
     "ExtendedSkills",
