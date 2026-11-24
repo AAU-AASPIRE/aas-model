@@ -1,3 +1,5 @@
+<img src=".github/icon.png" alt="" width="96" align="right">
+
 # aas-model
 
 The lab's AAS model in full: the pydantic types of the product, process and resource AASs, the
