@@ -3660,6 +3660,36 @@
           ],
           "value": [
             {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "number",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
+            {
               "description": [
                 {
                   "language": "en",
@@ -3706,6 +3736,36 @@
             }
           ],
           "value": [
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "number",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
             {
               "description": [
                 {
@@ -3754,6 +3814,36 @@
           ],
           "value": [
             {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "number",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
+            {
               "description": [
                 {
                   "language": "en",
@@ -3801,6 +3891,36 @@
           ],
           "value": [
             {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "number",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
+            {
               "description": [
                 {
                   "language": "en",
@@ -3845,6 +3965,38 @@
               ],
               "type": "ExternalReference"
             }
+          ],
+          "value": [
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "number",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            }
           ]
         },
         {
@@ -3868,6 +4020,38 @@
                 }
               ],
               "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "reference",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
             }
           ]
         },
@@ -3893,6 +4077,38 @@
               ],
               "type": "ExternalReference"
             }
+          ],
+          "value": [
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "number",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            }
           ]
         },
         {
@@ -3916,6 +4132,38 @@
                 }
               ],
               "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "reference",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
             }
           ]
         },
@@ -3943,6 +4191,36 @@
             }
           ],
           "value": [
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "boolean",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
             {
               "description": [
                 {
@@ -3991,6 +4269,36 @@
           ],
           "value": [
             {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "boolean",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
+            {
               "description": [
                 {
                   "language": "en",
@@ -4038,6 +4346,36 @@
           ],
           "value": [
             {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "boolean",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
+            {
               "description": [
                 {
                   "language": "en",
@@ -4084,6 +4422,36 @@
             }
           ],
           "value": [
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "boolean",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            },
             {
               "description": [
                 {

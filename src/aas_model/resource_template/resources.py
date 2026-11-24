@@ -133,7 +133,7 @@ class PhysicalResource(Resource):
 def occupied_by() -> StateVariable:
     """Who an operational device serves: the head of its process queue. Observed: the station-state mapping sinks
     it here (D36)."""
-    return StateVariable(supplemental_semantic_ids=[f"{LAB}OccupiedBy"])
+    return StateVariable.own(f"{LAB}OccupiedBy")
 
 
 class OperationalResource(PhysicalResource):
@@ -336,9 +336,9 @@ class PlanarShuttle(Shuttle):
     # A move's effect on Location is not written; the behaviour tree waits until the reported position confirms it.
     state_declaration: Optional[StateDeclaration] = StateDeclaration(id_short="StateDeclaration", variable={
         "OccupiedBy": occupied_by(),
-        "Location": StateVariable(supplemental_semantic_ids=[f"{LAB}Location"]),
+        "Location": StateVariable.own(f"{LAB}Location"),
         # Observed: the Location mapping sinks the reported position here, beside its series row.
-        **{axis: StateVariable(supplemental_semantic_ids=[f"{LAB}Absolute{axis}"]) for axis in ("X", "Y")},
+        **{axis: StateVariable.own(f"{LAB}Absolute{axis}") for axis in ("X", "Y")},
     })
     parameters: ResourceParameters = ResourceParameters(
         id_short="Parameters",

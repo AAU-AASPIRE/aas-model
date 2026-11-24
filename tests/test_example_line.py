@@ -200,6 +200,35 @@ def _state_sinks(store, aas: str) -> dict:
     return sunk
 
 
+def test_every_state_variable_is_typed_and_a_resources_names_its_subject():
+    """A StateVariable carries its meaning's value type and cardinality; a resource's names its subject (its own AAS,
+    or an element of it), which resolves; a product type's are about each unit and name none."""
+    from aas_model.product_instances.vial_2ml import AAS_ID as VIAL
+    from aas_model.resource_instances import RESOURCE_FACTORIES
+
+    store = _store()
+    for identifiable in build_from_model(RESOURCE_FACTORIES["planarShuttle1"]()):
+        store.add(identifiable)
+    checked = 0
+    for submodel in store:
+        if not isinstance(submodel, model.Submodel) or submodel.id_short != "StateDeclaration":
+            continue
+        for variable in submodel.submodel_element:
+            if _semantic_id(variable) != STATE_VARIABLE:
+                continue
+            named = {e.id_short: e for e in variable.value}
+            assert named["ValueType"].value in {"number", "boolean", "string", "reference"}, variable.id_short
+            assert named["Cardinality"].value in {"single", "set"}, variable.id_short
+            if submodel.id.startswith(VIAL):
+                assert "Subject" not in named, variable.id_short
+            else:
+                reference, owner = named["Subject"].value, submodel.id.split("/submodels/")[0]
+                assert reference.resolve(store) is not None, variable.id_short
+                assert reference.key[0].value == owner or reference.key[0].value.startswith(owner + "/submodels/")
+            checked += 1
+    assert checked >= 20
+
+
 def test_places_and_shuttles_project_their_positions_and_location_is_derived():
     """Linked projections (D36): the state store is one more sink of a mapping. The filling module's TransferPoint
     mapping composes the coordinate with the base it is relative to into the transfer point's position; the shuttle's

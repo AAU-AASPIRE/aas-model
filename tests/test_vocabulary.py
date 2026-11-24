@@ -55,6 +55,17 @@ def test_every_state_property_the_line_uses_has_a_cardinality_and_a_value_type()
     assert {str(o) for _, _, o in graph.triples((None, LAB.cardinality, None))} <= {"single", "set"}
 
 
+def test_the_value_types_and_cardinalities_aas_model_writes_are_the_vocabularys():
+    """Every StateVariable carries its meaning's lab:valueType and lab:cardinality (D32: generated complete), from
+    aas_model.state_vocabulary, which must say what the vocabulary says."""
+    from aas_model.state_vocabulary import STATE_PROPERTIES
+
+    graph = rdflib.Graph().parse(VOCABULARY)
+    stated = {str(s): (str(graph.value(s, LAB.valueType)), str(o))
+              for s, _, o in graph.triples((None, LAB.cardinality, None))}
+    assert STATE_PROPERTIES == stated
+
+
 def test_custody_and_place_are_references_and_occupying_is_named_as_its_skill():
     graph = rdflib.Graph().parse(VOCABULARY)
     for prop in (LAB.HeldBy, LAB.Location):

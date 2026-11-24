@@ -71,7 +71,7 @@ from aas_model.resource_template.translations import COMPLETED_REPLY, NO_INPUTS_
 from aas_model.submodel_templates import Aimc, AimcMappingConfiguration, AimcMappingConfigurations
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SinksItem, SourcesItem
 from aas_model.submodel_templates.state_declaration import (
-    StateDeclaration, StateVariable, StateVariableSubject,
+    StateDeclaration, StateVariable,
 )
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, TimeSeriesCollection, TimeSeriesMetadata, TimeSeriesRecord,
@@ -236,7 +236,7 @@ def filling_linear_axis() -> Component:
         state_declaration=StateDeclaration(id_short="StateDeclaration", variable={
             # Observed once the module's interface is mapped: the mapping that writes the module's LinearAxis
             # series (AXIS_POSITION_FIELD) sinks the position here too.
-            "Position": StateVariable(supplemental_semantic_ids=[f"{LAB}Position"]),
+            "Position": StateVariable.own(f"{LAB}Position"),
         }),
         # What the axis does wherever it is built in: it ends where it was sent, at its speed.
         capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
@@ -684,11 +684,9 @@ def filling_module() -> Module:
         # TransferPoint mapping below sinks it, so a query can tell whether a shuttle is at it; D36). The module reports no process queue, so who it serves is asserted by the
         # tree that occupies it until it does (plan, open question 24).
         state_declaration=StateDeclaration(id_short="StateDeclaration", variable={
-            "OccupiedBy": StateVariable(supplemental_semantic_ids=[f"{LAB}OccupiedBy"]),
-            **{f"TransferPoint{axis}": StateVariable(
-                supplemental_semantic_ids=[f"{LAB}Absolute{axis}"],
-                Subject=StateVariableSubject(value=ModelReference(key=TRANSFER_POINT)),
-            ) for axis in ("X", "Y")},
+            "OccupiedBy": StateVariable.own(f"{LAB}OccupiedBy"),
+            **{f"TransferPoint{axis}": StateVariable.about(f"{LAB}Absolute{axis}", ModelReference(key=TRANSFER_POINT))
+               for axis in ("X", "Y")},
         }),
         # The transfer point's position in the line's frame, into the state store: the coordinate and the base it is
         # relative to are the mapping's sources (static elements, read again when one changes), composed in its Lua.

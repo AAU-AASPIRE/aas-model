@@ -1015,6 +1015,66 @@
               ],
               "type": "ExternalReference"
             }
+          ],
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
+                }
+              ],
+              "idShort": "Subject",
+              "modelType": "ReferenceElement",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": {
+                "keys": [
+                  {
+                    "type": "AssetAdministrationShell",
+                    "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS"
+                  }
+                ],
+                "type": "ModelReference"
+              }
+            },
+            {
+              "idShort": "ValueType",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "number",
+              "valueType": "xs:string"
+            },
+            {
+              "idShort": "Cardinality",
+              "modelType": "Property",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": "single",
+              "valueType": "xs:string"
+            }
           ]
         },
         {

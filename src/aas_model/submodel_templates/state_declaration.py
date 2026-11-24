@@ -22,16 +22,23 @@ A variable is one of three kinds (plan, D36):
   what the tree waits for, as for an observed one.
 
 Which kind a variable is, is stated where it is decided: no mapping sinks into an asserted one, exactly one into an
-observed one, and its meaning marks a derived one. A variable is about the AAS it is declared on, unless ``Subject``
-names an element of it (a coordinate: a place). A product type declares the state of its units; a resource declares
-its own. Whether a state variable has one value or a set, and what kind of value, is its meaning's (the lab
-vocabulary's lab:cardinality and lab:valueType; vocabulary/lab-execution.ttl).
+observed one, and its meaning marks a derived one. A resource's variable names its ``Subject`` explicitly: its own AAS,
+or an element of it (a coordinate: a place); a product type declares the state of its units, and its variables name
+none. Whether a state variable has one value or a set, and what kind of value, is its meaning's (the lab vocabulary's
+lab:cardinality and lab:valueType; vocabulary/lab-execution.ttl), written onto the variable so that no consumer
+reads the vocabulary at run time.
+
+A subject's IRI in the state store: an AAS is its id; an element is ``<submodel id>#<idShortPath>`` (list items by
+``[index]``); a unit is the ``urn:uuid:`` IRI its tree minted.
 
 Structure::
 
     StateDeclaration
     ├── <variable>               StateVariable: what it means (supplemental semantic id, the lab vocabulary)
-    │   ├── Subject              the element it is about, where not this AAS (a coordinate: a place)
+    │   ├── Subject              who it is about: the resource's own AAS, or an element of it (a coordinate: a place);
+    │   │                        none on a product type, whose variables are about each unit
+    │   ├── ValueType            the meaning's lab:valueType (number, boolean, string, reference), from the vocabulary
+    │   ├── Cardinality          the meaning's lab:cardinality (single, set), from the vocabulary
     │   └── Initial              the value a new subject starts with (for a unit, written when its tree admits it, D35)
     └── Target                   SparqlTarget: the state store the values are written to
 
@@ -43,12 +50,15 @@ from __future__ import annotations
 
 from typing import ClassVar, Dict, Optional, TypeAlias
 
-from aas_pydantic import Property, ReferenceElement, Submodel, SubmodelElementCollection
+from aas_pydantic import Key, ModelReference, Property, ReferenceElement, Submodel, SubmodelElementCollection
+from pydantic import model_validator
 
 from aas_model.constants import (
     SM_STATE_DECLARATION, STATE_SPARQL_TARGET, STATE_SPARQL_TARGET_ENDPOINT, STATE_SPARQL_TARGET_GRAPH,
-    STATE_STORE_GRAPH, STATE_STORE_ORIGIN, STATE_VARIABLE, STATE_VARIABLE_INITIAL, STATE_VARIABLE_SUBJECT,
+    STATE_STORE_GRAPH, STATE_STORE_ORIGIN, STATE_VARIABLE, STATE_VARIABLE_CARDINALITY, STATE_VARIABLE_INITIAL,
+    STATE_VARIABLE_SUBJECT, STATE_VARIABLE_VALUE_TYPE,
 )
+from aas_model.state_vocabulary import STATE_PROPERTIES
 
 
 class StateVariableInitial(Property):
@@ -62,16 +72,60 @@ StateVariableInitial_t: TypeAlias = StateVariableInitial  # a field may share th
 class StateVariableSubject(ReferenceElement):
     id_short: str = "Subject"
     semantic_id: str = STATE_VARIABLE_SUBJECT
-    description: str = "The element this variable is about, where it is not the AAS it is declared on (a place)."
+    description: str = ("Who the variable is about: the resource's own AAS, or an element of it (a place). A product "
+                        "type's variables are about each of its units and have none.")
 
 StateVariableSubject_t: TypeAlias = StateVariableSubject  # a field may share the class's id_short
 
 
+class StateVariableValueType(Property):
+    """The meaning's value type in the vocabulary (lab:valueType): number, boolean, string or reference."""
+    id_short: str = "ValueType"
+    semantic_id: str = STATE_VARIABLE_VALUE_TYPE
+    value_type: str = "xs:string"
+
+StateVariableValueType_t: TypeAlias = StateVariableValueType  # a field may share the class's id_short
+
+
+class StateVariableCardinality(Property):
+    """The meaning's cardinality in the vocabulary (lab:cardinality): single or set."""
+    id_short: str = "Cardinality"
+    semantic_id: str = STATE_VARIABLE_CARDINALITY
+    value_type: str = "xs:string"
+
+StateVariableCardinality_t: TypeAlias = StateVariableCardinality  # a field may share the class's id_short
+
+
 class StateVariable(SubmodelElementCollection):
-    """One state variable of the subject. What it means rides as a supplemental semantic id."""
+    """One state variable of the subject. What it means rides as a supplemental semantic id; its value type and
+    cardinality are the meaning's in the vocabulary, written here from it (``state_vocabulary``)."""
     semantic_id: str = STATE_VARIABLE
     Subject: Optional[StateVariableSubject_t] = None
+    ValueType: Optional[StateVariableValueType_t] = None
+    Cardinality: Optional[StateVariableCardinality_t] = None
     Initial: Optional[StateVariableInitial_t] = None
+
+    @model_validator(mode="after")
+    def _typed_as_its_meaning(self):
+        meaning = self.supplemental_semantic_ids[0] if self.supplemental_semantic_ids else None
+        if meaning in STATE_PROPERTIES:
+            value_type, cardinality = STATE_PROPERTIES[meaning]
+            if self.ValueType is None:
+                self.ValueType = StateVariableValueType(value=value_type)
+            if self.Cardinality is None:
+                self.Cardinality = StateVariableCardinality(value=cardinality)
+        return self
+
+    @classmethod
+    def own(cls, meaning: str, **kwargs) -> "StateVariable":
+        """A variable about the resource whose AAS declares it."""
+        return cls(supplemental_semantic_ids=[meaning], Subject=StateVariableSubject(
+            value=ModelReference(key=(Key(type_="AssetAdministrationShell", value="{aas_id}"),))), **kwargs)
+
+    @classmethod
+    def about(cls, meaning: str, element: ModelReference, **kwargs) -> "StateVariable":
+        """A variable about an element of the resource's AAS (a place: a coordinate)."""
+        return cls(supplemental_semantic_ids=[meaning], Subject=StateVariableSubject(value=element), **kwargs)
 
 
 class SparqlEndpoint(Property):
