@@ -10,7 +10,7 @@ Modules:
     aid                    — DMP-extended AID (MQTT + generic WoT action layer)
     capability_description — IDTA Capability Description, with conditions as state constraints, Subjects, EffectSet
     execution              — what a capability needs and changes: subjects, term trees, the EffectSet, Translation
-    state_declaration      — StateDeclaration submodel: state no data point reports, and its store
+    knowledge              — Knowledge SMC of Variables: the state variables kept in the knowledge graph, and its store
     control_component_instance — Extended CCI Skill; Operation variable roles (subject, parameter)
     variables              — Variables submodel (custom, not yet IDTA)
     parameters             — Parameters submodel (custom, not yet IDTA)
@@ -100,7 +100,7 @@ from .capability_description import (
     ModuleCapabilitySet,
 )
 from .execution import EffectSet, RequirementSubject, Subjects, Translation
-from .state_declaration import StateDeclaration, StateVariable
+from .knowledge import Knowledge, StateVariable
 from .control_component_instance import (
     AcceptsReference, ParameterVariable,
 )
@@ -156,7 +156,7 @@ __all__ = [
     "OpcuaEventField",
     "UavEventType",
     "UavEventField",
-    # Capability Description with its execution semantics, StateDeclaration, Operation variable roles
+    # Capability Description with its execution semantics, Knowledge, Operation variable roles
     "ModuleCapabilityContainer",
     "ModuleCapabilityDescription",
     "ModuleCapabilitySet",
@@ -164,7 +164,7 @@ __all__ = [
     "Subjects",
     "RequirementSubject",
     "Translation",
-    "StateDeclaration",
+    "Knowledge",
     "StateVariable",
     "ParameterVariable",
     "AcceptsReference",

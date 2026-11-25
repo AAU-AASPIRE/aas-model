@@ -1,9 +1,14 @@
 """
-StateDeclaration submodel — the state variables of a subject, of what kind they are, and where they are kept.
+Knowledge — the SMC of an asset's Variables that declares its state as the knowledge graph keeps it.
 
-A custom (non-IDTA) submodel. The state variables a capability's conditions and effects name are declared once, on
-the AAS of their subject: what the asset reports (a station's occupation, a shuttle's position), and what only
-effects change (a unit's content, who holds it).
+A custom (non-IDTA) collection beside the time series of ``Variables`` (``variables.py``), and kept like one: a
+time series (``TimeSeriesCollection``) states the fields of its records and the InfluxDB they are written to, the
+Knowledge states the statements kept about the asset (each a state variable: a predicate of the lab vocabulary about a
+subject) and the state store they are written to. A mapping sinks into a variable as it sinks into a series segment.
+
+The state variables a capability's conditions and effects name are declared once, in the Knowledge of their
+subject's AAS: what the asset reports (a station's occupation, a shuttle's position), and what only effects change (a
+unit's content, who holds it). A product type has a Variables submodel for its Knowledge alone.
 
 A variable is one of three kinds (plan, D36):
 
@@ -33,14 +38,15 @@ A subject's IRI in the state store: an AAS is its id; an element is ``<submodel 
 
 Structure::
 
-    StateDeclaration
-    ├── <variable>               StateVariable: what it means (supplemental semantic id, the lab vocabulary)
-    │   ├── Subject              who it is about: the resource's own AAS, or an element of it (a coordinate: a place);
-    │   │                        none on a product type, whose variables are about each unit
-    │   ├── ValueType            the meaning's lab:valueType (number, boolean, string, reference), from the vocabulary
-    │   ├── Cardinality          the meaning's lab:cardinality (single, set), from the vocabulary
-    │   └── Initial              the value a new subject starts with (for a unit, written when its tree admits it, D35)
-    └── Target                   SparqlTarget: the state store the values are written to
+    Variables
+    └── Knowledge
+        ├── <variable>           StateVariable: what it means (supplemental semantic id, the lab vocabulary)
+        │   ├── Subject          who it is about: the resource's own AAS, or an element of it (a coordinate: a place);
+        │   │                    none on a product type, whose variables are about each unit
+        │   ├── ValueType        the meaning's lab:valueType (number, boolean, string, reference), from the vocabulary
+        │   ├── Cardinality      the meaning's lab:cardinality (single, set), from the vocabulary
+        │   └── Initial          the value a new subject starts with (for a unit, written when its tree admits it, D35)
+        └── Target               SparqlTarget: the state store the values are written to
 
 Two writers, never of the same variable: the DMP's mappings write observed variables, the behaviour tree applies
 effects to asserted ones, in the Target.
@@ -48,15 +54,16 @@ effects to asserted ones, in the Target.
 
 from __future__ import annotations
 
-from typing import ClassVar, Dict, Optional, TypeAlias
+from typing import Dict, Optional, TypeAlias
 
-from aas_pydantic import Key, ModelReference, Property, ReferenceElement, Submodel, SubmodelElementCollection
+from aas_pydantic import Key, ModelReference, Property, ReferenceElement, SubmodelElementCollection
+from aas_pydantic.aas_model import AasIdString
 from pydantic import model_validator
 
 from aas_model.constants import (
-    SM_STATE_DECLARATION, STATE_SPARQL_TARGET, STATE_SPARQL_TARGET_ENDPOINT, STATE_SPARQL_TARGET_GRAPH,
+    STATE_SPARQL_TARGET, STATE_SPARQL_TARGET_ENDPOINT, STATE_SPARQL_TARGET_GRAPH,
     STATE_STORE_GRAPH, STATE_STORE_ORIGIN, STATE_VARIABLE, STATE_VARIABLE_CARDINALITY, STATE_VARIABLE_INITIAL,
-    STATE_VARIABLE_SUBJECT, STATE_VARIABLE_VALUE_TYPE,
+    STATE_VARIABLE_SUBJECT, STATE_VARIABLE_VALUE_TYPE, VARIABLES_KNOWLEDGE,
 )
 from aas_model.state_vocabulary import STATE_PROPERTIES
 
@@ -154,11 +161,11 @@ class SparqlTarget(SubmodelElementCollection):
 SparqlTarget_t: TypeAlias = SparqlTarget  # a field may share the class's id_short
 
 
-class StateDeclaration(Submodel):
-    semantic_id: str = SM_STATE_DECLARATION
-    description: str = "The state variables of this subject, of which kind each is, and the store they are kept in."
-    VERSION: ClassVar[str] = "1"
-    REVISION: ClassVar[str] = "0"
+class Knowledge(SubmodelElementCollection):
+    """The state variables of this asset (or, on a product type, of each of its units) and the store they are kept in."""
+    id_short: AasIdString = "Knowledge"
+    semantic_id: str = VARIABLES_KNOWLEDGE
+    description: str = "The state kept about this asset in the knowledge graph: its variables, and the store they are kept in."
 
     variable: Dict[str, StateVariable] = {}
     Target: SparqlTarget_t = SparqlTarget()
@@ -166,4 +173,6 @@ class StateDeclaration(Submodel):
 
 StateVariable.model_rebuild()
 SparqlTarget.model_rebuild()
-StateDeclaration.model_rebuild()
+Knowledge_t: TypeAlias = Knowledge  # a field may share the class's id_short
+
+Knowledge.model_rebuild()

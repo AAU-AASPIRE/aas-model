@@ -11,9 +11,10 @@ through ``Resource.model_validate_json()``.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Dict, Optional
 
 from aas_pydantic import AAS, Capability
+from pydantic import model_validator
 from aas_pydantic.submodel_templates.hierarchical_structures import HierarchicalStructures
 from aas_pydantic.submodel_templates.nameplate import (
     AddressInformation, AddressInformation_t, CityTown, ManufacturerName, ManufacturerProductDesignation, Nameplate,
@@ -30,9 +31,7 @@ from aas_model.submodel_templates.execution import (
     RequirementSubject, SelfSubject,
     StateCondition, StateEffect, Subjects, TermSubject, TermValue, TermValueReference, Translation, UnitSubject,
 )
-from aas_model.submodel_templates.state_declaration import (
-    StateDeclaration, StateVariable,
-)
+from aas_model.submodel_templates.knowledge import Knowledge, StateVariable
 from aas_model.resource_template.translations import COMMAND_STATE_REPLY, LAB_PREFIX, UNIT_UUID
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription
 from aas_model.submodel_templates.control_component_instance import ResourceControlComponentInstance
@@ -116,8 +115,20 @@ class Resource(AAS):
     )
     # ── Optional submodels (no defaults — stations opt in) ────────────────
     hierarchical_structures: Optional[ResourceHierarchicalStructures] = None
-    # The state of this resource that effects change and no data point reports.
-    state_declaration: Optional[StateDeclaration] = None
+
+    @classmethod
+    def knowledge(cls) -> Dict[str, StateVariable]:
+        """The state variables a resource of this type declares in its Variables/Knowledge: none unless its type says."""
+        return {}
+
+    # The Knowledge is added unless authored, not a class default, as a station's series are (``OperationalVariables``):
+    # the resource restored from JSON holds what was authored.
+    @model_validator(mode="after")
+    def _declares_what_is_known_of_it(self):
+        variables = getattr(self, "variables", None)
+        if variables is not None and variables.Knowledge is None and (declared := self.knowledge()):
+            variables.Knowledge = Knowledge(variable=declared)
+        return self
 
 
 # Existing registration-service consumers import this name.
@@ -132,16 +143,18 @@ class PhysicalResource(Resource):
 
 def occupied_by() -> StateVariable:
     """Who an operational device serves: the head of its process queue. Observed: the station-state mapping sinks
-    it here (D36)."""
+    it into Variables/Knowledge/OccupiedBy (D36)."""
     return StateVariable.own(f"{LAB}OccupiedBy")
 
 
 class OperationalResource(PhysicalResource):
     """Operational physical asset, without an assumed native protocol. Every one has module control (Occupy,
-    Release) and reports its process queue, so it declares who it serves: the unit at the head of the queue."""
-    state_declaration: Optional[StateDeclaration] = StateDeclaration(id_short="StateDeclaration", variable={
-        "OccupiedBy": occupied_by(),
-    })
+    Release) and reports its process queue, so its Knowledge declares who it serves: the unit at the head of the
+    queue."""
+
+    @classmethod
+    def knowledge(cls) -> Dict[str, StateVariable]:
+        return {"OccupiedBy": occupied_by()}
 
 
 # ── Stations ─────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -334,12 +347,14 @@ class PlanarShuttle(Shuttle):
     # state store by the mapping that writes its Location series (observed, mm in the table's frame), and the
     # place that position is at (Location: derived by query from the places' projected positions, never stored; D36).
     # A move's effect on Location is not written; the behaviour tree waits until the reported position confirms it.
-    state_declaration: Optional[StateDeclaration] = StateDeclaration(id_short="StateDeclaration", variable={
-        "OccupiedBy": occupied_by(),
-        "Location": StateVariable.own(f"{LAB}Location"),
-        # Observed: the Location mapping sinks the reported position here, beside its series row.
-        **{axis: StateVariable.own(f"{LAB}Absolute{axis}") for axis in ("X", "Y")},
-    })
+    @classmethod
+    def knowledge(cls) -> Dict[str, StateVariable]:
+        return {
+            "OccupiedBy": occupied_by(),
+            "Location": StateVariable.own(f"{LAB}Location"),
+            # Observed: the Location mapping sinks the reported position here, beside its series row.
+            **{axis: StateVariable.own(f"{LAB}Absolute{axis}") for axis in ("X", "Y")},
+        }
     parameters: ResourceParameters = ResourceParameters(
         id_short="Parameters",
         parameter={"Location": Position()},

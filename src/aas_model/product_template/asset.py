@@ -6,8 +6,8 @@
   each with the product's values, the materials it uses and the capability it requires.
 - **Capability Description** (IDTA 02020, role Required): those capabilities with their values.
 - **Production Sequence** (the process sequence planner's): the recipe, its steps in order.
-- **State Declaration** (the lab's): the state of a unit that the capabilities' effects change (its content,
-  whether it is stoppered), what a unit starts with, and the store the values are kept in.
+- **Variables** (the lab's), its **Knowledge** alone: the state of a unit that the capabilities' effects change (its
+  content, whether it is stoppered), what a unit starts with, and the store the values are kept in.
 
 One per product type: an order of many items uses the same one, and a part with a recipe of its own
 has one too. The recipe bound to a line is a process AAS (``aas_model.process_template``).
@@ -32,7 +32,7 @@ from aas_model.resource_template.modules.submodels import LabNameplate
 from aas_model.submodel_templates.product.process_parameters import Processes, ProcessParameters
 from aas_model.submodel_templates.capability_description import ModuleCapabilityDescription
 from aas_model.submodel_templates.product.production_sequence import ProductionSequence
-from aas_model.submodel_templates.state_declaration import StateDeclaration
+from aas_model.submodel_templates.variables import Variables
 
 PLANS = f"{BASE_URL}/sm/process-plan"
 QUANTITY = f"{BASE_URL}/semantics/Quantity"
@@ -100,8 +100,8 @@ class Product(AAS):
     process_parameters: ProcessParameters = ProcessParameters(id_short="ProcessParameters", Processes=Processes())
     capability_description: Optional[ModuleCapabilityDescription] = None
     production_sequence: Optional[ProductionSequence] = None
-    # The state of its units that effects change: what a unit starts with, and the store it is kept in.
-    state_declaration: Optional[StateDeclaration] = None
+    # Its Knowledge: the state of its units that effects change, what a unit starts with, and the store it is kept in.
+    variables: Optional[Variables] = None
 
     @model_validator(mode="after")
     def the_recipe_has_the_planners_identifier(self):

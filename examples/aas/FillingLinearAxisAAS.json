@@ -41,7 +41,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/StateDeclaration"
+              "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/Variables"
             }
           ],
           "type": "ModelReference"
@@ -977,148 +977,169 @@
       "description": [
         {
           "language": "en",
-          "text": "The state variables of this subject, of which kind each is, and the store they are kept in."
+          "text": "An asset's runtime data: time series of its state, measurements and logs, and its state as the knowledge graph keeps it."
         }
       ],
-      "id": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/StateDeclaration",
-      "idShort": "StateDeclaration",
+      "id": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS/submodels/Variables",
+      "idShort": "Variables",
       "modelType": "Submodel",
       "semanticId": {
         "keys": [
           {
             "type": "GlobalReference",
-            "value": "https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0"
+            "value": "https://smartproductionlab.aau.dk/submodels/Variables/1/0"
           }
         ],
         "type": "ExternalReference"
       },
       "submodelElements": [
         {
-          "idShort": "Position",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
+          "description": [
             {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/Position"
-                }
-              ],
-              "type": "ExternalReference"
+              "language": "en",
+              "text": "The state kept about this asset in the knowledge graph: its variables, and the store they are kept in."
             }
           ],
-          "value": [
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
-                }
-              ],
-              "idShort": "Subject",
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "AssetAdministrationShell",
-                    "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS"
-                  }
-                ],
-                "type": "ModelReference"
-              }
-            },
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "Target",
+          "idShort": "Knowledge",
           "modelType": "SubmodelElementCollection",
           "semanticId": {
             "keys": [
               {
                 "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
+                "value": "https://smartproductionlab.aau.dk/variables/Knowledge/1/0"
               }
             ],
             "type": "ExternalReference"
           },
           "value": [
             {
-              "idShort": "Endpoint",
-              "modelType": "Property",
+              "idShort": "Position",
+              "modelType": "SubmodelElementCollection",
               "semanticId": {
                 "keys": [
                   {
                     "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
                   }
                 ],
                 "type": "ExternalReference"
               },
-              "value": "http://state-store:7878",
-              "valueType": "xs:string"
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/Position"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
+                    }
+                  ],
+                  "idShort": "Subject",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "AssetAdministrationShell",
+                        "value": "https://smartproductionlab.aau.dk/aas/FillingLinearAxisAAS"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                },
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
             },
             {
-              "idShort": "Graph",
-              "modelType": "Property",
+              "idShort": "Target",
+              "modelType": "SubmodelElementCollection",
               "semanticId": {
                 "keys": [
                   {
                     "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
+                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
                   }
                 ],
                 "type": "ExternalReference"
               },
-              "value": "https://smartproductionlab.aau.dk/state",
-              "valueType": "xs:string"
+              "value": [
+                {
+                  "idShort": "Endpoint",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "http://state-store:7878",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Graph",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "https://smartproductionlab.aau.dk/state",
+                  "valueType": "xs:string"
+                }
+              ]
             }
           ]
         }

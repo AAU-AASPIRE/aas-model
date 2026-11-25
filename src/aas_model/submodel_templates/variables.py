@@ -10,7 +10,8 @@ Structure::
     Variables
     ├── State            (discrete status that changes on events)
     ├── Measurements     (values sampled from the asset)
-    └── Log              (what the mappings log explicitly)
+    ├── Log              (what the mappings log explicitly)
+    └── Knowledge        (the asset's state as the knowledge graph keeps it)
 
 A group holds TimeSeries SMCs (``TimeSeriesCollection``): the AIMC mappings
 write their rows into a series' LinkedSegment, so the AAS describes the
@@ -19,6 +20,8 @@ series (the latest camera image) is a plain ``VariableProp`` in its group,
 or a ``VariableItem`` when several values belong together.
 ``Measurements`` also holds the asset's ``Coordinates`` (``coordinates.py``): where it
 and its points are, each relative to another coordinate by reference.
+``Knowledge`` (``knowledge.py``) declares the asset's state variables, the statements the state store
+keeps about it, and that store: the mappings sink into a variable as into a series segment.
 """
 
 from __future__ import annotations
@@ -29,6 +32,7 @@ from aas_pydantic.aas_model import AasIdString
 
 from aas_model.constants import BASE_URL
 from aas_model.submodel_templates.coordinates import Coordinates
+from aas_model.submodel_templates.knowledge import Knowledge_t
 from aas_model.submodel_templates.time_series import TimeSeriesCollection
 
 SM_VARIABLES = f"{BASE_URL}/submodels/Variables/1/0"
@@ -88,9 +92,11 @@ class LogGroup(SubmodelElementCollection):
 
 
 class Variables(Submodel):
-    """Variables submodel — an asset's runtime data, as time series of its state, measurements and logs."""
+    """Variables submodel — an asset's runtime data, as time series of its state, measurements and logs, and its
+    state as the knowledge graph keeps it."""
     semantic_id: str = SM_VARIABLES
-    description: str = "An asset's runtime data: time series of its state, measurements and logs."
+    description: str = ("An asset's runtime data: time series of its state, measurements and logs, and its state as "
+                        "the knowledge graph keeps it.")
     VERSION: ClassVar[str] = "1"
     REVISION: ClassVar[str] = "0"
 
@@ -98,3 +104,4 @@ class Variables(Submodel):
     State: Optional[StateGroup] = None
     Measurements: Optional[MeasurementsGroup] = None
     Log: Optional[LogGroup] = None
+    Knowledge: Optional[Knowledge_t] = None

@@ -20,7 +20,7 @@ then serves it (OccupiedBy); releasing hands it back and frees the device. The
 station's process queue arbitrates between units: Occupy answers SUCCESS once the
 unit's uuid is at its head. Who the device serves is observed: the station-state
 mapping sinks the queue's head into the state store as well as the series row
-(StateDeclaration/OccupiedBy), and the behaviour tree waits for it rather than
+(Variables/Knowledge/OccupiedBy), and the behaviour tree waits for it rather than
 writing it.
 
 State: ``Variables/State/Station`` records the PackML state and the process
@@ -458,7 +458,7 @@ _STATE_TRANSFORMATION = """function aimc_main(sources)
 end
 """
 
-# The sinks of the station-state mapping: the series, and the state store (StateDeclaration/OccupiedBy).
+# The sinks of the station-state mapping: the series, and the state store (Variables/Knowledge/OccupiedBy).
 _STATE_SINKS = [SinksItem(SinkId="Live", Sink=series_segment_ref("State", "Station")),
                 SinksItem(SinkId="OccupiedBy", Sink=state_variable_ref("OccupiedBy"))]
 

@@ -8,7 +8,7 @@ Ported from iec61499-mgmt-py (``cell/examples/products/vial_2ml.py``, the values
 planner's pharma example), with what the execution model adds:
 
 - the required capabilities in the lab's Capability Description extension (``ModuleCapabilityDescription``);
-- a **State Declaration**: the state of a unit of the vial that capabilities change (its content, its custody,
+- **Variables** with its **Knowledge**: the state of a unit of the vial that capabilities change (its content, its custody,
   whether it is weighed, stoppered, capped, inspected), what a unit starts with, and the store the values are
   kept in; and the vial's geometry (inner diameter, inner bottom and rim heights), which the filling module's
   formulas use. The geometry is the nominal 2R vial of ISO 8362-1 (16 mm across, 1 mm wall, 35 mm high, a
@@ -29,7 +29,8 @@ from aas_model.submodel_templates.capability_description import (
     ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilitySet, StatedProperty, StatedPropertySet,
 )
 from aas_model.submodel_templates.product import process_parameters as pp, production_sequence as ps
-from aas_model.submodel_templates.state_declaration import StateDeclaration, StateVariable, StateVariableInitial
+from aas_model.submodel_templates.knowledge import Knowledge, StateVariable, StateVariableInitial
+from aas_model.submodel_templates.variables import Variables
 
 SMC = "SubmodelElementCollection"
 AAS_ID = f"{BASE_URL}/aas/Vial2mLAAS"
@@ -319,10 +320,10 @@ def vial_2ml() -> Product:
             }),
         ),
 
-        # ── State Declaration: the state of a unit, and the vial's geometry ─────────────────────────────────
+        # ── Variables/Knowledge: the state of a unit, and the vial's geometry ───────────────────────────────
         # A unit starts empty, in no one's custody, and not yet weighed, stoppered, capped or inspected; what it
         # weighs is unknown until it is weighed. The geometry never changes: no effect writes it.
-        state_declaration=StateDeclaration(id_short="StateDeclaration", variable={
+        variables=Variables(id_short="Variables", Knowledge=Knowledge(variable={
             "InnerDiameter": StateVariable(supplemental_semantic_ids=[f"{LAB}InnerDiameter"],
                                            Initial=StateVariableInitial(value="14.0", value_type="xs:double")),
             "InnerBottomHeight": StateVariable(supplemental_semantic_ids=[f"{LAB}InnerBottomHeight"],
@@ -345,5 +346,5 @@ def vial_2ml() -> Product:
                                     Initial=StateVariableInitial(value="false", value_type="xs:boolean")),
             "Inspected": StateVariable(supplemental_semantic_ids=[f"{LAB}Inspected"],
                                        Initial=StateVariableInitial(value="false", value_type="xs:boolean")),
-        }),
+        })),
     )

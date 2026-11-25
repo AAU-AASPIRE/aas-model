@@ -44,6 +44,12 @@ def _submodel(store, aas_id: str, id_short: str) -> model.Submodel:
     return store.get_item(f"{aas_id}/submodels/{id_short}")
 
 
+def _knowledge(store, aas_id: str) -> list:
+    """The state variables an AAS declares: the elements of its Variables/Knowledge but its Target."""
+    knowledge = _submodel(store, aas_id, "Variables").get_referable("Knowledge")
+    return [element for element in knowledge.value if _semantic_id(element) == STATE_VARIABLE]
+
+
 def _semantic_id(element) -> str:
     return element.semantic_id.key[0].value if element.semantic_id else ""
 
@@ -211,9 +217,9 @@ def test_every_state_variable_is_typed_and_a_resources_names_its_subject():
         store.add(identifiable)
     checked = 0
     for submodel in store:
-        if not isinstance(submodel, model.Submodel) or submodel.id_short != "StateDeclaration":
+        if not isinstance(submodel, model.Submodel) or submodel.id_short != "Variables" or not _has(submodel, "Knowledge"):
             continue
-        for variable in submodel.submodel_element:
+        for variable in submodel.get_referable("Knowledge").value:
             if _semantic_id(variable) != STATE_VARIABLE:
                 continue
             named = {e.id_short: e for e in variable.value}
@@ -243,7 +249,7 @@ def test_places_and_shuttles_project_their_positions_and_location_is_derived():
         store.add(identifiable)
 
     def variables(aas: str) -> dict:
-        return {_meaning(v): v for v in _submodel(store, aas, "StateDeclaration").submodel_element}
+        return {_meaning(v): v for v in _knowledge(store, aas)}
 
     place, sunk = variables(MODULE), _state_sinks(store, MODULE)
     for axis in ("X", "Y"):
@@ -312,7 +318,7 @@ def test_the_vial_declares_what_the_module_reads_of_its_units():
     from aas_model.product_instances.vial_2ml import AAS_ID
 
     store = _store()
-    declared = {_meaning(v) for v in _submodel(store, AAS_ID, "StateDeclaration").submodel_element}
+    declared = {_meaning(v) for v in _knowledge(store, AAS_ID)}
     named = set()
     for container in _module_containers(store, every=True):
         named |= _unit_properties(store, container)
@@ -455,7 +461,7 @@ def test_the_stations_conditions_on_a_component_leave_it_room_within_what_it_off
 
     store, checked = _store(), []
     unit = {_meaning(v): float(v.get_referable("Initial").value)
-            for v in _submodel(store, AAS_ID, "StateDeclaration").submodel_element if _has(v, "Initial")}
+            for v in _knowledge(store, AAS_ID) if _has(v, "Initial")}
     for container in _module_containers(store):
         for when, root in _terms(container, "ConditionSet"):
             for term in _top_level(root):
@@ -632,7 +638,7 @@ def test_the_batch_names_its_product_how_many_and_the_goal_each_unit_is_to_reach
     assert all(t.get_referable("Subject").value.resolve(store) is each for t in terms)
     fill_volume = goal.get_referable(["Condition", "Term_00", "ValueReference"]).value.resolve(store)
     assert fill_volume.value == 2.0 and _meaning(fill_volume) == f"{LAB}FillVolume"   # the vial's required volume
-    declared = {_meaning(v) for v in _submodel(store, VIAL, "StateDeclaration").submodel_element}
+    declared = {_meaning(v) for v in _knowledge(store, VIAL)}
     assert {_meaning(t) for t in terms} <= declared
 
 
@@ -696,7 +702,7 @@ def test_a_fond_planner_finds_the_outcomes_a_filling_can_have():
               for entry in required.get_referable("PropertySet").value}
     for meaning in measured:                                                  # each measured result has bounds
         assert isinstance(bounds[meaning], model.Range) and bounds[meaning].min < bounds[meaning].max
-    declared = {_meaning(v) for v in _submodel(store, VIAL, "StateDeclaration").submodel_element}
+    declared = {_meaning(v) for v in _knowledge(store, VIAL)}
     assert f"{LAB}FillResult" in declared
 
 

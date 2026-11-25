@@ -215,19 +215,18 @@ def test_operators_are_restricted_to_their_kind():
 
 def test_a_product_declares_the_state_of_its_units():
     from aas_model.product_template import Product
-    from aas_model.submodel_templates.state_declaration import (
-        StateDeclaration, StateVariable, StateVariableInitial,
-    )
+    from aas_model.submodel_templates.knowledge import Knowledge, StateVariable, StateVariableInitial
+    from aas_model.submodel_templates.variables import Variables
 
-    product = Product(id_short="DemoVialAAS", state_declaration=StateDeclaration(
-        id_short="StateDeclaration",
+    product = Product(id_short="DemoVialAAS", variables=Variables(id_short="Variables", Knowledge=Knowledge(
         variable={"ContentVolume": StateVariable(
             supplemental_semantic_ids=[f"{LAB}ContentVolume"],
             Initial=StateVariableInitial(value="0.0", value_type="xs:double"))},
-    ))
+    )))
     restored = Product.model_validate_json(product.model_dump_json())
-    assert restored.state_declaration.variable["ContentVolume"].Initial.value == "0.0"
+    assert restored.variables.Knowledge.variable["ContentVolume"].Initial.value == "0.0"
     store = build_from_model(restored)
-    declared = next(s for s in store if isinstance(s, model.Submodel) and s.id_short == "StateDeclaration")
-    assert declared.id.endswith("/submodels/StateDeclaration")
-    assert {e.id_short for e in declared.submodel_element} == {"ContentVolume", "Target"}
+    variables = next(s for s in store if isinstance(s, model.Submodel) and s.id_short == "Variables")
+    assert variables.id.endswith("/submodels/Variables")
+    assert [e.id_short for e in variables.submodel_element] == ["Knowledge"]       # a product type's Variables
+    assert {e.id_short for e in variables.get_referable("Knowledge").value} == {"ContentVolume", "Target"}

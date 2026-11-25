@@ -62,7 +62,7 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://smartproductionlab.aau.dk/aas/Vial2mLAAS/submodels/StateDeclaration"
+              "value": "https://smartproductionlab.aau.dk/aas/Vial2mLAAS/submodels/Variables"
             }
           ],
           "type": "ModelReference"
@@ -3619,904 +3619,925 @@
       "description": [
         {
           "language": "en",
-          "text": "The state variables of this subject, of which kind each is, and the store they are kept in."
+          "text": "An asset's runtime data: time series of its state, measurements and logs, and its state as the knowledge graph keeps it."
         }
       ],
-      "id": "https://smartproductionlab.aau.dk/aas/Vial2mLAAS/submodels/StateDeclaration",
-      "idShort": "StateDeclaration",
+      "id": "https://smartproductionlab.aau.dk/aas/Vial2mLAAS/submodels/Variables",
+      "idShort": "Variables",
       "modelType": "Submodel",
       "semanticId": {
         "keys": [
           {
             "type": "GlobalReference",
-            "value": "https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0"
+            "value": "https://smartproductionlab.aau.dk/submodels/Variables/1/0"
           }
         ],
         "type": "ExternalReference"
       },
       "submodelElements": [
         {
-          "idShort": "InnerDiameter",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
+          "description": [
             {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/InnerDiameter"
-                }
-              ],
-              "type": "ExternalReference"
+              "language": "en",
+              "text": "The state kept about this asset in the knowledge graph: its variables, and the store they are kept in."
             }
           ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "14.0",
-              "valueType": "xs:double"
-            }
-          ]
-        },
-        {
-          "idShort": "InnerBottomHeight",
+          "idShort": "Knowledge",
           "modelType": "SubmodelElementCollection",
           "semanticId": {
             "keys": [
               {
                 "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/InnerBottomHeight"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "0.7",
-              "valueType": "xs:double"
-            }
-          ]
-        },
-        {
-          "idShort": "RimHeight",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/RimHeight"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "35.0",
-              "valueType": "xs:double"
-            }
-          ]
-        },
-        {
-          "idShort": "ContentVolume",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/ContentVolume"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "0.0",
-              "valueType": "xs:double"
-            }
-          ]
-        },
-        {
-          "idShort": "OutletImmersion",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/OutletImmersion"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "HeldBy",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/HeldBy"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "reference",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "FillWeight",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/FillWeight"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "FillResult",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/FillResult"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "reference",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "Weighed",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/Weighed"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "boolean",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "false",
-              "valueType": "xs:boolean"
-            }
-          ]
-        },
-        {
-          "idShort": "Stoppered",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/Stoppered"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "boolean",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "false",
-              "valueType": "xs:boolean"
-            }
-          ]
-        },
-        {
-          "idShort": "Capped",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/Capped"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "boolean",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "false",
-              "valueType": "xs:boolean"
-            }
-          ]
-        },
-        {
-          "idShort": "Inspected",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/Inspected"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "boolean",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            },
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "The value a new subject starts with; without it the variable starts unknown."
-                }
-              ],
-              "idShort": "Initial",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "false",
-              "valueType": "xs:boolean"
-            }
-          ]
-        },
-        {
-          "idShort": "Target",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
+                "value": "https://smartproductionlab.aau.dk/variables/Knowledge/1/0"
               }
             ],
             "type": "ExternalReference"
           },
           "value": [
             {
-              "idShort": "Endpoint",
-              "modelType": "Property",
+              "idShort": "InnerDiameter",
+              "modelType": "SubmodelElementCollection",
               "semanticId": {
                 "keys": [
                   {
                     "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
                   }
                 ],
                 "type": "ExternalReference"
               },
-              "value": "http://state-store:7878",
-              "valueType": "xs:string"
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/InnerDiameter"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "14.0",
+                  "valueType": "xs:double"
+                }
+              ]
             },
             {
-              "idShort": "Graph",
-              "modelType": "Property",
+              "idShort": "InnerBottomHeight",
+              "modelType": "SubmodelElementCollection",
               "semanticId": {
                 "keys": [
                   {
                     "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
                   }
                 ],
                 "type": "ExternalReference"
               },
-              "value": "https://smartproductionlab.aau.dk/state",
-              "valueType": "xs:string"
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/InnerBottomHeight"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "0.7",
+                  "valueType": "xs:double"
+                }
+              ]
+            },
+            {
+              "idShort": "RimHeight",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/RimHeight"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "35.0",
+                  "valueType": "xs:double"
+                }
+              ]
+            },
+            {
+              "idShort": "ContentVolume",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/ContentVolume"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "0.0",
+                  "valueType": "xs:double"
+                }
+              ]
+            },
+            {
+              "idShort": "OutletImmersion",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/OutletImmersion"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "HeldBy",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/HeldBy"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "reference",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "FillWeight",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/FillWeight"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "FillResult",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/FillResult"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "reference",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "Weighed",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/Weighed"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "boolean",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "false",
+                  "valueType": "xs:boolean"
+                }
+              ]
+            },
+            {
+              "idShort": "Stoppered",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/Stoppered"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "boolean",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "false",
+                  "valueType": "xs:boolean"
+                }
+              ]
+            },
+            {
+              "idShort": "Capped",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/Capped"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "boolean",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "false",
+                  "valueType": "xs:boolean"
+                }
+              ]
+            },
+            {
+              "idShort": "Inspected",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/Inspected"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "boolean",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The value a new subject starts with; without it the variable starts unknown."
+                    }
+                  ],
+                  "idShort": "Initial",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Initial/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "false",
+                  "valueType": "xs:boolean"
+                }
+              ]
+            },
+            {
+              "idShort": "Target",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "idShort": "Endpoint",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "http://state-store:7878",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Graph",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "https://smartproductionlab.aau.dk/state",
+                  "valueType": "xs:string"
+                }
+              ]
             }
           ]
         }

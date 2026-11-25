@@ -161,7 +161,7 @@ end
         AimcMappingConfiguration(
             id_short="Location", DefaultPollingInterval="0.0",
             Sources=[SourcesItem(SourceId="Location", Source=affordance_ref(MQTT_INTERFACE, "properties", "Location"))],
-            # The series row, and the position into the state store (StateDeclaration/X, Y; the table's frame is the
+            # The series row, and the position into the state store (Variables/Knowledge/X, Y; the table's frame is the
             # line's), where the shuttle's Location is derived from it.
             Sinks=[SinksItem(SinkId="Live", Sink=series_segment_ref("Measurements", "Location")),
                    SinksItem(SinkId="X", Sink=state_variable_ref("X")),

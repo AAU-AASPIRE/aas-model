@@ -30,7 +30,7 @@ Who says what:
 Who takes part, what must hold of them and what changes sit in each capability's CapabilityRelations
 (Subjects, ConditionSet, EffectSet). The subjects are the axis (its AAS) and the container, the unit in the
 module, known only at run time: what it holds and how it is shaped is declared by its product
-(``aas_model.product_instances.vial_2ml``, StateDeclaration). Where the needle is, is observed: the linear axis
+(``aas_model.product_instances.vial_2ml``, Variables/Knowledge). Where the needle is, is observed: the linear axis
 declares its position, and the module's Variables record it.
 
 IDTA 02020 relations between capabilities (ComposedOf, GeneralizedBy) relate elements of Capability Description
@@ -70,9 +70,7 @@ from aas_model.submodel_templates.execution import (
 from aas_model.resource_template.translations import COMPLETED_REPLY, NO_INPUTS_CALL
 from aas_model.submodel_templates import Aimc, AimcMappingConfiguration, AimcMappingConfigurations
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SinksItem, SourcesItem
-from aas_model.submodel_templates.state_declaration import (
-    StateDeclaration, StateVariable,
-)
+from aas_model.submodel_templates.knowledge import Knowledge, StateVariable
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, TimeSeriesCollection, TimeSeriesMetadata, TimeSeriesRecord,
     TimeSeriesSegments,
@@ -164,7 +162,7 @@ end
 # The axis as a part of the module, and the record of where it is.
 # The module's state, and the Lua that composes its transfer point into the line's frame (the base's pose, then the
 # point relative to it; yaw in degrees).
-MODULE_STATE = Key(type_="Submodel", value=f"{MODULE}/submodels/StateDeclaration")
+MODULE_KNOWLEDGE = (MODULE_VARIABLES, Key(type_=SMC, value="Knowledge"))
 TRANSFER_POINT_TRANSFORMATION = """function aimc_main(sources)
   local base, point = sources.ModuleBase, sources.TransferPoint
   local yaw = math.rad(tonumber(base.Yaw) or 0)
@@ -233,11 +231,11 @@ def filling_linear_axis() -> Component:
                 Completion=s.Completion(Timeout=s.Timeout(value="30s")),
             ),
         }),
-        state_declaration=StateDeclaration(id_short="StateDeclaration", variable={
-            # Observed once the module's interface is mapped: the mapping that writes the module's LinearAxis
-            # series (AXIS_POSITION_FIELD) sinks the position here too.
+        # What is known of the axis: where it is. Observed once the module's interface is mapped: the mapping that
+        # writes the module's LinearAxis series (AXIS_POSITION_FIELD) sinks the position here too.
+        variables=Variables(id_short="Variables", Knowledge=Knowledge(variable={
             "Position": StateVariable.own(f"{LAB}Position"),
-        }),
+        })),
         # What the axis does wherever it is built in: it ends where it was sent, at its speed.
         capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
             AUXILIARY: ModuleCapabilitySet(CapabilityContainer={"Positioning": ModuleCapabilityContainer(
@@ -680,14 +678,6 @@ def filling_module() -> Module:
         nameplate=LabNameplate(
             ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Filling module"}),
         ),
-        # The module's state: who it serves, and where its transfer point is in the line's frame (observed: the
-        # TransferPoint mapping below sinks it, so a query can tell whether a shuttle is at it; D36). The module reports no process queue, so who it serves is asserted by the
-        # tree that occupies it until it does (plan, open question 24).
-        state_declaration=StateDeclaration(id_short="StateDeclaration", variable={
-            "OccupiedBy": StateVariable.own(f"{LAB}OccupiedBy"),
-            **{f"TransferPoint{axis}": StateVariable.about(f"{LAB}Absolute{axis}", ModelReference(key=TRANSFER_POINT))
-               for axis in ("X", "Y")},
-        }),
         # The transfer point's position in the line's frame, into the state store: the coordinate and the base it is
         # relative to are the mapping's sources (static elements, read again when one changes), composed in its Lua.
         asset_interfaces_mapping_configuration=Aimc(
@@ -697,7 +687,7 @@ def filling_module() -> Module:
                     Sources=[SourcesItem(SourceId="TransferPoint", Source=ModelReference(key=TRANSFER_POINT)),
                              SourcesItem(SourceId="ModuleBase", Source=ModelReference(key=MODULE_BASE))],
                     Sinks=[SinksItem(SinkId=f"TransferPoint{axis}", Sink=ModelReference(key=(
-                        MODULE_STATE, Key(type_=SMC, value=f"TransferPoint{axis}")))) for axis in ("X", "Y")],
+                        *MODULE_KNOWLEDGE, Key(type_=SMC, value=f"TransferPoint{axis}")))) for axis in ("X", "Y")],
                     Transformation=TRANSFER_POINT_TRANSFORMATION,
                 ),
             ])),
@@ -767,7 +757,7 @@ def filling_module() -> Module:
             ),
         )}),
 
-        # ── Variables: where the needle is, and what the scale weighs ────────────────────────────────────────
+        # ── Variables: where the needle is, what the scale weighs, and what is known of the module ───────────
         variables=Variables(id_short="Variables", Measurements=MeasurementsGroup(value={
             # Where the module and its transfer point are. The base is to be relative to the planar table's base once
             # the table declares one (the line's root); the values are placeholders until the station is measured.
@@ -796,6 +786,14 @@ def filling_module() -> Module:
                 Segments=TimeSeriesSegments(LinkedSegment={
                     "Live": DmpLinkedSegment(InfluxDb2Target=InfluxDb2Target(Measurement="filling_weight"))}),
             ),
+        }), Knowledge=Knowledge(variable={
+            # What is known of the module: who it serves, and where its transfer point is in the line's frame
+            # (observed: the TransferPoint mapping above sinks it, so a query can tell whether a shuttle is at it;
+            # D36). The module reports no process queue, so who it serves is asserted by the tree that occupies it
+            # until it does (plan, open question 24).
+            "OccupiedBy": StateVariable.own(f"{LAB}OccupiedBy"),
+            **{f"TransferPoint{axis}": StateVariable.about(f"{LAB}Absolute{axis}", ModelReference(key=TRANSFER_POINT))
+               for axis in ("X", "Y")},
         })),
 
         capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={

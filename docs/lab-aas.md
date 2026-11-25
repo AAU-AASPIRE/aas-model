@@ -25,7 +25,7 @@ too (`cell/examples/example_line.py`).
 | `Module` | Instance, `.../Resource/Module` | Nameplate, Hierarchical Structures (its components), Asset Interfaces Description (one OPC UA server), Asset Interfaces Mapping Configuration, [Skills](lab-submodels/Skills.md), [Variables](#variables-and-coordinates), Capability Description (offered; optional); optional [Control Configuration](lab-submodels/ControlConfiguration.md) and [Parameters](lab-submodels/Parameters.md) |
 | `Component` | Instance, `.../Resource/Component/<Kind>` | [Skills](lab-submodels/Skills.md): its primitives, which its module carries out |
 | `ProductionSystem` | Instance, `.../Resource/System` | Hierarchical Structures (its modules, each by its asset id); optional [Variables](#variables-and-coordinates) with the coordinates of its own points |
-| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md); optional State Declaration (the state of its units: asserted, observed or derived, D36) |
+| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md); optional [Variables](#variables-and-coordinates) with its Knowledge alone (the state of its units: asserted, observed or derived, D36) |
 | `Batch` | Instance, `.../Batch` | Batch Information (the product type AAS, the quantity), Goal (Subjects and a condition tree every unit is to reach; the planner reads it, D13). Units are not listed: each BT instance mints the IRI of the unit it makes (`urn:uuid:<uuid>`, D10, D35), whose uuid the stations queue |
 | `Process` | Type, `.../Process` | [Process Information](lab-submodels/ProcessInformation.md), [Bindings](lab-submodels/Bindings.md), [Validation](lab-submodels/Validation.md) |
 
@@ -87,8 +87,7 @@ too (`cell/examples/example_line.py`).
 | Process Information | `https://smartproductionlab.aau.dk/ProcessInformation/1/0/Submodel` | `templates/process/ProcessInformation.json` | `submodel_templates.process.process_information` | [Process Information](lab-submodels/ProcessInformation.md) |
 | Bindings | `https://smartproductionlab.aau.dk/ProcessBindings/1/0/Submodel` | `templates/process/Bindings.json` | `submodel_templates.process.bindings` | [Bindings](lab-submodels/Bindings.md) |
 | Validation | `https://smartproductionlab.aau.dk/ProcessValidation/1/0/Submodel` | `templates/process/Validation.json` | `submodel_templates.process.validation` | [Validation](lab-submodels/Validation.md) |
-| State Declaration | `https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0` | none (hand-written classes) | `submodel_templates.state_declaration` | the state variables of a subject (asserted, written by the behaviour tree; observed, a linked projection: an AIMC mapping of the same AAS sinks into it, as into a time-series segment, its Lua converting the reported value where needed, as a station's process queue into `OccupiedBy`; derived, computed by query), its initial values and the store they are kept in |
-| Variables, with Coordinates | `https://smartproductionlab.aau.dk/submodels/Variables/1/0` | none (hand-written classes) | `submodel_templates.variables`, `submodel_templates.coordinates` | [below](#variables-and-coordinates) |
+| Variables, with Coordinates and Knowledge | `https://smartproductionlab.aau.dk/submodels/Variables/1/0` | none (hand-written classes) | `submodel_templates.variables`, `submodel_templates.coordinates`, `submodel_templates.knowledge` | [below](#variables-and-coordinates) |
 
 **How they are made:**
 
@@ -128,7 +127,13 @@ Variables
 │           ├── X, Y, Z           mm, along the parent's axes          (IDTA 02075 x/y/zframe)
 │           ├── Roll, Pitch, Yaw  degrees, about the parent's fixed X, then Y, then Z axis
 │           └── {value}Source     the variable a moving value is (ZSource)
-└── Log                           time series of what is logged (skill calls)
+├── Log                           time series of what is logged (skill calls)
+└── Knowledge                     the asset's state as the knowledge graph keeps it
+    ├── {variable}                StateVariable; its meaning (the lab vocabulary) a supplemental semantic id
+    │   ├── Subject               who it is about: the AAS, or an element of it (a place); none on a product type
+    │   ├── ValueType, Cardinality  the meaning's, from the vocabulary
+    │   └── Initial               what a new subject starts with
+    └── Target                    SparqlTarget: the state store (Endpoint, Graph) the values are written to
 ```
 
 | Element | Class | Semantic id |
@@ -139,6 +144,18 @@ Variables
 | `.../{coordinate}/X`, `Y`, `Z` | `CoordinateX`, `CoordinateY`, `CoordinateZ` | `https://admin-shell.io/idta/cds/xframe/1`, `yframe`, `zframe` (xs:double, mm) |
 | `.../{coordinate}/Roll`, `Pitch`, `Yaw` | `CoordinateRoll`, `CoordinatePitch`, `CoordinateYaw` | `https://admin-shell.io/idta/cds/rxframe/1`, `ryframe`, `rzframe` (xs:double, deg) |
 | `.../{coordinate}/{value}Source` | `CoordinateSource` | `https://smartproductionlab.aau.dk/variables/Coordinate/Source/1/0` |
+| `Knowledge` | `Knowledge` | `https://smartproductionlab.aau.dk/variables/Knowledge/1/0` |
+| `Knowledge/{variable}` | `StateVariable` | `https://smartproductionlab.aau.dk/state/StateVariable/1/0` |
+| `Knowledge/{variable}/Subject`, `ValueType`, `Cardinality`, `Initial` | `StateVariableSubject`, ... | `https://smartproductionlab.aau.dk/state/StateVariable/<Member>/1/0` |
+| `Knowledge/Target` | `SparqlTarget` | `https://smartproductionlab.aau.dk/state/SparqlTarget/1/0` (`Endpoint`, `Graph`) |
+
+- **Knowledge is kept as a time series is.** A series states the fields of its rows and the database its
+  segment is in; the Knowledge states the statements kept about the asset (each variable a predicate of the
+  lab vocabulary about its subject) and the state store they are in. A mapping sinks into a variable as into
+  a series segment (`Variables/Knowledge/<variable>`): such a variable is *observed*, as a station's
+  `OccupiedBy` is the head of its process queue; one no mapping sinks into is *asserted* by the behaviour
+  tree's effects; one whose meaning is `lab:derived` is computed by query (D36). A product type's Variables
+  hold its Knowledge alone: the state of each of its units.
 
 - **A tree of transforms across AASs,** rooted at one coordinate without `RelativeTo` (in the lab, the
   planar table's base): a module's base is relative to it, the module's points and mounts to its
@@ -169,7 +186,7 @@ store = build_from_model(vial)          # a BaSyx object store: the shell and it
 Two of them are written out here too, with the execution model: the filling module and its three components
 (`aas_model.resource_instances.modules`: each component offers its capability in its own AAS, in
 `AuxiliaryCapabilities`; the module states what holds of each in this station, a specialization of the
-component's (GeneralizedBy across the AASs), and the offered Filling derived from them) the 2 mL vial (`aas_model.product_instances`, with the State Declaration
+component's (GeneralizedBy across the AASs), and the offered Filling derived from them) the 2 mL vial (`aas_model.product_instances`, with the Knowledge
 of its units) and a batch of three of them with its goal (`aas_model.batch_instances`); `tests/test_example_line.py` builds them as one line and resolves every reference across them. Their AAS JSON is checked in under `examples/aas/`
 (`scripts/export_examples.py`).
 

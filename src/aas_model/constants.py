@@ -113,8 +113,8 @@ OPERATION_VARIABLE_PARAMETER = f"{BASE_URL}/aas/OperationVariable/Parameter/1/0"
 # A parameter that may be sent as a reference, resolved by the DMP at the call (D27).
 OPERATION_VARIABLE_ACCEPTS_REFERENCE = f"{BASE_URL}/aas/OperationVariable/AcceptsReference/1/0"
 
-# The StateDeclaration submodel: the state variables of a subject, of which kind each is, and where they are kept.
-SM_STATE_DECLARATION = f"{BASE_URL}/submodels/StateDeclaration/1/0"
+# The Knowledge of an asset's Variables: the state variables of a subject, of which kind each is, and where they are kept.
+VARIABLES_KNOWLEDGE = f"{BASE_URL}/variables/Knowledge/1/0"
 STATE_VARIABLE = f"{BASE_URL}/state/StateVariable/1/0"
 STATE_VARIABLE_INITIAL = f"{BASE_URL}/state/StateVariable/Initial/1/0"
 STATE_VARIABLE_SUBJECT = f"{BASE_URL}/state/StateVariable/Subject/1/0"
@@ -124,7 +124,7 @@ STATE_SPARQL_TARGET = f"{BASE_URL}/state/SparqlTarget/1/0"
 STATE_SPARQL_TARGET_ENDPOINT = f"{BASE_URL}/state/SparqlTarget/Endpoint/1/0"
 STATE_SPARQL_TARGET_GRAPH = f"{BASE_URL}/state/SparqlTarget/Graph/1/0"
 
-# The state store every StateDeclaration of this workspace points at (plans/kg-planning-execution-PLAN.md, 4.1).
+# The state store every Knowledge of this workspace points at (plans/kg-planning-execution-PLAN.md, 4.1).
 STATE_STORE_ORIGIN = "http://state-store:7878"
 STATE_STORE_GRAPH = f"{BASE_URL}/state"
 
@@ -138,7 +138,6 @@ AID_SUBMODEL_ID = "{aas_id}/submodels/AssetInterfacesDescription"
 CCI_SUBMODEL_ID = "{aas_id}/submodels/ControlComponentInstance"
 CONTROL_COMPONENT_TYPE_SUBMODEL_ID = "{aas_id}/submodels/ControlComponentType"
 VARIABLES_SUBMODEL_ID = "{aas_id}/submodels/Variables"
-STATE_DECLARATION_SUBMODEL_ID = "{aas_id}/submodels/StateDeclaration"
 CAPABILITIES_SUBMODEL_ID = "{aas_id}/submodels/CapabilityDescription"
 HIERARCHICAL_STRUCTURES_SUBMODEL_ID = "{aas_id}/submodels/HierarchicalStructures"
 

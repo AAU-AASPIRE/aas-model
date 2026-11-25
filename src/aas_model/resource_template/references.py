@@ -9,7 +9,7 @@ from __future__ import annotations
 from aas_pydantic import Key, ModelReference
 
 from aas_model.constants import (
-    AID_SUBMODEL_ID, CAPABILITIES_SUBMODEL_ID, CCI_SUBMODEL_ID, STATE_DECLARATION_SUBMODEL_ID, VARIABLES_SUBMODEL_ID,
+    AID_SUBMODEL_ID, CAPABILITIES_SUBMODEL_ID, CCI_SUBMODEL_ID, VARIABLES_SUBMODEL_ID,
 )
 
 # The idShorts of an asset's one interface per protocol. No protocol is a default: every reference into the AID
@@ -62,9 +62,10 @@ def variable_ref(*path: str) -> ModelReference:
 
 
 def state_variable_ref(name: str) -> ModelReference:
-    """A state variable of the resource's StateDeclaration: the sink of a mapping that keeps it in the state store
-    (observed state, D36), as a series segment is the sink of one that keeps a time series."""
-    return ModelReference(key=(Key(type_="Submodel", value=STATE_DECLARATION_SUBMODEL_ID),
+    """A state variable of the resource's Knowledge (``Variables/Knowledge/<name>``): the sink of a mapping that keeps
+    it in the state store (observed state, D36), as a series segment is the sink of one that keeps a time series."""
+    return ModelReference(key=(Key(type_="Submodel", value=VARIABLES_SUBMODEL_ID),
+                               Key(type_="SubmodelElementCollection", value="Knowledge"),
                                Key(type_="SubmodelElementCollection", value=name)))
 
 

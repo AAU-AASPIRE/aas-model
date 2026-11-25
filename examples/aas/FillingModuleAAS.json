@@ -77,15 +77,6 @@
           "keys": [
             {
               "type": "Submodel",
-              "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/StateDeclaration"
-            }
-          ],
-          "type": "ModelReference"
-        },
-        {
-          "keys": [
-            {
-              "type": "Submodel",
               "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
             }
           ],
@@ -805,7 +796,11 @@
                             "keys": [
                               {
                                 "type": "Submodel",
-                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/StateDeclaration"
+                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "Knowledge"
                               },
                               {
                                 "type": "SubmodelElementCollection",
@@ -884,7 +879,11 @@
                             "keys": [
                               {
                                 "type": "Submodel",
-                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/StateDeclaration"
+                                "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                              },
+                              {
+                                "type": "SubmodelElementCollection",
+                                "value": "Knowledge"
                               },
                               {
                                 "type": "SubmodelElementCollection",
@@ -9632,350 +9631,7 @@
       "description": [
         {
           "language": "en",
-          "text": "The state variables of this subject, of which kind each is, and the store they are kept in."
-        }
-      ],
-      "id": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/StateDeclaration",
-      "idShort": "StateDeclaration",
-      "modelType": "Submodel",
-      "semanticId": {
-        "keys": [
-          {
-            "type": "GlobalReference",
-            "value": "https://smartproductionlab.aau.dk/submodels/StateDeclaration/1/0"
-          }
-        ],
-        "type": "ExternalReference"
-      },
-      "submodelElements": [
-        {
-          "idShort": "OccupiedBy",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/OccupiedBy"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
-                }
-              ],
-              "idShort": "Subject",
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "AssetAdministrationShell",
-                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS"
-                  }
-                ],
-                "type": "ModelReference"
-              }
-            },
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "reference",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "TransferPointX",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/AbsoluteX"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
-                }
-              ],
-              "idShort": "Subject",
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "Submodel",
-                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "Measurements"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "Coordinates"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "TransferPoint"
-                  }
-                ],
-                "type": "ModelReference"
-              }
-            },
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "TransferPointY",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "supplementalSemanticIds": [
-            {
-              "keys": [
-                {
-                  "type": "GlobalReference",
-                  "value": "https://smartproductionlab.aau.dk/semantics/AbsoluteY"
-                }
-              ],
-              "type": "ExternalReference"
-            }
-          ],
-          "value": [
-            {
-              "description": [
-                {
-                  "language": "en",
-                  "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
-                }
-              ],
-              "idShort": "Subject",
-              "modelType": "ReferenceElement",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": {
-                "keys": [
-                  {
-                    "type": "Submodel",
-                    "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "Measurements"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "Coordinates"
-                  },
-                  {
-                    "type": "SubmodelElementCollection",
-                    "value": "TransferPoint"
-                  }
-                ],
-                "type": "ModelReference"
-              }
-            },
-            {
-              "idShort": "ValueType",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "number",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Cardinality",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "single",
-              "valueType": "xs:string"
-            }
-          ]
-        },
-        {
-          "idShort": "Target",
-          "modelType": "SubmodelElementCollection",
-          "semanticId": {
-            "keys": [
-              {
-                "type": "GlobalReference",
-                "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
-              }
-            ],
-            "type": "ExternalReference"
-          },
-          "value": [
-            {
-              "idShort": "Endpoint",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "http://state-store:7878",
-              "valueType": "xs:string"
-            },
-            {
-              "idShort": "Graph",
-              "modelType": "Property",
-              "semanticId": {
-                "keys": [
-                  {
-                    "type": "GlobalReference",
-                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
-                  }
-                ],
-                "type": "ExternalReference"
-              },
-              "value": "https://smartproductionlab.aau.dk/state",
-              "valueType": "xs:string"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "description": [
-        {
-          "language": "en",
-          "text": "An asset's runtime data: time series of its state, measurements and logs."
+          "text": "An asset's runtime data: time series of its state, measurements and logs, and its state as the knowledge graph keeps it."
         }
       ],
       "id": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables",
@@ -11020,6 +10676,348 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "The state kept about this asset in the knowledge graph: its variables, and the store they are kept in."
+            }
+          ],
+          "idShort": "Knowledge",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/variables/Knowledge/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "idShort": "OccupiedBy",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/OccupiedBy"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
+                    }
+                  ],
+                  "idShort": "Subject",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "AssetAdministrationShell",
+                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                },
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "reference",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "TransferPointX",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/AbsoluteX"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
+                    }
+                  ],
+                  "idShort": "Subject",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "Submodel",
+                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "Measurements"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "Coordinates"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "TransferPoint"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                },
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "TransferPointY",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/AbsoluteY"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
+                    }
+                  ],
+                  "idShort": "Subject",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "Submodel",
+                        "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS/submodels/Variables"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "Measurements"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "Coordinates"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "TransferPoint"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                },
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "number",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "Target",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "idShort": "Endpoint",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "http://state-store:7878",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Graph",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "https://smartproductionlab.aau.dk/state",
+                  "valueType": "xs:string"
                 }
               ]
             }
