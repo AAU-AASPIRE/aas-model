@@ -23,8 +23,9 @@ from aas_model.resource_template.references import (
     skill_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, SkillOperation, SkillInterfaceRelationship,
+    SkillOperation,
 )
+from aas_model.submodel_templates.skills import MODULE_CONTROL, command_skill
 from aas_model.submodel_templates import DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.aimc import DmpMappingConfiguration
 from aas_model.submodel_templates.aid import (
@@ -63,7 +64,6 @@ def orchestrator() -> MqttSoftwareResource:
     mqtt.title.value = "AAU Orchestrator"
     mqtt.EndpointMetadata.base.value = f"{BROKER}/{SITE}/Orchestrator/"
     interaction = aid.InterfaceTemplateForMQTT["interface_mqtt"].InteractionMetadata
-    cci = resource.control_component_instance
     mappings = resource.asset_interfaces_mapping_configuration.MappingConfigurations.value
     for name in ("Start", "Stop", "Suspend", "Unsuspend", "Reset"):
         input_url = f"{SCHEMA_BASE}/orchestrationCommand.schema.json" if name in (
@@ -79,10 +79,7 @@ def orchestrator() -> MqttSoftwareResource:
             forms=MqttActionForm(href=f"CMD/{name}", mqv_qos="2", mqv_responseTopic=f"DATA/{name}"),
         )
         interaction.actions.property_name[name] = action
-        skill = ExtendedSkill(
-            Disabled="false", interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name)
-        )
-        skill.operation = SkillOperation(
+        operation = SkillOperation(
             in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
             output_variable=[Property(id_short="State", description="The state of the command being executed")],
         )
@@ -103,16 +100,13 @@ def orchestrator() -> MqttSoftwareResource:
                            for member in ("Uuid", "State")],
         )
         if name in ("Start", "Unsuspend"):
-            skill.operation.input_variable = [Property(id_short="Process")]
+            operation.input_variable = [Property(id_short="Process")]
             mapping.Transformation.value = (
                 f"function aimc_main(sources) "
                 f"return {{ {name} = {{ Uuid = sources.Uuid, Process = sources.Process }} }} end"
             ).encode("utf-8")
-        cci.Skills.Skill[name] = skill
-        cci.Endpoints.Endpoint[name] = SkillInterfaceRelationship(
-            first=skill_ref(name),
-            second=affordance_ref(MQTT_INTERFACE, "actions", name),
-        )
+        resource.skills.Skill[name] = command_skill(
+            name, MODULE_CONTROL, affordance_ref(MQTT_INTERFACE, "actions", name), operation)
         mappings.append(mapping)
     resource.capability_description.CapabilitySet = {
         "Coordination": ModuleCapabilitySet(

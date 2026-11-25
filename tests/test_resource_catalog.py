@@ -74,7 +74,7 @@ def test_each_factory_returns_independent_defaults(name):
     first.parameters.parameter.clear()
     for group in _groups(first):
         group.value.clear()
-    first.control_component_instance.Skills.Skill.clear()
+    first.skills.Skill.clear()
     first.asset_interfaces_description.InterfaceTemplateForMQTT.clear()
     first.asset_interfaces_description.InterfaceTemplateForOPCUA.clear()
     first.asset_interfaces_mapping_configuration.MappingConfigurations.value.clear()
@@ -101,14 +101,15 @@ def test_resource_types_have_coherent_defaults_and_preserve_empty_imports(resour
     assert isinstance(resource, Resource)
     resolved = resource.model_copy(deep=True)
     inject_ids(resolved)
-    for name, skill in resolved.control_component_instance.Skills.Skill.items():
-        _, interface, _, kind, action = (key.value for key in skill.interface_reference.value.key)
+    for name, skill in resolved.skills.Skill.items():
+        _, interface, _, kind, action = (key.value for key in skill.Start.InterfaceReference.value.key)
         assert (kind, action) == ("actions", name)
         assert name in _interfaces(resource)[interface].InteractionMetadata.actions.property_name
-        invocation = next(q for q in skill.operation.qualifiers if q.type_ == "invocationDelegation")
+        invocation = next(q for q in skill.Start.SkillOperation["Start"].qualifiers
+                          if q.type_ == "invocationDelegation")
         assert invocation.value == "http://dmp:8080" + operation_path(
-            f"{BASE_URL}/aas/Example/submodels/ControlComponentInstance", f"Skills.{name}.operation")
-    resource.control_component_instance.Skills.Skill.clear()
+            f"{BASE_URL}/aas/Example/submodels/Skills", f"{name}.Start.Start")
+    resource.skills.Skill.clear()
     resource.asset_interfaces_description.InterfaceTemplateForMQTT.clear()
     resource.asset_interfaces_description.InterfaceTemplateForOPCUA.clear()
     for group in _groups(resource):
@@ -176,19 +177,19 @@ def test_system_type_requires_its_hierarchical_structure():
 
 def test_motion_schema_operation_and_mapping_describe_the_same_payload():
     shuttle = RESOURCE_FACTORIES["planarShuttle1"]()
-    skill = shuttle.control_component_instance.Skills.Skill["MoveToPosition"]
-    assert [(v.id_short, v.value_type) for v in skill.operation.input_variable[:3]] == [
+    skill = shuttle.skills.Skill["MoveToPosition"]
+    assert [(v.id_short, v.value_type) for v in skill.Start.SkillOperation["Start"].input_variable[:3]] == [
         ("X", "xs:double"), ("Y", "xs:double"), ("Theta", "xs:double"),
     ]
     # Only the pose: which place, and on whose behalf, is the capability's Translation's to turn into it.
-    assert not skill.operation.input_variable[3:]
+    assert not skill.Start.SkillOperation["Start"].input_variable[3:]
     action = shuttle.asset_interfaces_description.InterfaceTemplateForMQTT[
         "interface_mqtt"
     ].InteractionMetadata.actions.property_name["MoveToPosition"]
     assert f"{SCHEMA_BASE}/moveToPosition.schema.json" in action.input.supplemental_semantic_ids
     assert action.forms.href.value == "CMD/XYMotion"
     assert action.forms.mqv_responseTopic.value == "DATA/XYMotion"
-    assert [v.id_short for v in skill.operation.in_output_variable] == ["Uuid", "ProductID"]
+    assert [v.id_short for v in skill.Start.SkillOperation["Start"].in_output_variable] == ["Uuid", "ProductID"]
     mapping = next(
         m for m in shuttle.asset_interfaces_mapping_configuration.MappingConfigurations.value
         if m.id_short == "MoveToPosition"
@@ -221,7 +222,7 @@ def test_extra_station_telemetry_has_variables_and_live_mappings():
 
 def test_software_commands_include_their_native_payload_inputs():
     planner = RESOURCE_FACTORIES["productionPlanner"]()
-    assert {v.id_short for v in planner.control_component_instance.Skills.Skill["Plan"].operation.input_variable} == {
+    assert {v.id_short for v in planner.skills.Skill["Plan"].Start.SkillOperation["Start"].input_variable} == {
         "Assets", "Order",
     }
     assert set(planner.variables.State.value) == {"Station"}
@@ -238,7 +239,7 @@ def test_software_commands_include_their_native_payload_inputs():
     assert "MQTT" not in {m.id_short for m in mappings}
     assert "StationState" in {m.id_short for m in mappings}
     for name in ("Start", "Unsuspend"):
-        inputs = orchestrator.control_component_instance.Skills.Skill[name].operation.input_variable
+        inputs = orchestrator.skills.Skill[name].Start.SkillOperation["Start"].input_variable
         assert [v.id_short for v in inputs] == ["Process"]
 
 
@@ -258,7 +259,7 @@ def test_generic_templates_do_not_claim_instance_specific_operations_or_telemetr
     interaction = _interfaces(resource)[interface].InteractionMetadata
     assert set(interaction.actions.property_name) == {"Halt", "Occupy", "Release"}
     assert set(interaction.properties.property_name) == state
-    assert set(resource.control_component_instance.Skills.Skill) == {"Halt", "Occupy", "Release"}
+    assert set(resource.skills.Skill) == {"Halt", "Occupy", "Release"}
     assert set(resource.variables.State.value) == {"Station"}
     assert resource.capability_description.CapabilitySet == {}
 
@@ -271,7 +272,7 @@ def test_non_station_resources_do_not_inherit_physical_location_or_station_skill
     )} if template is CompositeResource else {}
     resource = template(id_short="Generic", **kwargs)
     assert _interfaces(resource) == {}
-    assert resource.control_component_instance.Skills.Skill == {}
+    assert resource.skills.Skill == {}
     assert list(_groups(resource)) == []
     assert ("Location" in resource.parameters.parameter) is (template is Station)
 
@@ -280,10 +281,10 @@ def test_physical_and_operational_inheritance_is_declared_at_the_right_level():
     physical = PhysicalResource(id_short="Pump")
     operational = OperationalResource(id_short="Shuttle")
     assert "Location" in physical.parameters.parameter
-    assert physical.control_component_instance.Skills.Skill == {}
-    assert operational.control_component_instance.Skills.Skill == {}
+    assert physical.skills.Skill == {}
+    assert operational.skills.Skill == {}
     lab = MqttOperationalStation(id_short="Lab")
-    assert set(lab.control_component_instance.Skills.Skill) == {
+    assert set(lab.skills.Skill) == {
         "Halt", "Occupy", "Release",
     }
     assert set(lab.variables.State.value) == {"Station"}
@@ -296,10 +297,10 @@ def test_dispensing_type_declares_capability_but_not_vendor_skill_or_weight():
     station = DispensingStation(id_short="GenericDispensing")
     assert set(station.capability_description.CapabilitySet["Processing"].CapabilityContainer) == {"Dispensing"}
     assert station.variables.Measurements is None
-    assert "Dispensing" not in station.control_component_instance.Skills.Skill
+    assert "Dispensing" not in station.skills.Skill
     assert _interfaces(station) == {}
     concrete = RESOURCE_FACTORIES["imaDispensing"]()
-    assert "Dispensing" in concrete.control_component_instance.Skills.Skill
+    assert "Dispensing" in concrete.skills.Skill
     action = _interfaces(concrete)["interface_opcua"].InteractionMetadata.actions.property_name["Dispensing"]
     assert set(action.input.properties.property_name) == {"Uuid", "Volume"}
     assert f"{SCHEMA_BASE}/commandResponse.schema.json" in action.output.supplemental_semantic_ids
@@ -341,15 +342,15 @@ def test_direct_typed_defaults_are_independent_across_resources():
     from aas_model.resource_template.resources import MqttOperationalStation, StopperingStation
 
     assert MqttOperationalStation.model_fields["variables"].default_factory is None
-    assert MqttOperationalStation.model_fields["control_component_instance"].default_factory is None
+    assert MqttOperationalStation.model_fields["skills"].default_factory is None
     assert StopperingStation.model_fields["capability_description"].default_factory is None
 
     first = MqttOperationalStation(id_short="First")
     second = MqttOperationalStation(id_short="Second")
     first.variables.State.value.clear()
-    first.control_component_instance.Skills.Skill.clear()
+    first.skills.Skill.clear()
     assert set(second.variables.State.value) == {"Station"}
-    assert "Halt" in second.control_component_instance.Skills.Skill
+    assert "Halt" in second.skills.Skill
 
     first_capability = StopperingStation(id_short="First")
     second_capability = StopperingStation(id_short="Second")
@@ -359,7 +360,7 @@ def test_direct_typed_defaults_are_independent_across_resources():
 
 def test_graph_validation_rejects_invalid_direct_dict_insertions_before_aas_export():
     resource = RESOURCE_FACTORIES["imaDispensing"]()
-    resource.control_component_instance.Skills.Skill["Invalid"] = 42
+    resource.skills.Skill["Invalid"] = 42
     with pytest.warns(UserWarning, match="Pydantic serializer warnings"):
         with pytest.raises(ValidationError):
             build_from_model(resource)
@@ -384,12 +385,12 @@ def test_factory_authored_skills_resolve_their_invocations_and_empty_imports_sta
     resource = RESOURCE_FACTORIES[name]()
     resolved = resource.model_copy(deep=True)
     inject_ids(resolved)
-    for skill_name, skill in resolved.control_component_instance.Skills.Skill.items():
-        invocation = next(q for q in skill.operation.qualifiers if q.type_ == "invocationDelegation")
-        submodel = resolved.control_component_instance
+    for skill_name, skill in resolved.skills.Skill.items():
+        invocation = next(q for q in skill.Start.SkillOperation["Start"].qualifiers
+                          if q.type_ == "invocationDelegation")
         assert invocation.value == "http://dmp:8080" + operation_path(
-            f"{BASE_URL}/aas/{resource.id_short}/submodels/{submodel.id_short}", f"Skills.{skill_name}.operation")
-    resource.control_component_instance.Skills.Skill.clear()
+            f"{BASE_URL}/aas/{resource.id_short}/submodels/Skills", f"{skill_name}.Start.Start")
+    resource.skills.Skill.clear()
     resource.asset_interfaces_description.InterfaceTemplateForMQTT.clear()
     resource.asset_interfaces_description.InterfaceTemplateForOPCUA.clear()
     for group in _groups(resource):
@@ -416,14 +417,14 @@ def test_capability_realization_is_explicit_and_not_a_skill_naming_rule():
         "Processing"
     ].CapabilityContainer["Dispensing"].CapabilityRelations.CapabilityRealizedBy
     assert relations["RealizedBy_Dispensing"].first.key[-1].value == "Capability"
-    # The realizing skill is an element of this AAS: a ModelReference into the CCI.
+    # The realizing skill is an element of this AAS: a ModelReference into its Skills.
     assert relations["RealizedBy_Dispensing"].second == skill_ref("Dispensing")
     relations["RealizedBy_AlternativeImplementation"] = CapabilityRealizedBy(
         id_short="RealizedBy_AlternativeImplementation",
         first=relations["RealizedBy_Dispensing"].first.model_copy(deep=True),
         second=ExternalReference(key=(Key(
             type_="GlobalReference",
-            value="{aas_id}/submodels/ControlComponentInstance/Skills/AlternativeImplementation",
+            value="{aas_id}/submodels/Skills/AlternativeImplementation",
         ),)),
     )
     assert "RealizedBy_AlternativeImplementation" in relations
@@ -444,7 +445,7 @@ def test_capability_realization_is_explicit_and_not_a_skill_naming_rule():
 def test_capabilities_explicitly_link_to_the_selected_implementation(name, group, capability, skill):
     resource = RESOURCE_FACTORIES[name]()
     container = resource.capability_description.CapabilitySet[group].CapabilityContainer[capability]
-    assert skill in resource.control_component_instance.Skills.Skill
+    assert skill in resource.skills.Skill
     assert container.CapabilityRelations is not None
     relation = next(iter(container.CapabilityRelations.CapabilityRealizedBy.values()))
     assert relation.first.key[-1].value == "Capability"
@@ -456,7 +457,7 @@ def test_capabilities_explicitly_link_to_the_selected_implementation(name, group
     ].CapabilityRelations.CapabilityRealizedBy[relation.id_short]
     assert target.first.key[0].value == f"{resource.id}/submodels/CapabilityDescription"
     assert [key.value for key in target.second.key] == [
-        f"{resource.id}/submodels/ControlComponentInstance", "Skills", skill,
+        f"{resource.id}/submodels/Skills", skill,
     ]
 
 
@@ -466,10 +467,10 @@ def test_optional_operation_outputs_carry_the_dmp_qualifier_through_export():
     from aas_model.submodel_templates.control_component_instance import OPERATION_VARIABLE_OPTIONAL
 
     doc = json.loads(json_serialization.object_store_to_json(build_from_model(RESOURCE_FACTORIES["imaDispensing"]())))
-    cci = next(s for s in doc["submodels"] if s["idShort"] == "ControlComponentInstance")
-    skills = next(e for e in cci["submodelElements"] if e["idShort"] == "Skills")
-    skill = next(s for s in skills["value"] if s["idShort"] == "Dispensing")
-    operation = next(e for e in skill["value"] if e["modelType"] == "Operation")
+    skills = next(s for s in doc["submodels"] if s["idShort"] == "Skills")
+    skill = next(s for s in skills["submodelElements"] if s["idShort"] == "Dispensing")
+    start = next(e for e in skill["value"] if e["idShort"] == "Start")
+    operation = next(e for e in start["value"] if e["modelType"] == "Operation")
     qualifiers = {v["value"]["idShort"]: v["value"].get("qualifiers", [])
                   for v in operation["outputVariables"] + operation["inoutputVariables"]}
     # Outcome may be absent from the reply (commandResponse makes it optional); State and Uuid may not.

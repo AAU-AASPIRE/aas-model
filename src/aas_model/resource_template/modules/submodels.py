@@ -3,8 +3,8 @@
 The classes of ARSO's own submodels are generated (``aas_model.submodel_templates.arso``). Declared
 here is what they leave open, and the changes to IDTA templates a module needs:
 
-- **Skills**: a skill under a name of its own (``ModuleSkill``), so it is not read back as the
-  Control Component Instance's ``Skill``.
+- **Skills**: a skill under a name of its own (``ModuleSkill``, ``submodel_templates.skills``, shared with the
+  stations).
 - **Capability Description** (IDTA 02020): the lab's extension, shared with the stations
   (``aas_model.submodel_templates.capability_description``).
 - **Asset Interfaces Description**: one OPC UA server, no MQTT.
@@ -28,7 +28,6 @@ from aas_pydantic.submodel_templates.nameplate import (
 from aas_model.constants import BASE_URL
 from aas_model.resource_template.resources import ResourceNameplate
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription, DmpOpcuaInterface, MqttInterface
-from aas_model.submodel_templates.arso import skills
 from aas_model.submodel_templates.arso.control_configuration import ControlConfiguration
 # The Capability Description as the modules state it is the lab's extension of IDTA 02020, which the stations
 # use too; imported here, where modreg finds it.
@@ -52,16 +51,9 @@ class LabNameplate(ResourceNameplate):
 
 # ── Skills ────────────────────────────────────────────────────────────────────
 
-class ModuleSkill(skills.Skill):
-    """A skill as its commands (Start, Stop, Abort, Reset), each with the interface action that calls
-    it, its Operation and, for a composite, its steps. Named apart from the Control Component
-    Instance's ``Skill``: an element is read back as the class its dump names."""
-
-
-class ModuleSkills(skills.Skills):
-    """The Skills submodel: the skills, the module's own commands (``Module``) and the errors."""
-    Skill: Dict[str, ModuleSkill] = {}
-    Errors: skills.Errors = skills.Errors()
+# ModuleSkill and ModuleSkills are every resource's (``submodel_templates.skills``); imported here, where modreg
+# finds them.
+from aas_model.submodel_templates.skills import ModuleSkill, ModuleSkills  # noqa: E402,F401
 
 
 # ── Control Configuration ────────────────────────────────────────────────────

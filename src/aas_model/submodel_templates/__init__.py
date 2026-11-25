@@ -11,7 +11,8 @@ Modules:
     capability_description — IDTA Capability Description, with conditions as state constraints, Subjects, EffectSet
     execution              — what a capability needs and changes: subjects, term trees, the EffectSet, Translation
     knowledge              — Knowledge SMC of Variables: the state variables kept in the knowledge graph, and its store
-    control_component_instance — Extended CCI Skill; Operation variable roles (subject, parameter)
+    control_component_instance — a skill command's delegated Operation; Operation variable roles (parameter, optional)
+    skills                 — the ARSO Skills submodel every resource has: ModuleSkill, command_skill
     variables              — Variables submodel (custom, not yet IDTA)
     parameters             — Parameters submodel (custom, not yet IDTA)
 
@@ -87,13 +88,8 @@ from aas_model.submodel_templates.aimc import (
     DmpSource,
     DmpSources,
 )
-from .control_component_instance import (
-    ExtendedSkill,
-    ExtendedSkills,
-    SkillOperation,
-    SkillInterfaceRelationship,
-    ResourceEndpoints,
-)
+from .control_component_instance import SkillOperation
+from .skills import ModuleSkill, ModuleSkills, command_skill
 from .capability_description import (
     ModuleCapabilityContainer,
     ModuleCapabilityDescription,
@@ -169,11 +165,10 @@ __all__ = [
     "ParameterVariable",
     "AcceptsReference",
     # Skills
-    "ExtendedSkill",
-    "ExtendedSkills",
     "SkillOperation",
-    "SkillInterfaceRelationship",
-    "ResourceEndpoints",
+    "ModuleSkill",
+    "ModuleSkills",
+    "command_skill",
     # REST AID interface
     # Custom submodels
     "Variables",

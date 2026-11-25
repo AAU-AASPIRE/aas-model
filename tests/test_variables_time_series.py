@@ -200,5 +200,5 @@ def test_a_call_log_references_the_operation_beside_outcome_and_duration():
     assert list(fields) == ["Outcome", "DurationMs", "Operation"]
     assert fields["DurationMs"].value_type == "xs:long"
     assert isinstance(fields["Operation"], RecordReference)
-    assert [k.value for k in fields["Operation"].value.key][-3:] == ["Skills", "Occupy", "operation"]
+    assert [k.value for k in fields["Operation"].value.key][-3:] == ["Occupy", "Start", "Start"]
     assert log.Segments.LinkedSegment["Live"].InfluxDb2Target.Measurement.value == "operation_occupy"

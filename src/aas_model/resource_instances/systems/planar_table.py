@@ -10,8 +10,9 @@ from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, operation_variable_ref, skill_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, SkillOperation, SkillInterfaceRelationship,
+    SkillOperation,
 )
+from aas_model.submodel_templates.skills import MODULE_CONTROL, command_skill
 from aas_model.submodel_templates.aimc import DmpMappingConfiguration
 from aas_pydantic import Property
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import (
@@ -67,15 +68,9 @@ def planar_table() -> CompositeResource:
         input=datapoint_from_schema(COMMAND_SCHEMA, cls=DmpActionInput, schema_url=COMMAND_SCHEMA_URL),
         forms=MqttActionForm(href=f"CMD/{name}", mqv_qos="2"),
     )
-    skill = ExtendedSkill(
-        Disabled="false", interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name)
-    )
-    skill.operation = SkillOperation(input_variable=[Property(id_short="Uuid", description="The UUID of the command")])
-    table.control_component_instance.Skills.Skill[name] = skill
-    table.control_component_instance.Endpoints.Endpoint[name] = SkillInterfaceRelationship(
-        first=skill_ref(name),
-        second=affordance_ref(MQTT_INTERFACE, "actions", name),
-    )
+    table.skills.Skill[name] = command_skill(name, MODULE_CONTROL, affordance_ref(MQTT_INTERFACE, "actions", name),
+                                             SkillOperation(input_variable=[
+                                                 Property(id_short="Uuid", description="The UUID of the command")]))
     table.asset_interfaces_mapping_configuration.MappingConfigurations.value.append(
         DmpMappingConfiguration(
             id_short=name,

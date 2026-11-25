@@ -1,7 +1,7 @@
 """Resources as the resource ontology ARSO describes them: a production system, a module and a
 component of a module.
 
-Each is a ``Resource``. ARSO's **Skills** take the place of the Control Component Instance; the
+Each is a ``Resource``, with ARSO's **Skills** as every resource of the lab has them; the
 **Variables** are aas-model's (the live values, and in ``Measurements`` the coordinates). What a kind
 of resource does not have is left out (``None``): a component has its Skills only, a production
 system its Hierarchical Structures and the coordinates of its own points. What kind of resource an
@@ -17,7 +17,6 @@ from aas_pydantic.submodel_templates.nameplate import Nameplate
 
 from aas_model.constants import BASE_URL
 from aas_model.resource_template.resources import Resource
-from aas_model.submodel_templates.control_component_instance import ResourceControlComponentInstance
 from aas_model.submodel_templates.parameters import ResourceParameters
 from aas_model.submodel_templates import Aimc, AimcMappingConfigurations
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription
@@ -37,7 +36,7 @@ class ArsoResource(Resource):
     has it."""
     nameplate: Optional[Nameplate] = None
     asset_interfaces_description: Optional[DmpAssetInterfacesDescription] = None
-    control_component_instance: Optional[ResourceControlComponentInstance] = None     # Skills instead
+    skills: Optional[ModuleSkills] = None
     capability_description: Optional[ModuleCapabilityDescription] = None
     variables: Optional[Variables] = None
     parameters: Optional[ResourceParameters] = None

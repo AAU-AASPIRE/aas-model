@@ -135,8 +135,7 @@ STATE_STORE_GRAPH = f"{BASE_URL}/state"
 # resource's own submodels are authored against these and resolved with it.
 
 AID_SUBMODEL_ID = "{aas_id}/submodels/AssetInterfacesDescription"
-CCI_SUBMODEL_ID = "{aas_id}/submodels/ControlComponentInstance"
-CONTROL_COMPONENT_TYPE_SUBMODEL_ID = "{aas_id}/submodels/ControlComponentType"
+SKILLS_SUBMODEL_ID = "{aas_id}/submodels/Skills"
 VARIABLES_SUBMODEL_ID = "{aas_id}/submodels/Variables"
 CAPABILITIES_SUBMODEL_ID = "{aas_id}/submodels/CapabilityDescription"
 HIERARCHICAL_STRUCTURES_SUBMODEL_ID = "{aas_id}/submodels/HierarchicalStructures"

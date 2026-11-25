@@ -6,7 +6,7 @@ from aas_pydantic.submodel_templates.nameplate import ManufacturerName, Manufact
 from aas_model.resource_template import ResourceNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
-    OperationalMqttControlComponent, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
+    OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
 )
 from aas_model.resource_template.resources import CappingStation
 from aas_model.constants import SCHEMA_BASE
@@ -15,8 +15,9 @@ from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, skill_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, SkillOperation, SkillInterfaceRelationship, OptionalVariable,
+    SkillOperation, OptionalVariable,
 )
+from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
@@ -48,7 +49,7 @@ def cytiva_capping() -> CappingStation:
             ),
         ),
         asset_interfaces_description=OperationalMqttInterfaces(id_short="AssetInterfacesDescription"),
-        control_component_instance=OperationalMqttControlComponent(id_short="ControlComponentInstance"),
+        skills=OperationalMqttSkills(id_short="Skills"),
         asset_interfaces_mapping_configuration=OperationalMqttMappings(
             id_short="AssetInterfacesMappingConfiguration",
         ),
@@ -69,9 +70,7 @@ def cytiva_capping() -> CappingStation:
         output=datapoint_from_schema(load_schema(output_url), cls=DmpActionOutput, schema_url=output_url),
         forms=MqttActionForm(href=f"CMD/{name}", mqv_qos="2", mqv_responseTopic=f"DATA/{name}"),
     )
-    cci = resource.control_component_instance
-    skill = ExtendedSkill(interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
-        operation=SkillOperation(
+    skill = command_skill(name, PRIMITIVE, affordance_ref(MQTT_INTERFACE, "actions", name), SkillOperation(
             in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
             output_variable=[
                 Property(id_short="State", description="The state of the command being executed"),
@@ -79,10 +78,7 @@ def cytiva_capping() -> CappingStation:
             ],
         ),
     )
-    cci.Skills.Skill[name] = skill
-    cci.Endpoints.Endpoint[name] = SkillInterfaceRelationship(
-        first=skill_ref(name), second=affordance_ref(MQTT_INTERFACE, "actions", name)
-    )
+    resource.skills.Skill[name] = skill
     resource.asset_interfaces_mapping_configuration.MappingConfigurations.value.append(
         AimcMappingConfiguration(
             id_short=name, DefaultPollingInterval="0.0",

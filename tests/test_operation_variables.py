@@ -25,15 +25,16 @@ def is_optional(element) -> bool:
                for q in element.qualifiers)
 
 
-def _exported_cci(resource) -> dict:
+def _exported_skills(resource) -> dict:
     doc = json.loads(json_serialization.object_store_to_json(build_from_model(resource)))
-    return next(s for s in doc["submodels"] if s["idShort"] == "ControlComponentInstance")
+    return next(s for s in doc["submodels"] if s["idShort"] == "Skills")
 
 
-def _operation(cci: dict, skill: str) -> dict:
-    skills = next(e for e in cci["submodelElements"] if e["idShort"] == "Skills")
-    return next(e for e in next(s for s in skills["value"] if s["idShort"] == skill)["value"]
-                if e["modelType"] == "Operation")
+def _operation(skills: dict, skill: str) -> dict:
+    """The Operation of a skill's Start command."""
+    start = next(e for e in next(s for s in skills["submodelElements"] if s["idShort"] == skill)["value"]
+                 if e["idShort"] == "Start")
+    return next(e for e in start["value"] if e["modelType"] == "Operation")
 
 
 def _optional(element: dict) -> bool:
@@ -48,12 +49,12 @@ def test_a_variable_is_marked_optional_by_its_qualifier():
 
 def test_collection_and_list_variables_export_with_their_optional_marks():
     resource = RESOURCE_FACTORIES["imaDispensing"]()
-    operation = resource.control_component_instance.Skills.Skill["Dispensing"].operation
+    operation = resource.skills.Skill["Dispensing"].Start.SkillOperation["Start"]
     operation.output_variable = [*operation.output_variable, Result(id_short="Result"),
                                  SubmodelElementList(id_short="Samples", type_value_list_element="Property",
                                                      value_type_list_element="xs:int", qualifiers=[OptionalVariable()])]
-    cci = _exported_cci(resource)
-    outputs = {v["value"]["idShort"]: v["value"] for v in _operation(cci, "Dispensing")["outputVariables"]}
+    skills = _exported_skills(resource)
+    outputs = {v["value"]["idShort"]: v["value"] for v in _operation(skills, "Dispensing")["outputVariables"]}
     assert outputs["Result"]["modelType"] == "SubmodelElementCollection"
     assert outputs["Samples"]["modelType"] == "SubmodelElementList"
     members = {m["idShort"]: m for m in outputs["Result"]["value"]}
@@ -63,7 +64,7 @@ def test_collection_and_list_variables_export_with_their_optional_marks():
 
 def test_operation_aimc_uses_explicit_input_and_output_variable_references():
     resource = RESOURCE_FACTORIES["imaDispensing"]()
-    operation = resource.control_component_instance.Skills.Skill["Dispensing"].operation
+    operation = resource.skills.Skill["Dispensing"].Start.SkillOperation["Start"]
     mapping = next(mc for mc in resource.asset_interfaces_mapping_configuration
                    .MappingConfigurations.value if mc.id_short == "Dispensing")
 
@@ -72,7 +73,7 @@ def test_operation_aimc_uses_explicit_input_and_output_variable_references():
     assert set(source_ids) == declared_inputs == {"Uuid", "Volume"}     # every input is the device's
     for source, variable in zip(mapping.Sources.value, source_ids):
         assert [(key.type_, key.value) for key in source.Source.value.key[-2:]] == [
-            ("Operation", "operation"), ("Property", variable),
+            ("Operation", "Start"), ("Property", variable),
         ]
 
     sink_ids = [sink.SinkId.value for sink in mapping.ResponseSinks.value]
@@ -80,7 +81,7 @@ def test_operation_aimc_uses_explicit_input_and_output_variable_references():
     assert set(sink_ids) == declared_outputs == {"Uuid", "State", "Outcome"}
     for sink in mapping.ResponseSinks.value:
         assert [(key.type_, key.value) for key in sink.Sink.value.key[-2:]] == [
-            ("Operation", "operation"), ("Property", sink.SinkId.value),
+            ("Operation", "Start"), ("Property", sink.SinkId.value),
         ]
     assert b"Outputs" not in mapping.ResponseTransformation.value
     assert b"Uuid = sources.Uuid" in mapping.Transformation.value

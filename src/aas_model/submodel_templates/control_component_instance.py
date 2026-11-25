@@ -1,55 +1,33 @@
 """
-Extended Skills — the IDTA Control Component Instance's Skill with its native interface and Operation.
+Skill Operations — the delegated Operation of a skill's command and the roles of its variables.
 
-The IDTA ControlComponentInstance template defines a Skill SMC with basic
-fields (disabled, modes, parameters, errors, uses). This module extends it
-with:
-- interface_reference: ReferenceElement pointing to the AID action
-- operation: the AAS Operation clients invoke, delegated to the DMP, and the roles of its variables
-  (``ParameterVariable``, which may accept a reference, ``AcceptsReference``). Its variables are what the asset's
-  action needs and answers, nothing more: the DMP maps them to the action and back.
+A skill's command (ARSO Skills, ``submodel_templates.skills``) is called through its Operation (``SkillOperation``),
+delegated to the DMP by its ``invocationDelegation`` qualifier. Its variables are what the asset's action needs and
+answers, nothing more: the DMP maps them to the action and back. A variable may be a parameter
+(``ParameterVariable``), which may accept a reference (``AcceptsReference``), or optional (``OptionalVariable``).
 
 What a skill's capability needs and changes, and how a call is built from its subjects, is not here: it is the
 capability's conditions, effects and Translation (``capability_description``, ``execution``), which the behaviour
 tree reads.
 
-Named-field style: containers hold their children as DIRECT named fields
-(no ``value``/``submodel_element`` wrapper); dynamic name-keyed maps are
-``Dict[str, X]`` fields.
+The module keeps its name from the IDTA Control Component Instance, which the lab's resources no longer use: every
+resource has the ARSO Skills submodel.
 """
 
 from __future__ import annotations
 
-from typing import ClassVar, Dict, List, Optional
+from typing import List
 
-from aas_pydantic import (
-    Key, ModelReference,
-    Property, ReferenceElement, Operation, RelationshipElement, Qualifier, SubmodelElementList,
-)
-
-from aas_pydantic.submodel_templates.control_component_instance import (
-    Skill as _BaseSkill,
-    Skills as _BaseSkills,
-    Disabled, Modes, Parameters, Errors, Uses,
-    Disabled_t, Modes_t, Parameters_t, Errors_t, Uses_t,
-    Endpoints as _BaseEndpoints,
-    ControlComponentInstance, Type_instance,
-)
+from aas_pydantic import Property, Operation, Qualifier
 
 from aas_model.constants import (
-    BASE_URL, CONTROL_COMPONENT_TYPE_SUBMODEL_ID, INVOCATION_URL_TEMPLATE, OPERATION_VARIABLE_ACCEPTS_REFERENCE,
-    OPERATION_VARIABLE_PARAMETER,
+    BASE_URL, INVOCATION_URL_TEMPLATE, OPERATION_VARIABLE_ACCEPTS_REFERENCE, OPERATION_VARIABLE_PARAMETER,
 )
 
 
-EXTENDED_SKILLS = f"{BASE_URL}/ControlComponent/Skills/2/0"
-EXTENDED_SKILL = f"{BASE_URL}/ControlComponent/Skill/2/0"
-EXTENDED_SKILL_INTERFACE_REF = f"{BASE_URL}/ControlComponent/Skill/1/0"
-
-# Skill Operation (operation delegation) + endpoint relationships
+# Skill Operation (operation delegation)
 SKILL_OPERATION = f"{BASE_URL}/ControlComponent/Skill/Operation/2/0"
 SKILL_INVOCATION_DELEGATION = f"{BASE_URL}/ControlComponent/Skill/InvocationDelegation/1/0"
-SKILL_INTERFACE_RELATIONSHIP = f"{BASE_URL}/ControlComponent/Skill/NativeInterface/1/0"
 
 
 # The value of an Operation variable may be absent at invocation (aas-camel-dmp SPEC §7):
@@ -116,70 +94,3 @@ class SkillOperation(Operation):
     semantic_id: str = SKILL_OPERATION
     description: str = "Operation to invoke this skill (delegated via operation delegation)."
     qualifiers: List[Qualifier] = [InvocationDelegation()]
-
-
-class SkillInterfaceRelationship(RelationshipElement):
-    """Annotated relationship: THIS skill has THIS native interface in the AID.
-
-    ``first`` references the skill SMC (``ControlComponentInstance/skills/<skill>``),
-    ``second`` references its native action in the AID
-    (``AssetInterfacesDescription/<interface>/InteractionMetadata/actions/<skill>``).
-    Replaces the generic Endpoint ``interface_reference``/``endpoint_reference``
-    ReferenceElements for the per-skill native-interface linkage.
-    """
-    semantic_id: str = SKILL_INTERFACE_RELATIONSHIP
-    description: str = "This skill has this native interface in the AID submodel."
-
-
-class ResourceEndpoints(_BaseEndpoints):
-    """Endpoints container holding one annotated native-interface relationship
-    per skill (keyed by skill name) instead of generic Endpoint SMCs."""
-    Endpoint: Dict[str, SkillInterfaceRelationship] = {}
-
-
-class ExtendedSkill(_BaseSkill):
-    """Skill children + the interface-reference + operation extensions, as
-    DIRECT named fields.  The IDTA template marks ``Disabled``/``Modes``/
-    ``Parameters``/``Errors``/``Uses`` as mandatory (One) — provided here so
-    the extended skill constructs; stations override ``Modes`` etc. via
-    config.
-
-    ``interface_reference`` points at the skill's NATIVE interface (the AID
-    action it maps to, on whichever interface the asset offers it);
-    ``operation`` is the AAS Operation exposed to clients and delegated to
-    the DMP."""
-    semantic_id: str = EXTENDED_SKILL
-    Disabled: Disabled_t = Disabled()
-    Modes: Modes_t = Modes()
-    Parameters: Parameters_t = Parameters()
-    Errors: Errors_t = Errors()
-    Uses: Uses_t = Uses()
-    interface_reference: ReferenceElement = ReferenceElement(
-        semantic_id=EXTENDED_SKILL_INTERFACE_REF,
-        description="Reference to the AID action that natively implements this skill.",
-    )
-    operation: Optional[SkillOperation] = None
-
-
-class ExtendedSkills(_BaseSkills):
-    """Dynamic map of extended skills offered by the component instance
-    (name → ExtendedSkill)."""
-    semantic_id: str = EXTENDED_SKILLS
-    Skill: Dict[str, ExtendedSkill] = {}
-
-
-# Ensure forward references are resolved (Pydantic v2)
-ExtendedSkill.model_rebuild()
-ExtendedSkills.model_rebuild()
-
-
-class ResourceControlComponentInstance(ControlComponentInstance):
-    """CCI variant that uses ExtendedSkills + the per-skill endpoint
-    relationships and default-constructs its mandatory children."""
-    Endpoints: ResourceEndpoints = ResourceEndpoints()
-    Skills: ExtendedSkills = ExtendedSkills()
-    Type: Type_instance = Type_instance(
-        value=ModelReference(
-            key=(Key(type_="Submodel", value=CONTROL_COMPONENT_TYPE_SUBMODEL_ID),)
-        )
-    )

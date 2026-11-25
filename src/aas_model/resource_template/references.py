@@ -9,7 +9,7 @@ from __future__ import annotations
 from aas_pydantic import Key, ModelReference
 
 from aas_model.constants import (
-    AID_SUBMODEL_ID, CAPABILITIES_SUBMODEL_ID, CCI_SUBMODEL_ID, VARIABLES_SUBMODEL_ID,
+    AID_SUBMODEL_ID, CAPABILITIES_SUBMODEL_ID, SKILLS_SUBMODEL_ID, VARIABLES_SUBMODEL_ID,
 )
 
 # The idShorts of an asset's one interface per protocol. No protocol is a default: every reference into the AID
@@ -39,14 +39,14 @@ def action_member_ref(interface: str, action: str, schema: str, *members: str) -
 
 
 def skill_ref(name: str) -> ModelReference:
-    """The skill ``name`` in the ControlComponentInstance."""
-    return ModelReference(key=(Key(type_="Submodel", value=CCI_SUBMODEL_ID), *_collections("Skills", name)))
+    """The skill ``name`` in the Skills submodel (ARSO)."""
+    return ModelReference(key=(Key(type_="Submodel", value=SKILLS_SUBMODEL_ID), *_collections(name)))
 
 
-def operation_ref(skill: str) -> ModelReference:
-    """A skill's delegated Operation; AIMC Sources and response Sinks address its variables
-    (:func:`operation_variable_ref`), not the Operation itself."""
-    return ModelReference(key=skill_ref(skill).key + (Key(type_="Operation", value="operation"),))
+def operation_ref(skill: str, command: str = "Start") -> ModelReference:
+    """The delegated Operation of a skill's command (``Skills/<skill>/<command>/<command>``, the Operation named like
+    its command); AIMC Sources and response Sinks address its variables (:func:`operation_variable_ref`)."""
+    return ModelReference(key=skill_ref(skill).key + _collections(command) + (Key(type_="Operation", value=command),))
 
 
 def operation_variable_ref(skill: str, variable: str, element_type: str = "Property") -> ModelReference:

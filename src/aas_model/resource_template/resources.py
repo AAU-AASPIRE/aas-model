@@ -34,13 +34,13 @@ from aas_model.submodel_templates.execution import (
 from aas_model.submodel_templates.knowledge import Knowledge, StateVariable
 from aas_model.resource_template.translations import COMMAND_STATE_REPLY, LAB_PREFIX, UNIT_UUID
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription
-from aas_model.submodel_templates.control_component_instance import ResourceControlComponentInstance
+from aas_model.submodel_templates.skills import ModuleSkills
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 from aas_model.submodel_templates.parameters import Position, ResourceParameters
 from aas_model.submodel_templates.variables import Variables
 from aas_model.resource_template.operational import (
-    MqttInterfaces, OperationalCapabilityDescription, OperationalMqttControlComponent, OperationalMqttInterfaces,
-    OperationalMqttMappings, OperationalOpcuaControlComponent, OperationalOpcuaInterfaces, OperationalOpcuaMappings,
+    MqttInterfaces, OperationalCapabilityDescription, OperationalMqttInterfaces, OperationalMqttMappings,
+    OperationalMqttSkills, OperationalOpcuaInterfaces, OperationalOpcuaMappings, OperationalOpcuaSkills,
     OperationalVariables,
 )
 from aas_model.resource_template.references import subject_ref
@@ -91,10 +91,8 @@ class Resource(AAS):
         id_short="AssetInterfacesDescription",
     )
 
-    # ── Control Component Instance ────────────────────────────────────────
-    control_component_instance: ResourceControlComponentInstance = ResourceControlComponentInstance(
-        id_short="ControlComponentInstance",
-    )
+    # ── Skills (ARSO): each skill's commands, the action that carries each out, its Operation ───────
+    skills: Optional[ModuleSkills] = ModuleSkills(id_short="Skills")
 
     # ── Capability Description (included unless explicitly omitted) ──────────
     capability_description: Optional[ModuleCapabilityDescription] = ModuleCapabilityDescription(
@@ -171,9 +169,7 @@ class MqttOperationalStation(Station):
     asset_interfaces_description: DmpAssetInterfacesDescription = OperationalMqttInterfaces(
         id_short="AssetInterfacesDescription",
     )
-    control_component_instance: ResourceControlComponentInstance = OperationalMqttControlComponent(
-        id_short="ControlComponentInstance",
-    )
+    skills: Optional[ModuleSkills] = OperationalMqttSkills(id_short="Skills")
     asset_interfaces_mapping_configuration: Aimc = OperationalMqttMappings(
         id_short="AssetInterfacesMappingConfiguration",
     )
@@ -186,9 +182,7 @@ class OpcuaOperationalStation(Station):
     asset_interfaces_description: DmpAssetInterfacesDescription = OperationalOpcuaInterfaces(
         id_short="AssetInterfacesDescription",
     )
-    control_component_instance: ResourceControlComponentInstance = OperationalOpcuaControlComponent(
-        id_short="ControlComponentInstance",
-    )
+    skills: Optional[ModuleSkills] = OperationalOpcuaSkills(id_short="Skills")
     asset_interfaces_mapping_configuration: Aimc = OperationalOpcuaMappings(
         id_short="AssetInterfacesMappingConfiguration",
     )
@@ -362,9 +356,7 @@ class PlanarShuttle(Shuttle):
     asset_interfaces_description: DmpAssetInterfacesDescription = OperationalMqttInterfaces(
         id_short="AssetInterfacesDescription",
     )
-    control_component_instance: ResourceControlComponentInstance = OperationalMqttControlComponent(
-        id_short="ControlComponentInstance",
-    )
+    skills: Optional[ModuleSkills] = OperationalMqttSkills(id_short="Skills")
     # A move takes the shuttle to a place: the shuttle is at that place when it ends. Where a unit it carries is
     # follows from custody (the unit is held by the shuttle), so the unit takes no part. The place is a coordinate
     # of the line (a module's TransferPoint); the pose the device is sent to is that place's, in the table's frame.

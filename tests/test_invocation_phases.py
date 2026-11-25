@@ -83,7 +83,7 @@ def _start_mapping():
         Sources=[
             SourcesItem(
                 SourceId="Start",
-                Source=aimc_ref("{aas_id}/submodels/ControlComponentInstance", "Skills", "Start", "operation"),
+                Source=aimc_ref("{aas_id}/submodels/Skills", "Start", "Start", "Start"),
             )
         ],
         Sinks=[SinksItem(SinkId="Start", Sink=_mqtt("actions", "Start"))],

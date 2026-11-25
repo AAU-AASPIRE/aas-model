@@ -21,9 +21,9 @@ from aas_model.resource_template.resources import PlanarShuttle
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm, MqttForm
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, OptionalVariable, ParameterVariable,
-    SkillInterfaceRelationship, SkillOperation,
+    OptionalVariable, ParameterVariable, SkillOperation,
 )
+from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_model.submodel_templates.time_series import (
     DmpLinkedSegment, InfluxDb2Target, RecordField, TimeSeriesCollection, TimeSeriesMetadata, TimeSeriesRecord,
     TimeSeriesSegments,
@@ -87,10 +87,8 @@ def _planar_shuttle(number: int, x: float) -> PlanarShuttle:
         ),
         forms=MqttActionForm(href="CMD/XYMotion", mqv_qos="2", mqv_responseTopic="DATA/XYMotion"),
     )
-    cci = resource.control_component_instance
-    cci.Skills.Skill[name] = ExtendedSkill(
-        interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
-        operation=SkillOperation(
+    resource.skills.Skill[name] = command_skill(
+        name, PRIMITIVE, affordance_ref(MQTT_INTERFACE, "actions", name), SkillOperation(
             # ProductID is not sent to the device; the reply echoes the caller's value (traceability only: where a
             # unit is follows from custody, so it is not a subject of the move).
             in_output_variable=[
@@ -110,9 +108,6 @@ def _planar_shuttle(number: int, x: float) -> PlanarShuttle:
                 Property(id_short="Outcome", value_type="xs:integer", value="0", qualifiers=[OptionalVariable()]),
             ],
         ),
-    )
-    cci.Endpoints.Endpoint[name] = SkillInterfaceRelationship(
-        first=skill_ref(name), second=affordance_ref(MQTT_INTERFACE, "actions", name)
     )
     mappings.append(AimcMappingConfiguration(
         id_short=name, DefaultPollingInterval="0.0",

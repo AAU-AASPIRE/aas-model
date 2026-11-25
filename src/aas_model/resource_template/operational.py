@@ -58,9 +58,9 @@ from aas_model.submodel_templates.aid import (
     MqttAction, MqttActionForm, MqttActions, MqttForm, MqttInteractionMetadata, MqttInterface, OpcuaAction,
     OpcuaActionForm, OpcuaActions, OpcuaInteractionMetadata,
 )
-from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, ExtendedSkills, ResourceControlComponentInstance, ResourceEndpoints, SkillInterfaceRelationship,
-    SkillOperation,
+from aas_model.submodel_templates.control_component_instance import SkillOperation
+from aas_model.submodel_templates.skills import (
+    MODULE_CONTROL as MODULE_CONTROL_SKILL, ModuleSkill, ModuleSkills, command_skill,
 )
 from aas_model.submodel_templates.variables import LogGroup, StateGroup, Variables
 from aas_model.submodel_templates.execution import (
@@ -279,50 +279,28 @@ class OperationalCapabilityDescription(ModuleCapabilityDescription):
 # ── Control component: the PackML skills, bound to one interface ─────────────
 
 
-class OperationalMqttControlComponent(ResourceControlComponentInstance):
-    # Halt carries the command's Uuid; Occupy and Release return it with the command's State.
-    Skills: ExtendedSkills = ExtendedSkills(Skill={
-        **{name: ExtendedSkill(
-            interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
-            operation=SkillOperation(
-                input_variable=[Property(id_short="Uuid", description="The UUID of the command")],
-            ),
-        ) for name in INVOKE_ONLY_SKILLS},
-        **{name: ExtendedSkill(
-            interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
-            operation=SkillOperation(
-                in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
-                output_variable=[Property(id_short="State", description="The state of the command being executed")],
-            ),
-        ) for name in LOGGED_SKILLS},
-    })
-    Endpoints: ResourceEndpoints = ResourceEndpoints(Endpoint={
-        name: SkillInterfaceRelationship(first=skill_ref(name), second=affordance_ref(MQTT_INTERFACE, "actions", name))
-        for name in PACKML_SKILLS
-    })
+def _packml_skills(interface: str) -> Dict[str, ModuleSkill]:
+    """Halt, Occupy and Release on ``interface``: the device's own commands (ModuleControl). Halt carries the command's
+    Uuid; Occupy and Release return it with the command's State."""
+    return {
+        **{name: command_skill(name, MODULE_CONTROL_SKILL, affordance_ref(interface, "actions", name), SkillOperation(
+            input_variable=[Property(id_short="Uuid", description="The UUID of the command")],
+        )) for name in INVOKE_ONLY_SKILLS},
+        **{name: command_skill(name, MODULE_CONTROL_SKILL, affordance_ref(interface, "actions", name), SkillOperation(
+            in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
+            output_variable=[Property(id_short="State", description="The state of the command being executed")],
+        )) for name in LOGGED_SKILLS},
+    }
 
 
-class OperationalOpcuaControlComponent(ResourceControlComponentInstance):
-    # Halt carries the command's Uuid; Occupy and Release return it with the command's State.
-    Skills: ExtendedSkills = ExtendedSkills(Skill={
-        **{name: ExtendedSkill(
-            interface_reference=affordance_ref(OPCUA_INTERFACE, "actions", name),
-            operation=SkillOperation(
-                input_variable=[Property(id_short="Uuid", description="The UUID of the command")],
-            ),
-        ) for name in INVOKE_ONLY_SKILLS},
-        **{name: ExtendedSkill(
-            interface_reference=affordance_ref(OPCUA_INTERFACE, "actions", name),
-            operation=SkillOperation(
-                in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
-                output_variable=[Property(id_short="State", description="The state of the command being executed")],
-            ),
-        ) for name in LOGGED_SKILLS},
-    })
-    Endpoints: ResourceEndpoints = ResourceEndpoints(Endpoint={
-        name: SkillInterfaceRelationship(first=skill_ref(name), second=affordance_ref(OPCUA_INTERFACE, "actions", name))
-        for name in PACKML_SKILLS
-    })
+class OperationalMqttSkills(ModuleSkills):
+    """The Skills of a station with the PackML contract over MQTT: Halt, Occupy and Release."""
+    Skill: Dict[str, ModuleSkill] = _packml_skills(MQTT_INTERFACE)
+
+
+class OperationalOpcuaSkills(ModuleSkills):
+    """The Skills of a station with the PackML contract over OPC UA: Halt, Occupy and Release."""
+    Skill: Dict[str, ModuleSkill] = _packml_skills(OPCUA_INTERFACE)
 
 
 # ── Asset interfaces ─────────────────────────────────────────────────────────

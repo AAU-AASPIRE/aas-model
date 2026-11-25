@@ -7,7 +7,7 @@ from aas_pydantic.submodel_templates.nameplate import ManufacturerName, Manufact
 from aas_model.resource_template import ResourceNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
-    COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, OPCUA_STATION, OperationalOpcuaControlComponent,
+    COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, OPCUA_STATION, OperationalOpcuaSkills,
     OperationalOpcuaInterfaces, OperationalOpcuaMappings, OperationalVariables,
 )
 from aas_model.resource_template.resources import DispensingStation
@@ -24,9 +24,9 @@ from aas_model.resource_template.references import (
     skill_ref, subject_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    AcceptsReference, ExtendedSkill, OptionalVariable, ParameterVariable,
-    SkillInterfaceRelationship, SkillOperation,
+    AcceptsReference, OptionalVariable, ParameterVariable, SkillOperation,
 )
+from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_model.submodel_templates.execution import (
     EffectOperator, EffectSet, EndTerms, StateEffect, TermSubject, TermValueReference, Translation,
 )
@@ -81,7 +81,7 @@ def ima_dispensing() -> DispensingStation:
             ),
         ),
         asset_interfaces_description=OperationalOpcuaInterfaces(id_short="AssetInterfacesDescription"),
-        control_component_instance=OperationalOpcuaControlComponent(id_short="ControlComponentInstance"),
+        skills=OperationalOpcuaSkills(id_short="Skills"),
         asset_interfaces_mapping_configuration=OperationalOpcuaMappings(
             id_short="AssetInterfacesMappingConfiguration",
         ),
@@ -106,10 +106,8 @@ def ima_dispensing() -> DispensingStation:
         ),
         forms=OpcuaActionForm(href=f"/?id={f'{OPCUA_STATION}.{name}'}"),
     )
-    cci = resource.control_component_instance
-    cci.Skills.Skill[name] = ExtendedSkill(
-        interface_reference=affordance_ref(OPCUA_INTERFACE, "actions", name),
-        operation=SkillOperation(
+    resource.skills.Skill[name] = command_skill(
+        name, PRIMITIVE, affordance_ref(OPCUA_INTERFACE, "actions", name), SkillOperation(
             input_variable=[
                 ParameterVariable(
                     id_short="Volume", value="1.0", value_type="xs:double", description="The volume to dispense in ml",
@@ -122,10 +120,6 @@ def ima_dispensing() -> DispensingStation:
                 Property(id_short="Outcome", value="0", value_type="xs:integer", qualifiers=[OptionalVariable()]),
             ],
         ),
-    )
-    cci.Endpoints.Endpoint[name] = SkillInterfaceRelationship(
-        first=skill_ref(name),
-        second=affordance_ref(OPCUA_INTERFACE, "actions", name),
     )
     # The mapping addresses the members of the Method's arguments: each
     # InputArgument is a Sink, each OutputArgument a ResponseSource, and the

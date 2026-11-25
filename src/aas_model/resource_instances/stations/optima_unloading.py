@@ -6,7 +6,7 @@ from aas_pydantic.submodel_templates.nameplate import ManufacturerName, Manufact
 from aas_model.resource_template import ResourceNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
-    OperationalMqttControlComponent, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
+    OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
 )
 from aas_model.resource_template.resources import UnloadingStation
 from aas_model.constants import SCHEMA_BASE
@@ -16,8 +16,9 @@ from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, skill_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, SkillOperation, SkillInterfaceRelationship, OptionalVariable,
+    SkillOperation, OptionalVariable,
 )
+from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm
@@ -50,7 +51,7 @@ def optima_unloading() -> UnloadingStation:
             ),
         ),
         asset_interfaces_description=OperationalMqttInterfaces(id_short="AssetInterfacesDescription"),
-        control_component_instance=OperationalMqttControlComponent(id_short="ControlComponentInstance"),
+        skills=OperationalMqttSkills(id_short="Skills"),
         asset_interfaces_mapping_configuration=OperationalMqttMappings(
             id_short="AssetInterfacesMappingConfiguration",
         ),
@@ -63,7 +64,6 @@ def optima_unloading() -> UnloadingStation:
     mqtt_actions = resource.asset_interfaces_description.InterfaceTemplateForMQTT[
         "interface_mqtt"
     ].InteractionMetadata.actions.property_name
-    cci = resource.control_component_instance
     mappings = resource.asset_interfaces_mapping_configuration.MappingConfigurations.value
     for name in ("Unloading", "Scrap"):
         input_url = f"{SCHEMA_BASE}/command.schema.json"
@@ -82,11 +82,8 @@ def optima_unloading() -> UnloadingStation:
                 Property(id_short="Outcome", value="0", value_type="xs:integer", qualifiers=[OptionalVariable()]),
             ],
         )
-        skill = ExtendedSkill(interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name), operation=operation)
-        cci.Skills.Skill[name] = skill
-        cci.Endpoints.Endpoint[name] = SkillInterfaceRelationship(
-            first=skill_ref(name), second=affordance_ref(MQTT_INTERFACE, "actions", name)
-        )
+        skill = command_skill(name, PRIMITIVE, affordance_ref(MQTT_INTERFACE, "actions", name), operation)
+        resource.skills.Skill[name] = skill
         mappings.append(AimcMappingConfiguration(
             id_short=name, DefaultPollingInterval="0.0",
             Sources=[SourcesItem(SourceId="Uuid", Source=operation_variable_ref(name, "Uuid"))],

@@ -50,7 +50,7 @@ def test_every_operational_device_has_module_control_realized_by_its_packml_skil
     assert set(containers) == {"Occupying", "Releasing"}
     assert containers["Occupying"].Capability.supplemental_semantic_ids == [f"{LAB}Occupying"]
     assert containers["Releasing"].Capability.supplemental_semantic_ids == [f"{LAB}Releasing"]
-    skills = resource.control_component_instance.Skills.Skill
+    skills = resource.skills.Skill
     for container, skill in (("Occupying", "Occupy"), ("Releasing", "Release")):
         (realized,) = containers[container].CapabilityRelations.CapabilityRealizedBy.values()
         assert realized.second.key[-1].value == skill and skill in skills
@@ -93,7 +93,7 @@ def test_module_control_states_what_it_needs_and_changes_in_its_relations():
     end = {t.display_name["en"]: t for t in releasing.get_referable(["EffectSet", "End"]).value}
     assert end["Free again"].get_referable("Operator").value == "clear"
     # The skill's Operation is the device's command and nothing more; the Translation builds it from the subjects.
-    occupy = RESOURCE_FACTORIES["imaDispensing"]().control_component_instance.Skills.Skill["Occupy"].operation
+    occupy = RESOURCE_FACTORIES["imaDispensing"]().skills.Skill["Occupy"].Start.SkillOperation["Start"]
     assert not occupy.input_variable and [v.id_short for v in occupy.in_output_variable] == ["Uuid"]
     assert [v.id_short for v in occupy.output_variable] == ["State"]
     translation = relations.get_referable("Translation")
@@ -112,7 +112,7 @@ def test_dispensing_binds_the_unit_and_the_volume_of_its_operation():
     assert (pre.Operator.value, pre.Value.value) == ("equal", "0.0")
     (end,) = relations.EffectSet.End.term.values()
     assert isinstance(end, StateEffect) and end.Operator.value == "increase"
-    assert [key.value for key in end.ValueReference.value.key[-2:]] == ["operation", "Volume"]
+    assert [key.value for key in end.ValueReference.value.key[-2:]] == ["Start", "Volume"]
     assert relations.CapabilityRealizedBy                              # the instance added its skill
 
     required = relations.Subjects.value[2]                                # the volume the product requires
@@ -120,7 +120,7 @@ def test_dispensing_binds_the_unit_and_the_volume_of_its_operation():
     assert required.value.type_ == "ExternalReference" and required.value.key[0].value == f"{LAB}FillVolume"
     assert relations.Translation is not None                              # the call: unit's uuid, that volume
 
-    operation = resource.control_component_instance.Skills.Skill["Dispensing"].operation
+    operation = resource.skills.Skill["Dispensing"].Start.SkillOperation["Start"]
     variables = {v.id_short: v for v in operation.input_variable}
     assert set(variables) == {"Volume"}                                   # the device's, nothing else
     assert variables["Volume"].semantic_id == OPERATION_VARIABLE_PARAMETER
@@ -145,7 +145,7 @@ def test_a_shuttle_move_takes_the_shuttle_to_a_place_the_call_names():
     assert [k.value for k in end.Subject.value.key[-2:]] == ["Subjects", "0"]
     assert [k.value for k in end.ValueReference.value.key[-2:]] == ["Subjects", "1"]
 
-    operation = resource.control_component_instance.Skills.Skill["MoveToPosition"].operation
+    operation = resource.skills.Skill["MoveToPosition"].Start.SkillOperation["Start"]
     assert [v.id_short for v in operation.input_variable] == ["X", "Y", "Theta"]
     assert relations.Translation is not None
 

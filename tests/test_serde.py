@@ -25,8 +25,7 @@ def test_aimc_response_sources_and_sinks_are_exported():
         "{aas_id}/submodels/AssetInterfacesDescription", "interface_mqtt",
         "InteractionMetadata", "actions", "Halt", "output", "State")
     operation = aimc_ref(
-        "{aas_id}/submodels/ControlComponentInstance", "Skills", "Halt",
-        "operation")
+        "{aas_id}/submodels/Skills", "Halt", "Start", "Start")
     variables = aimc_ref("{aas_id}/submodels/Variables", "PackMLState")
     mapping = AimcMappingConfiguration(
         id_short="Halt",

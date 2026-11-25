@@ -9,8 +9,9 @@ from aas_model.resource_template.references import (
     skill_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, SkillOperation, SkillInterfaceRelationship, OptionalVariable,
+    SkillOperation, OptionalVariable,
 )
+from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_model.resource_template.operational import station_state
 from aas_model.submodel_templates import DmpResponseSink, DmpResponseSource
 from aas_model.submodel_templates.aimc import DmpMappingConfiguration
@@ -70,28 +71,20 @@ def production_planner() -> MqttSoftwareResource:
     )
     mqtt.InteractionMetadata.properties.property_name["StationState"] = state
     resource.variables.State = station_state(occupation=False)
-    plan = ExtendedSkill(
-        Disabled="false", interface_reference=affordance_ref(MQTT_INTERFACE, "actions", "Plan")
-    )
-    plan.operation = SkillOperation(
+    resource.skills.Skill["Plan"] = command_skill("Plan", PRIMITIVE, affordance_ref(MQTT_INTERFACE, "actions", "Plan"),
+                                                  SkillOperation(
+        input_variable=[
+            Property(id_short="Assets", value="[]", description="JSON array of resource AAS identifiers."),
+            Property(id_short="Order"),
+        ],
         in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
-        output_variable=[Property(id_short="State", description="The state of the command being executed")],
-    )
-    plan.operation.input_variable = [
-        Property(id_short="Assets", value="[]", description="JSON array of resource AAS identifiers."),
-        Property(id_short="Order"),
-    ]
-    plan.operation.output_variable.extend([
-        Property(id_short="ProcessAasId", qualifiers=[OptionalVariable()]),
-        Property(id_short="ProductAasId", qualifiers=[OptionalVariable()]),
-        Property(id_short="ErrorMessage", qualifiers=[OptionalVariable()]),
-    ])
-    cci = resource.control_component_instance
-    cci.Skills.Skill["Plan"] = plan
-    cci.Endpoints.Endpoint["Plan"] = SkillInterfaceRelationship(
-        first=skill_ref("Plan"),
-        second=affordance_ref(MQTT_INTERFACE, "actions", "Plan"),
-    )
+        output_variable=[
+            Property(id_short="State", description="The state of the command being executed"),
+            Property(id_short="ProcessAasId", qualifiers=[OptionalVariable()]),
+            Property(id_short="ProductAasId", qualifiers=[OptionalVariable()]),
+            Property(id_short="ErrorMessage", qualifiers=[OptionalVariable()]),
+        ],
+    ))
     mapping = DmpMappingConfiguration(
         id_short="Plan",
         DefaultPollingInterval="0.0",

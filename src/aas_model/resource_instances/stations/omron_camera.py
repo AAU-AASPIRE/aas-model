@@ -7,7 +7,7 @@ from aas_pydantic.submodel_templates.nameplate import ManufacturerName, Manufact
 from aas_model.resource_template import ResourceNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
-    OperationalMqttControlComponent, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
+    OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
 )
 from aas_model.resource_template.resources import InspectionStation
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
@@ -17,8 +17,9 @@ from aas_model.resource_template.references import (
     skill_ref, variable_ref,
 )
 from aas_model.submodel_templates.control_component_instance import (
-    ExtendedSkill, SkillOperation, SkillInterfaceRelationship, OptionalVariable,
+    SkillOperation, OptionalVariable,
 )
+from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_model.submodel_templates.variables import MeasurementsGroup, VariableProp
@@ -58,7 +59,7 @@ def omron_camera() -> InspectionStation:
             ),
         ),
         asset_interfaces_description=OperationalMqttInterfaces(id_short="AssetInterfacesDescription"),
-        control_component_instance=OperationalMqttControlComponent(id_short="ControlComponentInstance"),
+        skills=OperationalMqttSkills(id_short="Skills"),
         asset_interfaces_mapping_configuration=OperationalMqttMappings(
             id_short="AssetInterfacesMappingConfiguration",
         ),
@@ -83,9 +84,7 @@ def omron_camera() -> InspectionStation:
         output=datapoint_from_schema(load_schema(output_url), cls=DmpActionOutput, schema_url=output_url),
         forms=MqttActionForm(href=f"CMD/{name}", mqv_qos="2", mqv_responseTopic=f"DATA/{name}"),
     )
-    cci = resource.control_component_instance
-    skill = ExtendedSkill(interface_reference=affordance_ref(MQTT_INTERFACE, "actions", name),
-        operation=SkillOperation(
+    skill = command_skill(name, PRIMITIVE, affordance_ref(MQTT_INTERFACE, "actions", name), SkillOperation(
             in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
             output_variable=[
                 Property(id_short="State", description="The state of the command being executed"),
@@ -93,10 +92,7 @@ def omron_camera() -> InspectionStation:
             ],
         ),
     )
-    cci.Skills.Skill[name] = skill
-    cci.Endpoints.Endpoint[name] = SkillInterfaceRelationship(
-        first=skill_ref(name), second=affordance_ref(MQTT_INTERFACE, "actions", name)
-    )
+    resource.skills.Skill[name] = skill
     mappings = resource.asset_interfaces_mapping_configuration.MappingConfigurations.value
     mappings.append(AimcMappingConfiguration(
         id_short=name, DefaultPollingInterval="0.0",
