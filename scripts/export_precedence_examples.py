@@ -17,7 +17,7 @@ What is checked, and printed:
 - every reference in these AASs: found, found in ``--against`` (a folder of AAS JSON environments,
   e.g. a copy of the lab's server with the filling line), or into an AAS not modelled (the battery
   cell's stations);
-- every partial block: After names only steps of the block, no cycle, Order respects After;
+- every partial block: its ProcessOrders join only steps of the block, no cycle, Order respects them;
 - every joint: first and second are entities of the bill of material of the AAS holding the step,
   each joint is defined once in its AAS, a joint referred to from another archetype exists;
 - every step of a recipe (and of the sequences it calls) has a binding in the process AAS.
@@ -286,15 +286,13 @@ def check(envs: list[dict], against: list[dict]) -> list[str]:
                     if kind == "partial":
                         inner = child(s, "Steps")
                         sib = {c["idShort"]: c for c in inner.get("value", [])}
-                        after = {}
-                        for name, c in sib.items():
-                            after[name] = []
-                            for r in (child(c, "After") or {}).get("value", []):
-                                k = [x["value"] for x in r["value"]["keys"]]
-                                if k[:-1] != keys + ["Steps"] or k[-1] not in sib:
-                                    lines.append(f"AFTER {value(c, 'NodeId')} names a step outside its block")
-                                else:
-                                    after[name].append(k[-1])
+                        after = {name: [] for name in sib}          # a step: the steps before it
+                        for o in (child(s, "ProcessOrders") or {}).get("value", []):
+                            ends = [[x["value"] for x in o[side]["keys"]] for side in ("first", "second")]
+                            if any(k[:-1] != keys + ["Steps"] or k[-1] not in sib for k in ends):
+                                lines.append(f"AFTER {o['idShort']} joins a step outside its block")
+                            else:
+                                after[ends[1][-1]].append(ends[0][-1])
                         layers, done = [], set()
                         while len(done) < len(sib):
                             ready = [x for x in sib if x not in done and set(after[x]) <= done]

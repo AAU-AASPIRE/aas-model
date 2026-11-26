@@ -54,17 +54,14 @@ class StepName(Property):
 class Order(Property):
     id_short: AasIdString = "Order"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Order/1/0"
-    description: str = "Position among the nodes beside it. In a partial block, an order that respects After: the default the steps run in."
+    description: str = "Position among the nodes beside it. In a partial block, an order that respects its ProcessOrders: the default the steps run in."
     value_type: str = "xs:nonNegativeInteger"
 
-class After(SubmodelElementList):
-    id_short: AasIdString = "After"
-    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/After/1/0"
-    description: str = "In a partial block: the steps beside this one that must be done before it starts. None: it is ready when the block starts."
-    type_value_list_element: str = "ReferenceElement"
-    order_relevant: bool = False
-    item_type: ClassVar = ReferenceElement
-    value: List[ReferenceElement] = []
+class EstimatedDuration(Property):
+    id_short: AasIdString = "EstimatedDuration"
+    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/EstimatedDuration/1/0"
+    description: str = "Kind step: how long the step is expected to take, in seconds, for scheduling."
+    value_type: str = "xs:double"
 
 class ProcessOwner(ReferenceElement):
     id_short: AasIdString = "ProcessOwner"
@@ -275,6 +272,23 @@ class Condition(SubmodelElementCollection):
     Expected: Optional[Expected_t] = None
     Operand: Optional[Operand_t] = None
 
+class Reason(Property):
+    id_short: AasIdString = "Reason"
+    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Reason/1/0"
+    description: str = "Why the order holds, e.g. a joint in the way, access, an order fixed by GMP."
+    value_type: str = "xs:string"
+
+class ProcessOrder(AnnotatedRelationshipElement):
+    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/ProcessOrder/1/0"
+    description: str = "first must be done before second starts. Both are steps of this block (their collections in its Steps)."
+    Reason: Optional[Reason_t] = None
+
+class ProcessOrders(SubmodelElementCollection):
+    id_short: AasIdString = "ProcessOrders"
+    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/ProcessOrders/1/0"
+    description: str = "Kind partial: the order of the steps inside, one relation for each pair that must keep its order. A step that no relation has as second is ready when the block starts."
+    ProcessOrder: Dict[str, ProcessOrder_t] = {}
+
 class BranchId(Property):
     id_short: AasIdString = "BranchId"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/BranchId/1/0"
@@ -309,12 +323,12 @@ class Branches(SubmodelElementCollection):
 
 class Step(SubmodelElementCollection):
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Step/1/0"
-    description: str = "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their After allows. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
+    description: str = "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
     NodeId: NodeId_t
     Kind: Kind_t
     Name: Union[StepName, Name]
     Order: Order_t
-    After: Optional[After_t] = None
+    EstimatedDuration: Optional[EstimatedDuration_t] = None
     ProcessOwner: Optional[ProcessOwner_t] = None
     ProcessReference: Optional[ProcessReference_t] = None
     RequiredCapabilities: Optional[RequiredCapabilities_t] = None
@@ -325,6 +339,7 @@ class Step(SubmodelElementCollection):
     Component: Optional[Component_t] = None
     Condition: Optional[Condition_t] = None
     Steps: Optional[Steps_t] = None
+    ProcessOrders: Optional[ProcessOrders_t] = None
     Branches: Optional[Branches_t] = None
 
 class Steps(SubmodelElementCollection):
@@ -387,6 +402,10 @@ Operator_t: TypeAlias = Operator
 Expected_t: TypeAlias = Expected
 # alias so field ``Operand_t`` can name a class of the same id_short
 Operand_t: TypeAlias = Operand
+# alias so field ``Reason_t`` can name a class of the same id_short
+Reason_t: TypeAlias = Reason
+# alias so field ``ProcessOrder_t`` can name a class of the same id_short
+ProcessOrder_t: TypeAlias = ProcessOrder
 # alias so field ``BranchId_t`` can name a class of the same id_short
 BranchId_t: TypeAlias = BranchId
 # alias so field ``Steps_t`` can name a class of the same id_short
@@ -399,8 +418,8 @@ NodeId_t: TypeAlias = NodeId
 Kind_t: TypeAlias = Kind
 # alias so field ``Order_t`` can name a class of the same id_short
 Order_t: TypeAlias = Order
-# alias so field ``After_t`` can name a class of the same id_short
-After_t: TypeAlias = After
+# alias so field ``EstimatedDuration_t`` can name a class of the same id_short
+EstimatedDuration_t: TypeAlias = EstimatedDuration
 # alias so field ``ProcessOwner_t`` can name a class of the same id_short
 ProcessOwner_t: TypeAlias = ProcessOwner
 # alias so field ``ProcessReference_t`` can name a class of the same id_short
@@ -419,6 +438,8 @@ OccurrenceId_t: TypeAlias = OccurrenceId
 Component_t: TypeAlias = Component
 # alias so field ``Condition_t`` can name a class of the same id_short
 Condition_t: TypeAlias = Condition
+# alias so field ``ProcessOrders_t`` can name a class of the same id_short
+ProcessOrders_t: TypeAlias = ProcessOrders
 # alias so field ``Branches_t`` can name a class of the same id_short
 Branches_t: TypeAlias = Branches
 # alias so field ``Step_t`` can name a class of the same id_short
@@ -440,7 +461,7 @@ NodeId.model_rebuild()
 Kind.model_rebuild()
 StepName.model_rebuild()
 Order.model_rebuild()
-After.model_rebuild()
+EstimatedDuration.model_rebuild()
 ProcessOwner.model_rebuild()
 ProcessReference.model_rebuild()
 RequiredCapability.model_rebuild()
@@ -475,6 +496,9 @@ StepId.model_rebuild()
 OperandOutputId.model_rebuild()
 Operand.model_rebuild()
 Condition.model_rebuild()
+Reason.model_rebuild()
+ProcessOrder.model_rebuild()
+ProcessOrders.model_rebuild()
 BranchId.model_rebuild()
 BranchName.model_rebuild()
 BranchOrder.model_rebuild()

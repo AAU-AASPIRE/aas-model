@@ -34,7 +34,7 @@ from aas_model.product_template import (
 )
 from aas_model.submodel_templates.product import process_parameters as pp
 from aas_model.submodel_templates.product import production_sequence_4 as ps4
-from aas_pydantic import Capability, Key, ModelReference, Qualifier, ReferenceElement
+from aas_pydantic import Capability, Key, ModelReference, Qualifier
 from aas_pydantic.submodel_templates import capability_description as cd
 from aas_pydantic.submodel_templates.hierarchical_structures import ArcheType
 from aas_pydantic.submodel_templates.nameplate import (
@@ -429,11 +429,10 @@ def process(name: str) -> ps4.ProcessReference:
         ("Submodel", PROCESSES), ("SubmodelElementCollection", "Processes"), ("SubmodelElementCollection", name)))
 
 
-def after(sequence: str, *steps: str) -> ps4.After:
-    """The steps of the partial block (Step_0000) of ``sequence`` that come first."""
-    return ps4.After(value=[ReferenceElement(value=reference(
-        ("Submodel", sequence), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"),
-        ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", name))) for name in steps])
+def step(sequence: str, name: str) -> ModelReference:
+    """A step of the partial block (Step_0000) of ``sequence``: an end of a ProcessOrder."""
+    return reference(("Submodel", sequence), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"),
+                     ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", name))
 
 
 def disassembly() -> ps4.ProductionSequence:
@@ -450,12 +449,36 @@ def disassembly() -> ps4.ProductionSequence:
             "Step_0000": ps4.Step(
                 id_short="Step_0000", NodeId=ps4.NodeId(value="OpenPack"), Kind=ps4.Kind(value="partial"),
                 Name=ps4.StepName(value="Open the pack"), Order=ps4.Order(value="0"),
+                ProcessOrders=ps4.ProcessOrders(ProcessOrder={
+                    "ProcessOrder_0000": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0000", first=step(DISASSEMBLY, "Step_0000"),
+                        second=step(DISASSEMBLY, "Step_0002"), Reason=ps4.Reason(value="the cover is over the busbars")),
+                    "ProcessOrder_0001": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0001", first=step(DISASSEMBLY, "Step_0001"),
+                        second=step(DISASSEMBLY, "Step_0002"), Reason=ps4.Reason(value="the pack is live until the HV connector is out")),
+                    "ProcessOrder_0002": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0002", first=step(DISASSEMBLY, "Step_0001"),
+                        second=step(DISASSEMBLY, "Step_0003"), Reason=ps4.Reason(value="the BMS is held by the HV connector")),
+                    "ProcessOrder_0003": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0003", first=step(DISASSEMBLY, "Step_0002"),
+                        second=step(DISASSEMBLY, "Step_0004"), Reason=ps4.Reason(value="the busbars hold module 1")),
+                    "ProcessOrder_0004": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0004", first=step(DISASSEMBLY, "Step_0002"),
+                        second=step(DISASSEMBLY, "Step_0005"), Reason=ps4.Reason(value="the busbars hold module 2")),
+                    "ProcessOrder_0005": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0005", first=step(DISASSEMBLY, "Step_0002"),
+                        second=step(DISASSEMBLY, "Step_0006"), Reason=ps4.Reason(value="the busbars hold module 3")),
+                    "ProcessOrder_0006": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0006", first=step(DISASSEMBLY, "Step_0002"),
+                        second=step(DISASSEMBLY, "Step_0007"), Reason=ps4.Reason(value="the busbars hold module 4")),
+                }),
                 Steps=ps4.Steps(Step={
 
                     # UnscrewCover: nothing before it; breaks the cover's screwed joint.
                     "Step_0000": ps4.Step(
                         id_short="Step_0000", NodeId=ps4.NodeId(value="UnscrewCover"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Unscrew the cover"), Order=ps4.Order(value="0"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="90"),
                         ProcessReference=process("Unscrewing"),
                         Joints=ps4.Joints(Joint={
                             "J_Cover": ps4.Joint(
@@ -469,6 +492,7 @@ def disassembly() -> ps4.ProductionSequence:
                     "Step_0001": ps4.Step(
                         id_short="Step_0001", NodeId=ps4.NodeId(value="UnplugHV"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Unplug the HV connector"), Order=ps4.Order(value="1"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="20"),
                         ProcessReference=process("Unplugging"),
                         Joints=ps4.Joints(Joint={
                             "J_HV": ps4.Joint(
@@ -482,8 +506,8 @@ def disassembly() -> ps4.ProductionSequence:
                     "Step_0002": ps4.Step(
                         id_short="Step_0002", NodeId=ps4.NodeId(value="RemoveBusbars"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Remove the busbars"), Order=ps4.Order(value="2"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="120"),
                         ProcessReference=process("Unbolting"),
-                        After=after(DISASSEMBLY, "Step_0000", "Step_0001"),
                         Joints=ps4.Joints(Joint={
                             f"J_Busbar{n}": ps4.Joint(
                                 id_short=f"J_Busbar{n}", display_name={"en": f"Busbars to module {n}, bolted M6"},
@@ -497,8 +521,8 @@ def disassembly() -> ps4.ProductionSequence:
                     "Step_0003": ps4.Step(
                         id_short="Step_0003", NodeId=ps4.NodeId(value="RemoveBMS"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Remove the BMS"), Order=ps4.Order(value="3"),
-                        ProcessReference=process("Removing"),
-                        After=after(DISASSEMBLY, "Step_0001")),
+                        EstimatedDuration=ps4.EstimatedDuration(value="60"),
+                        ProcessReference=process("Removing")),
 
                     # The four modules: each a call into the module's own Disassembly sequence, after
                     # the busbars; four agents take them apart at once.
@@ -507,8 +531,7 @@ def disassembly() -> ps4.ProductionSequence:
                         Kind=ps4.Kind(value="call"), Name=ps4.StepName(value=f"Take battery module {n} apart"),
                         Order=ps4.Order(value=str(3 + n)),
                         SequenceReference=ps4.SequenceReference(value=reference(
-                            ("Submodel", sequence_id(MODULES[n - 1], "Disassembly")))),
-                        After=after(DISASSEMBLY, "Step_0002"))
+                            ("Submodel", sequence_id(MODULES[n - 1], "Disassembly")))))
                        for n in (1, 2, 3, 4)},
                 })),
         }))
@@ -535,28 +558,41 @@ def assembly() -> ps4.ProductionSequence:
             "Step_0000": ps4.Step(
                 id_short="Step_0000", NodeId=ps4.NodeId(value="ClosePack"), Kind=ps4.Kind(value="partial"),
                 Name=ps4.StepName(value="Close the pack"), Order=ps4.Order(value="0"),
+                ProcessOrders=ps4.ProcessOrders(ProcessOrder={
+                    "ProcessOrder_0000": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0000", first=step(ASSEMBLY, "Step_0000"),
+                        second=step(ASSEMBLY, "Step_0002"), Reason=ps4.Reason(value="the HV connector plugs into the BMS")),
+                    "ProcessOrder_0001": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0001", first=step(ASSEMBLY, "Step_0001"),
+                        second=step(ASSEMBLY, "Step_0003"), Reason=ps4.Reason(value="the cover goes over the busbars")),
+                    "ProcessOrder_0002": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0002", first=step(ASSEMBLY, "Step_0002"),
+                        second=step(ASSEMBLY, "Step_0003"), Reason=ps4.Reason(value="the cover goes over the HV connector")),
+                }),
                 Steps=ps4.Steps(Step={
                     "Step_0000": ps4.Step(
                         id_short="Step_0000", NodeId=ps4.NodeId(value="PlaceBMS"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Place the BMS"), Order=ps4.Order(value="0"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="40"),
                         ProcessReference=process("Placing")),
                     "Step_0001": ps4.Step(
                         id_short="Step_0001", NodeId=ps4.NodeId(value="BoltBusbars"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Bolt the busbars"), Order=ps4.Order(value="1"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="120"),
                         ProcessReference=process("Bolting"),
                         Joints=ps4.Joints(JointReference={
                             name: joint(name) for name in ("J_Busbar1", "J_Busbar2", "J_Busbar3", "J_Busbar4")})),
                     "Step_0002": ps4.Step(
                         id_short="Step_0002", NodeId=ps4.NodeId(value="PlugHV"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Plug the HV connector in"), Order=ps4.Order(value="2"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="20"),
                         ProcessReference=process("Plugging"),
-                        After=after(ASSEMBLY, "Step_0000"),
                         Joints=ps4.Joints(JointReference={"J_HV": joint("J_HV")})),
                     "Step_0003": ps4.Step(
                         id_short="Step_0003", NodeId=ps4.NodeId(value="ScrewCover"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Screw the cover on"), Order=ps4.Order(value="3"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="90"),
                         ProcessReference=process("Screwing"),
-                        After=after(ASSEMBLY, "Step_0001", "Step_0002"),
                         Joints=ps4.Joints(JointReference={"J_Cover": joint("J_Cover")})),
                 })),
         }))

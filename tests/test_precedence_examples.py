@@ -38,12 +38,12 @@ def test_a_fault_is_found(cases):
     import copy
     broken = copy.deepcopy(cases["pharma"])
     sequence = next(sm for sm in broken[0]["submodels"] if sm["idShort"] == "ProductionSequenceAssembly")
-    steps = examples.child(examples.child(examples.child(sequence, "Steps"), "Step_0000"), "Steps")
-    # Filling after Inspection: a cycle, and an Order that does not respect After.
-    filling, inspection = examples.child(steps, "Step_0000"), examples.child(steps, "Step_0003")
-    after = copy.deepcopy(examples.child(inspection, "After"))
-    after["value"][0]["value"]["keys"][-1]["value"] = "Step_0003"
-    filling["value"].append(after)
+    # Filling after Inspection: a cycle, and an Order that does not respect the ProcessOrders.
+    orders = examples.child(examples.child(examples.child(sequence, "Steps"), "Step_0000"), "ProcessOrders")
+    back = copy.deepcopy(orders["value"][0])                   # Filling before Stoppering, turned round
+    back["idShort"] = "ProcessOrder_9999"
+    back["first"]["keys"][-1]["value"], back["second"]["keys"][-1]["value"] = "Step_0003", "Step_0000"
+    orders["value"].append(back)
     found = [line.split()[0] for line in examples.check(broken, []) if line.startswith(examples.FAULTS)]
     assert "CYCLE" in found and "ORDER" in found
 
@@ -72,7 +72,11 @@ def test_a_sequence_reads_back_with_its_joints():
     joint = remove.Joints.Joint["J_Busbar3"]
     assert isinstance(joint, ps4.Joint) and joint.JointType.value == "Bolt"
     assert joint.second.key[-1].value == "BatteryModule3"
-    assert [r.value.key[-1].value for r in remove.After.value] == ["Step_0000", "Step_0001"]
+    assert float(remove.EstimatedDuration.value) == 120
+    orders = back.Steps.Step["Step_0000"].ProcessOrders.ProcessOrder
+    before = sorted(o.first.key[-1].value for o in orders.values() if o.second.key[-1].value == "Step_0002")
+    assert before == ["Step_0000", "Step_0001"]
+    assert orders["ProcessOrder_0000"].Reason.value == "the cover is over the busbars"
 
 
 def test_a_sequence_is_of_its_fields_archetype():

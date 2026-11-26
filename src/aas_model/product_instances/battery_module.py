@@ -22,7 +22,7 @@ from aas_model.product_template import (
 )
 from aas_model.submodel_templates.product import process_parameters as pp
 from aas_model.submodel_templates.product import production_sequence_4 as ps4
-from aas_pydantic import Capability, Key, ModelReference, Qualifier, ReferenceElement
+from aas_pydantic import Capability, Key, ModelReference, Qualifier
 from aas_pydantic.submodel_templates import capability_description as cd
 from aas_pydantic.submodel_templates.hierarchical_structures import ArcheType
 from aas_pydantic.submodel_templates.nameplate import (
@@ -237,12 +237,11 @@ def battery_module_sequence(n: int) -> ps4.ProductionSequence:
         return ps4.ProcessReference(value=reference(
             ("Submodel", i["processes"]), ("SubmodelElementCollection", "Processes"), ("SubmodelElementCollection", name)))
 
-    def after(*steps: str) -> ps4.After:
-        """The steps of the partial block Teardown that come first."""
-        return ps4.After(value=[ReferenceElement(value=reference(
-            ("Submodel", i["disassembly"]), ("SubmodelElementCollection", "Steps"),
-            ("SubmodelElementCollection", "Step_0000"), ("SubmodelElementCollection", "Steps"),
-            ("SubmodelElementCollection", name))) for name in steps])
+    def step(sequence: str, name: str) -> ModelReference:
+        """A step of the partial block Teardown: an end of a ProcessOrder."""
+        return reference(("Submodel", sequence), ("SubmodelElementCollection", "Steps"),
+                         ("SubmodelElementCollection", "Step_0000"), ("SubmodelElementCollection", "Steps"),
+                         ("SubmodelElementCollection", name))
 
     return ps4.ProductionSequence(
         id=i["disassembly"], id_short="ProductionSequenceDisassembly",
@@ -255,12 +254,21 @@ def battery_module_sequence(n: int) -> ps4.ProductionSequence:
             "Step_0000": ps4.Step(
                 id_short="Step_0000", NodeId=ps4.NodeId(value="Teardown"), Kind=ps4.Kind(value="partial"),
                 Name=ps4.StepName(value="Take the module apart"), Order=ps4.Order(value="0"),
+                ProcessOrders=ps4.ProcessOrders(ProcessOrder={
+                    "ProcessOrder_0000": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0000", first=step(i["disassembly"], "Step_0000"),
+                        second=step(i["disassembly"], "Step_0001"), Reason=ps4.Reason(value="the cells are under the lid")),
+                    "ProcessOrder_0001": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0001", first=step(i["disassembly"], "Step_0001"),
+                        second=step(i["disassembly"], "Step_0002"), Reason=ps4.Reason(value="grading needs the state of health")),
+                }),
                 Steps=ps4.Steps(Step={
 
                     # RemoveLid: breaks the clip joint between lid and housing.
                     "Step_0000": ps4.Step(
                         id_short="Step_0000", NodeId=ps4.NodeId(value="RemoveLid"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Remove the lid"), Order=ps4.Order(value="0"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="30"),
                         ProcessReference=process("Unclipping"),
                         Joints=ps4.Joints(Joint={
                             "J_Lid": ps4.Joint(
@@ -275,8 +283,8 @@ def battery_module_sequence(n: int) -> ps4.ProductionSequence:
                     "Step_0001": ps4.Step(
                         id_short="Step_0001", NodeId=ps4.NodeId(value="TestCells"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Test the cells"), Order=ps4.Order(value="1"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="300"),
                         ProcessReference=process("CellTesting"),
-                        After=after("Step_0000"),
                         Outputs=ps4.Outputs(Output={
                             "Output_0000": ps4.Output(
                                 id_short="Output_0000", OutputId=ps4.OutputId(value="StateOfHealth"),
@@ -288,7 +296,6 @@ def battery_module_sequence(n: int) -> ps4.ProductionSequence:
                     "Step_0002": ps4.Step(
                         id_short="Step_0002", NodeId=ps4.NodeId(value="Grade"), Kind=ps4.Kind(value="decision"),
                         Name=ps4.StepName(value="State of health at least 80 %?"), Order=ps4.Order(value="2"),
-                        After=after("Step_0001"),
                         Condition=ps4.Condition(
                             ConditionType=ps4.ConditionType(value="comparison"),
                             Operator=ps4.Operator(value="gte"), Unit=ps4.ConditionUnit(value="%"),

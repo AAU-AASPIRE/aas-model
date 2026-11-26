@@ -224,7 +224,7 @@
        "description": [
         {
          "language": "en",
-         "text": "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their After allows. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
+         "text": "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
         }
        ],
        "qualifiers": [
@@ -371,7 +371,7 @@
          "description": [
           {
            "language": "en",
-           "text": "Position among the nodes beside it. In a partial block, an order that respects After: the default the steps run in."
+           "text": "Position among the nodes beside it. In a partial block, an order that respects its ProcessOrders: the default the steps run in."
           }
          ],
          "qualifiers": [
@@ -394,21 +394,21 @@
          "valueType": "xs:nonNegativeInteger"
         },
         {
-         "modelType": "SubmodelElementList",
-         "idShort": "After",
+         "modelType": "Property",
+         "idShort": "EstimatedDuration",
          "semanticId": {
           "type": "ExternalReference",
           "keys": [
            {
             "type": "GlobalReference",
-            "value": "https://smartproductionlab.aau.dk/ProductionSequence/After/1/0"
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/EstimatedDuration/1/0"
            }
           ]
          },
          "description": [
           {
            "language": "en",
-           "text": "In a partial block: the steps beside this one that must be done before it starts. None: it is ready when the block starts."
+           "text": "Kind step: how long the step is expected to take, in seconds, for scheduling."
           }
          ],
          "qualifiers": [
@@ -428,36 +428,7 @@
            }
           }
          ],
-         "typeValueListElement": "ReferenceElement",
-         "orderRelevant": false,
-         "value": [
-          {
-           "modelType": "ReferenceElement",
-           "qualifiers": [
-            {
-             "type": "SMT/Cardinality",
-             "valueType": "xs:string",
-             "kind": "TemplateQualifier",
-             "value": "ZeroToMany",
-             "semanticId": {
-              "type": "ExternalReference",
-              "keys": [
-               {
-                "type": "GlobalReference",
-                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-               }
-              ]
-             }
-            }
-           ],
-           "description": [
-            {
-             "language": "en",
-             "text": "A step of the same block (its collection in this submodel)."
-            }
-           ]
-          }
-         ]
+         "valueType": "xs:double"
         },
         {
          "modelType": "ReferenceElement",
@@ -1773,6 +1744,137 @@
           }
          ],
          "value": []
+        },
+        {
+         "modelType": "SubmodelElementCollection",
+         "idShort": "ProcessOrders",
+         "semanticId": {
+          "type": "ExternalReference",
+          "keys": [
+           {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/ProcessOrders/1/0"
+           }
+          ]
+         },
+         "description": [
+          {
+           "language": "en",
+           "text": "Kind partial: the order of the steps inside, one relation for each pair that must keep its order. A step that no relation has as second is ready when the block starts."
+          }
+         ],
+         "qualifiers": [
+          {
+           "type": "SMT/Cardinality",
+           "valueType": "xs:string",
+           "kind": "TemplateQualifier",
+           "value": "ZeroToOne",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+             }
+            ]
+           }
+          }
+         ],
+         "value": [
+          {
+           "modelType": "AnnotatedRelationshipElement",
+           "idShort": "ProcessOrder__00__",
+           "semanticId": {
+            "type": "ExternalReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "https://smartproductionlab.aau.dk/ProductionSequence/ProcessOrder/1/0"
+             }
+            ]
+           },
+           "description": [
+            {
+             "language": "en",
+             "text": "first must be done before second starts. Both are steps of this block (their collections in its Steps)."
+            }
+           ],
+           "qualifiers": [
+            {
+             "type": "SMT/Cardinality",
+             "valueType": "xs:string",
+             "kind": "TemplateQualifier",
+             "value": "ZeroToMany",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+               }
+              ]
+             }
+            }
+           ],
+           "first": {
+            "type": "ModelReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "EMPTY"
+             }
+            ]
+           },
+           "second": {
+            "type": "ModelReference",
+            "keys": [
+             {
+              "type": "GlobalReference",
+              "value": "EMPTY"
+             }
+            ]
+           },
+           "annotations": [
+            {
+             "modelType": "Property",
+             "idShort": "Reason",
+             "semanticId": {
+              "type": "ExternalReference",
+              "keys": [
+               {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/ProductionSequence/Reason/1/0"
+               }
+              ]
+             },
+             "description": [
+              {
+               "language": "en",
+               "text": "Why the order holds, e.g. a joint in the way, access, an order fixed by GMP."
+              }
+             ],
+             "qualifiers": [
+              {
+               "type": "SMT/Cardinality",
+               "valueType": "xs:string",
+               "kind": "TemplateQualifier",
+               "value": "ZeroToOne",
+               "semanticId": {
+                "type": "ExternalReference",
+                "keys": [
+                 {
+                  "type": "GlobalReference",
+                  "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
+                 }
+                ]
+               }
+              }
+             ],
+             "valueType": "xs:string"
+            }
+           ]
+          }
+         ]
         },
         {
          "modelType": "SubmodelElementCollection",

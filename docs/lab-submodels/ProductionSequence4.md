@@ -1,8 +1,8 @@
 # Production Sequence 4.0
 
 A product's recipe as a partial order (proposed): the steps that put the product together
-(Assembly) or take it apart (Disassembly), each step after the steps it needs, with the joints it
-makes or breaks. It sits beside the planner's [Production Sequence](ProductionSequence.md) 2.0, which
+(Assembly) or take it apart (Disassembly), the order between them as relations (`ProcessOrder`, as in
+APSO's bill of process), and the joints each step makes or breaks. It sits beside the planner's [Production Sequence](ProductionSequence.md) 2.0, which
 the lab's products still use; the planner (basyx-aas-web-ui, module ProcessSequence) does not read
 4.0 yet. In the product AAS (`aas_model.product_template.Product`: `assembly_sequence`,
 `disassembly_sequence`).
@@ -15,10 +15,14 @@ Classes: `aas_model.submodel_templates.product.production_sequence_4` (generated
   is the product's plan id with the archetype after it (`aas_model.product_template.sequence_id`), its
   idShort `ProductionSequenceAssembly` or `ProductionSequenceDisassembly`. `Product` checks that each
   field holds a sequence of its archetype.
-- **A partial block** (Kind `partial`) holds steps in `Steps` that run in any order their `After`
-  allows. `After` lists the steps beside this one, in the same block, that must be done before it
-  starts. A step without `After` is ready when the block starts. `Order` stays: an order that
-  respects `After`, which a reader that runs steps one by one follows.
+- **A partial block** (Kind `partial`) holds steps in `Steps` that run in any order its
+  `ProcessOrders` allow. Each `ProcessOrder` is a relation between two steps of the block: `first`
+  must be done before `second` starts. Its annotation `Reason` may say why (a joint in the way,
+  access, an order fixed by GMP). A step that no relation has as `second` is ready when the block
+  starts. `Order` stays: an order that respects the relations, which a reader that runs steps one by
+  one follows.
+- **A step's `EstimatedDuration`** (seconds) is what a scheduler plans with; the examples' values are
+  made up.
 - **A joint** is an AnnotatedRelationshipElement in the `Joints` of the step that makes it
   (Assembly) or breaks it (Disassembly). `first` and `second` are entities of the Hierarchical
   Structures of the AAS that holds the step. `JointType` and `JointStandard` are its annotations; the
@@ -38,8 +42,11 @@ Classes: `aas_model.submodel_templates.product.production_sequence_4` (generated
 
 - **A partial order instead of a list:** disassembly and assembly rarely have one order. What must
   come first is what is fixed; the agents and the planner choose among the steps that are ready.
-- **`After` only between siblings:** a block is then a graph of its own that can be checked alone
-  (no cycles, `Order` respects `After`), and a call or a nested block is one node of it.
+- **The order as relations, between siblings only:** the colleagues' APSO states the order of a bill of
+  process as `ProcessOrder` relations, and the relation can carry why the order holds. They stay
+  inside the block, between its steps, so a block is a graph of its own that can be checked alone (no
+  cycles, `Order` respects the relations), and a call or a nested block is one node of it. Until
+  26 Nov 2026 the order was an `After` list on each step: the same edges, kept on the later step.
 - **Joints in the sequence, not in the Hierarchical Structures:** the bill of material stays a list
   of parts. A joint is what a step does to two parts, so it is defined where the step is.
 - **What stays from 2.0 and 3.0:** the step kinds, `Order`, `ProcessReference`, calls, branches,
@@ -51,9 +58,9 @@ Classes: `aas_model.submodel_templates.product.production_sequence_4` (generated
 
 In aas-model (`aas_model.product_instances`, built by `scripts/export_precedence_examples.py`):
 
-- **The battery pack** (`battery_pack`): Disassembly, a partial block: UnscrewCover and UnplugHV are
-  ready at the start; RemoveBusbars after both; RemoveBMS after UnplugHV; the four modules' own
-  sequences called after RemoveBusbars. The joints J_Cover, J_HV, J_Busbar1-4 are defined here. Its
+- **The battery pack** (`battery_pack`): Disassembly, a partial block whose seven ProcessOrders say:
+  UnscrewCover and UnplugHV are ready at the start; RemoveBusbars after both; RemoveBMS after UnplugHV;
+  the four modules' own sequences called after RemoveBusbars. The joints J_Cover, J_HV, J_Busbar1-4 are defined here. Its
   Assembly sequence refers to the same joints.
 - **A battery module** (`battery_module`): RemoveLid, TestCells (output StateOfHealth), then a
   decision: 80 % or more to SortForReuse, otherwise SortForRecycling.
@@ -73,13 +80,12 @@ In aas-model (`aas_model.product_instances`, built by `scripts/export_precedence
 | `Name` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0` | The name shown for the sequence. |
 | `Subject` | Ref | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Subject/1/0` | The AAS of the product the sequence plans. |
 | `Steps` | SMC | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Steps/1/0` | The nodes of the sequence. |
-| `Steps/{Step}` | SMC | 0..* | `https://smartproductionlab.aau.dk/ProductionSequence/Step/1/0` | One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their After allows. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition. |
+| `Steps/{Step}` | SMC | 0..* | `https://smartproductionlab.aau.dk/ProductionSequence/Step/1/0` | One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition. |
 | `Steps/{Step}/NodeId` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/NodeId/1/0` | Identifies the node within its sequence. |
 | `Steps/{Step}/Kind` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Kind/1/0` | step, call, partial, parallel, conditional or decision. |
 | `Steps/{Step}/Name` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0` | The name shown for the node. |
-| `Steps/{Step}/Order` | Property (xs:nonNegativeInteger) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Order/1/0` | Position among the nodes beside it. In a partial block, an order that respects After: the default the steps run in. |
-| `Steps/{Step}/After` | SML of ReferenceElement | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/After/1/0` | In a partial block: the steps beside this one that must be done before it starts. None: it is ready when the block starts. |
-| `Steps/{Step}/After/[]` | Ref | 0..* | – | A step of the same block (its collection in this submodel). |
+| `Steps/{Step}/Order` | Property (xs:nonNegativeInteger) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Order/1/0` | Position among the nodes beside it. In a partial block, an order that respects its ProcessOrders: the default the steps run in. |
+| `Steps/{Step}/EstimatedDuration` | Property (xs:double) | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/EstimatedDuration/1/0` | Kind step: how long the step is expected to take, in seconds, for scheduling. |
 | `Steps/{Step}/ProcessOwner` | Ref | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/ProcessOwner/1/0` | Kind step: the AAS whose process the step runs, where it is not the Subject. |
 | `Steps/{Step}/ProcessReference` | Ref | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/ProcessReference/1/0` | Kind step: the process, in the owner's Process Parameters. |
 | `Steps/{Step}/RequiredCapabilities` | SMC | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/RequiredCapabilities/1/0` | Kind step: the capabilities the step requires, where they differ from those of its process. |
@@ -115,6 +121,9 @@ In aas-model (`aas_model.product_instances`, built by `scripts/export_precedence
 | `Steps/{Step}/Condition/Operand/StepId` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/StepId/1/0` | The NodeId of the step. |
 | `Steps/{Step}/Condition/Operand/OutputId` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/OutputId/1/0` | The OutputId of its output. |
 | `Steps/{Step}/Steps` | SMC | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/Steps/1/0` | Kind partial and conditional: the steps inside, each a Step as described here. |
+| `Steps/{Step}/ProcessOrders` | SMC | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/ProcessOrders/1/0` | Kind partial: the order of the steps inside, one relation for each pair that must keep its order. A step that no relation has as second is ready when the block starts. |
+| `Steps/{Step}/ProcessOrders/{ProcessOrder}` | ARE | 0..* | `https://smartproductionlab.aau.dk/ProductionSequence/ProcessOrder/1/0` | first must be done before second starts. Both are steps of this block (their collections in its Steps). |
+| `Steps/{Step}/ProcessOrders/{ProcessOrder}/Reason` | Property (xs:string) | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/Reason/1/0` | Why the order holds, e.g. a joint in the way, access, an order fixed by GMP. |
 | `Steps/{Step}/Branches` | SMC | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/Branches/1/0` | Kind parallel and decision: the branches. A decision has two: Order 0 when the condition holds, Order 1 when not. |
 | `Steps/{Step}/Branches/{Branch}` | SMC | 0..* | `https://smartproductionlab.aau.dk/ProductionSequence/Branch/1/0` | One branch. |
 | `Steps/{Step}/Branches/{Branch}/BranchId` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/BranchId/1/0` | Identifies the branch. |

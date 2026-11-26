@@ -26,7 +26,7 @@ from aas_model.product_template import (
 )
 from aas_model.submodel_templates.product import process_parameters as pp
 from aas_model.submodel_templates.product import production_sequence_4 as ps4
-from aas_pydantic import Capability, Key, ModelReference, Qualifier, ReferenceElement
+from aas_pydantic import Capability, Key, ModelReference, Qualifier
 from aas_pydantic.submodel_templates import capability_description as cd
 from aas_pydantic.submodel_templates.hierarchical_structures import ArcheType
 from aas_pydantic.submodel_templates.nameplate import (
@@ -341,11 +341,10 @@ def process(name: str) -> ps4.ProcessReference:
         ("Submodel", PROCESSES), ("SubmodelElementCollection", "Processes"), ("SubmodelElementCollection", name)))
 
 
-def after(name: str) -> ps4.After:
-    """After: a step of the partial block FillAndClose."""
-    return ps4.After(value=[ReferenceElement(value=reference(
-        ("Submodel", ASSEMBLY), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"),
-        ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", name)))])
+def step(sequence: str, name: str) -> ModelReference:
+    """A step of the partial block (Step_0000) of ``sequence``: an end of a ProcessOrder."""
+    return reference(("Submodel", sequence), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"),
+                     ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", name))
 
 
 def assembly() -> ps4.ProductionSequence:
@@ -360,20 +359,32 @@ def assembly() -> ps4.ProductionSequence:
             "Step_0000": ps4.Step(
                 id_short="Step_0000", NodeId=ps4.NodeId(value="FillAndClose"), Kind=ps4.Kind(value="partial"),
                 Name=ps4.StepName(value="Fill and close the vial"), Order=ps4.Order(value="0"),
+                ProcessOrders=ps4.ProcessOrders(ProcessOrder={
+                    "ProcessOrder_0000": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0000", first=step(ASSEMBLY, "Step_0000"),
+                        second=step(ASSEMBLY, "Step_0001"), Reason=ps4.Reason(value="the vial is filled before it is closed")),
+                    "ProcessOrder_0001": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0001", first=step(ASSEMBLY, "Step_0001"),
+                        second=step(ASSEMBLY, "Step_0002"), Reason=ps4.Reason(value="the seal is crimped over the stopper")),
+                    "ProcessOrder_0002": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0002", first=step(ASSEMBLY, "Step_0002"),
+                        second=step(ASSEMBLY, "Step_0003"), Reason=ps4.Reason(value="the closed vial is inspected (GMP)")),
+                }),
                 Steps=ps4.Steps(Step={
 
                     # Filling: nothing before it; no joint (the liquid is incorporated).
                     "Step_0000": ps4.Step(
                         id_short="Step_0000", NodeId=ps4.NodeId(value="Filling"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Filling"), Order=ps4.Order(value="0"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="12"),
                         ProcessReference=process("Filling")),
 
                     # Stoppering: after Filling; makes the press fit of stopper and vial.
                     "Step_0001": ps4.Step(
                         id_short="Step_0001", NodeId=ps4.NodeId(value="Stoppering"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Stoppering"), Order=ps4.Order(value="1"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="6"),
                         ProcessReference=process("Stoppering"),
-                        After=after("Step_0000"),
                         Joints=ps4.Joints(Joint={
                             "J_Stopper": ps4.Joint(
                                 id_short="J_Stopper", display_name={"en": "Stopper pressed into the vial"},
@@ -386,8 +397,8 @@ def assembly() -> ps4.ProductionSequence:
                     "Step_0002": ps4.Step(
                         id_short="Step_0002", NodeId=ps4.NodeId(value="Capping"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Capping"), Order=ps4.Order(value="2"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="8"),
                         ProcessReference=process("Capping"),
-                        After=after("Step_0001"),
                         Joints=ps4.Joints(Joint={
                             "J_Seal": ps4.Joint(
                                 id_short="J_Seal", display_name={"en": "Seal crimped onto the vial"},
@@ -400,8 +411,8 @@ def assembly() -> ps4.ProductionSequence:
                     "Step_0003": ps4.Step(
                         id_short="Step_0003", NodeId=ps4.NodeId(value="Inspection"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Inspection"), Order=ps4.Order(value="3"),
+                        EstimatedDuration=ps4.EstimatedDuration(value="4"),
                         ProcessReference=process("Inspection"),
-                        After=after("Step_0002"),
                         Outputs=ps4.Outputs(Output={
                             "Output_0000": ps4.Output(
                                 id_short="Output_0000", OutputId=ps4.OutputId(value="TopPassed"),
