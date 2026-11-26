@@ -1,22 +1,27 @@
 """The 2 mL vial with the Production Sequence 4.0 (proposed,
-``docs/lab-submodels/ProductionSequence4.md``): the reference vial of iec61499-mgmt-py
-(``cell/examples/products/vial_2ml.py``), with two changes.
+``docs/lab-submodels/ProductionSequence4.md``), its bill of processes: the reference vial of
+iec61499-mgmt-py (``cell/examples/products/vial_2ml.py``), with three changes.
 
 1. The cap is the flip-off seal, a subassembly bought in, with an AAS of its own
    (``flip_off_seal.py``): an aluminium crimp seal with a plastic button. In the bill of material it
    is ``FlipOffSeal`` (a SelfManagedEntity, by asset id) in place of ``Cap``.
-2. The recipe is a Production Sequence 4.0 of the archetype Assembly: one partial block whose steps
-   are ordered by After alone. GMP fixes the order, so the graph is a chain:
+2. The recipe is a Production Sequence 4.0 of the archetype Assembly: one partial block, FillAndClose,
+   its order stated by ProcessOrder relations, each with its reason:
 
-       Filling ──> Stoppering ──> Capping ──> Inspection
+       Filling -> CheckWeight -> Stoppering -> Capping -+-> InspectTop  -+-> TopOK -yes-> SideOK -yes-> Unload
+                                                       +-> InspectSide -+     |              +-no--> RejectSide
+                                                                              +-no--> RejectTop
 
-   Stoppering makes the press fit of stopper and vial, Capping the crimp of seal and vial; each
-   joint (an AnnotatedRelationshipElement) sits in the step that makes it. Filling makes no joint:
-   it incorporates the liquid.
+   Aseptic filling fixes the chain; the two camera inspections wait only for Capping, so they may run
+   at once. Stoppering makes the press fit of stopper and vial, Capping the crimp of seal and vial; each
+   joint sits in the step that makes it. Filling makes no joint: it incorporates the liquid.
+3. CheckWeight, the two inspections and the release are steps of their own, with processes (Weighing,
+   TopInspection, SideInspection, Unloading, Rejecting) and required capabilities (Weighing,
+   Inspection, Handling) of their own. A decision compares one output, so the release is two
+   decisions, one per camera.
 
-Nameplate, Process Parameters and Capability Description are those of the reference vial, element
-for element (Capping's material is the seal). The AAS keeps the reference vial's ids: loaded on a
-server, it replaces it.
+Nameplate and the processes Filling, Stoppering and Capping are those of the reference vial. The AAS
+keeps the reference vial's ids: loaded on a server, it replaces it.
 """
 from __future__ import annotations
 
@@ -142,6 +147,24 @@ def vial_2ml() -> Product:
                         ("Submodel", CAPABILITIES), ("SubmodelElementCollection", "RequiredCapabilities"),
                         ("SubmodelElementCollection", "Filling"), ("Capability", "Capability"))),
                 ),
+                "Weighing": pp.Process(
+                    id_short="Weighing",
+                    ProcessId=pp.ProcessId(value="Weighing"),
+                    ProcessName=pp.ProcessName(value="Weighing"),
+                    ProcessDescription=pp.ProcessDescription(value={"en": "Weigh the filled vial: the in-process check of the fill"}),
+                    PlannedProcessTime=pp.PlannedProcessTime(value="PT3S"),
+                    ProductParameters=pp.ProductParameters(Parameter={
+                        "ContainerType": pp.Parameter(id_short="ContainerType", semantic_id=f"{MEANS}/ContainerType", value="vial"),
+                        "GraspDiameter": pp.Parameter(id_short="GraspDiameter", semantic_id=f"{MEANS}/GraspDiameter", value="16.0", value_type="xs:double", qualifiers=unit("mm")),
+                        "TargetFillWeight": pp.Parameter(id_short="TargetFillWeight", semantic_id=f"{MEANS}/FillWeight", value="2.0", value_type="xs:double", qualifiers=unit("g")),
+                    }),
+                    ProcessParameters=pp.ProcessParameterGroup(),
+                    ResourceParameters=pp.ResourceParameters(),
+                    ProcessBoM=pp.ProcessBoM(),
+                    RequiredCapability=pp.RequiredCapability(value=reference(
+                        ("Submodel", CAPABILITIES), ("SubmodelElementCollection", "RequiredCapabilities"),
+                        ("SubmodelElementCollection", "Weighing"), ("Capability", "Capability"))),
+                ),
                 "Stoppering": pp.Process(
                     id_short="Stoppering",
                     ProcessId=pp.ProcessId(value="Stoppering"),
@@ -196,19 +219,17 @@ def vial_2ml() -> Product:
                         ("Submodel", CAPABILITIES), ("SubmodelElementCollection", "RequiredCapabilities"),
                         ("SubmodelElementCollection", "Capping"), ("Capability", "Capability"))),
                 ),
-                "Inspection": pp.Process(
-                    id_short="Inspection",
-                    ProcessId=pp.ProcessId(value="Inspection"),
-                    ProcessName=pp.ProcessName(value="Inspection"),
-                    ProcessDescription=pp.ProcessDescription(value={"en": "Inspect the closed vial and decide whether it passes"}),
-                    PlannedProcessTime=pp.PlannedProcessTime(value="PT3S"),
+                "TopInspection": pp.Process(
+                    id_short="TopInspection",
+                    ProcessId=pp.ProcessId(value="TopInspection"),
+                    ProcessName=pp.ProcessName(value="TopInspection"),
+                    ProcessDescription=pp.ProcessDescription(value={"en": "Inspect the closed vial with the top camera"}),
+                    PlannedProcessTime=pp.PlannedProcessTime(value="PT2S"),
                     ProductParameters=pp.ProductParameters(Parameter={
-                        "ContainerType": pp.Parameter(id_short="ContainerType", semantic_id=f"{MEANS}/ContainerType",
-                                                      value="vial"),
-                        "GraspDiameter": pp.Parameter(id_short="GraspDiameter", semantic_id=f"{MEANS}/GraspDiameter",
-                                                      value="16.0", value_type="xs:double", qualifiers=unit("mm")),
-                        "InspectionMethod": pp.Parameter(id_short="InspectionMethod", semantic_id=f"{MEANS}/InspectionMethod",
-                                                         value="vision"),
+                        "ContainerType": pp.Parameter(id_short="ContainerType", semantic_id=f"{MEANS}/ContainerType", value="vial"),
+                        "GraspDiameter": pp.Parameter(id_short="GraspDiameter", semantic_id=f"{MEANS}/GraspDiameter", value="16.0", value_type="xs:double", qualifiers=unit("mm")),
+                        "InspectionMethod": pp.Parameter(id_short="InspectionMethod", semantic_id=f"{MEANS}/InspectionMethod", value="vision"),
+                        "InspectionView": pp.Parameter(id_short="InspectionView", semantic_id=f"{MEANS}/InspectionView", value="top"),
                     }),
                     ProcessParameters=pp.ProcessParameterGroup(),
                     ResourceParameters=pp.ResourceParameters(),
@@ -216,6 +237,61 @@ def vial_2ml() -> Product:
                     RequiredCapability=pp.RequiredCapability(value=reference(
                         ("Submodel", CAPABILITIES), ("SubmodelElementCollection", "RequiredCapabilities"),
                         ("SubmodelElementCollection", "Inspection"), ("Capability", "Capability"))),
+                ),
+                "SideInspection": pp.Process(
+                    id_short="SideInspection",
+                    ProcessId=pp.ProcessId(value="SideInspection"),
+                    ProcessName=pp.ProcessName(value="SideInspection"),
+                    ProcessDescription=pp.ProcessDescription(value={"en": "Inspect the closed vial with the side camera"}),
+                    PlannedProcessTime=pp.PlannedProcessTime(value="PT2S"),
+                    ProductParameters=pp.ProductParameters(Parameter={
+                        "ContainerType": pp.Parameter(id_short="ContainerType", semantic_id=f"{MEANS}/ContainerType", value="vial"),
+                        "GraspDiameter": pp.Parameter(id_short="GraspDiameter", semantic_id=f"{MEANS}/GraspDiameter", value="16.0", value_type="xs:double", qualifiers=unit("mm")),
+                        "InspectionMethod": pp.Parameter(id_short="InspectionMethod", semantic_id=f"{MEANS}/InspectionMethod", value="vision"),
+                        "InspectionView": pp.Parameter(id_short="InspectionView", semantic_id=f"{MEANS}/InspectionView", value="side"),
+                    }),
+                    ProcessParameters=pp.ProcessParameterGroup(),
+                    ResourceParameters=pp.ResourceParameters(),
+                    ProcessBoM=pp.ProcessBoM(),
+                    RequiredCapability=pp.RequiredCapability(value=reference(
+                        ("Submodel", CAPABILITIES), ("SubmodelElementCollection", "RequiredCapabilities"),
+                        ("SubmodelElementCollection", "Inspection"), ("Capability", "Capability"))),
+                ),
+                "Unloading": pp.Process(
+                    id_short="Unloading",
+                    ProcessId=pp.ProcessId(value="Unloading"),
+                    ProcessName=pp.ProcessName(value="Unloading"),
+                    ProcessDescription=pp.ProcessDescription(value={"en": "Take the released vial off the line, to the tray"}),
+                    PlannedProcessTime=pp.PlannedProcessTime(value="PT2S"),
+                    ProductParameters=pp.ProductParameters(Parameter={
+                        "ContainerType": pp.Parameter(id_short="ContainerType", semantic_id=f"{MEANS}/ContainerType", value="vial"),
+                        "GraspDiameter": pp.Parameter(id_short="GraspDiameter", semantic_id=f"{MEANS}/GraspDiameter", value="16.0", value_type="xs:double", qualifiers=unit("mm")),
+                        "Destination": pp.Parameter(id_short="Destination", semantic_id=f"{MEANS}/Destination", value="tray"),
+                    }),
+                    ProcessParameters=pp.ProcessParameterGroup(),
+                    ResourceParameters=pp.ResourceParameters(),
+                    ProcessBoM=pp.ProcessBoM(),
+                    RequiredCapability=pp.RequiredCapability(value=reference(
+                        ("Submodel", CAPABILITIES), ("SubmodelElementCollection", "RequiredCapabilities"),
+                        ("SubmodelElementCollection", "Handling"), ("Capability", "Capability"))),
+                ),
+                "Rejecting": pp.Process(
+                    id_short="Rejecting",
+                    ProcessId=pp.ProcessId(value="Rejecting"),
+                    ProcessName=pp.ProcessName(value="Rejecting"),
+                    ProcessDescription=pp.ProcessDescription(value={"en": "Take the rejected vial off the line, to the reject bin"}),
+                    PlannedProcessTime=pp.PlannedProcessTime(value="PT2S"),
+                    ProductParameters=pp.ProductParameters(Parameter={
+                        "ContainerType": pp.Parameter(id_short="ContainerType", semantic_id=f"{MEANS}/ContainerType", value="vial"),
+                        "GraspDiameter": pp.Parameter(id_short="GraspDiameter", semantic_id=f"{MEANS}/GraspDiameter", value="16.0", value_type="xs:double", qualifiers=unit("mm")),
+                        "Destination": pp.Parameter(id_short="Destination", semantic_id=f"{MEANS}/Destination", value="reject bin"),
+                    }),
+                    ProcessParameters=pp.ProcessParameterGroup(),
+                    ResourceParameters=pp.ResourceParameters(),
+                    ProcessBoM=pp.ProcessBoM(),
+                    RequiredCapability=pp.RequiredCapability(value=reference(
+                        ("Submodel", CAPABILITIES), ("SubmodelElementCollection", "RequiredCapabilities"),
+                        ("SubmodelElementCollection", "Handling"), ("Capability", "Capability"))),
                 ),
             }),
         ),
@@ -321,6 +397,46 @@ def vial_2ml() -> Product:
                                                              value="vision")}),
                         })},
                     ),
+                    "Weighing": cd.CapabilityContainer(
+                        id_short="Weighing",
+                        Capability=Capability(
+                            id_short="Capability", semantic_id=CAPABILITY, supplemental_semantic_ids=[f"{MEANS}/Weighing"],
+                            display_name={"en": "Weighing"},
+                            qualifiers=[Qualifier(type_="CapabilityRoleQualifier/Required", value="true",
+                                                  semantic_id=REQUIRED, kind="ConceptQualifier")]),
+                        PropertySet={"PropertySet": cd.PropertySet(PropertyContainer={
+                            "ContainerType": cd.PropertyContainer(id_short="ContainerType", PropertyProperty={
+                                "Value": cd.PropertyProperty(id_short="Value", display_name={"en": "ContainerType"},
+                                                             supplemental_semantic_ids=[f"{MEANS}/ContainerType"],
+                                                             value="vial")}),
+                            "GraspDiameter": cd.PropertyContainer(id_short="GraspDiameter", PropertyProperty={
+                                "Value": cd.PropertyProperty(id_short="Value", display_name={"en": "GraspDiameter"},
+                                                             supplemental_semantic_ids=[f"{MEANS}/GraspDiameter"],
+                                                             value="16.0", value_type="xs:double", qualifiers=unit("mm"))}),
+                            "FillWeight": cd.PropertyContainer(id_short="FillWeight", PropertyProperty={
+                                "Value": cd.PropertyProperty(id_short="Value", display_name={"en": "FillWeight"},
+                                                             supplemental_semantic_ids=[f"{MEANS}/FillWeight"],
+                                                             value="2.0", value_type="xs:double", qualifiers=unit("g"))}),
+                        })},
+                    ),
+                    "Handling": cd.CapabilityContainer(
+                        id_short="Handling",
+                        Capability=Capability(
+                            id_short="Capability", semantic_id=CAPABILITY, supplemental_semantic_ids=[f"{MEANS}/Handling"],
+                            display_name={"en": "Handling"},
+                            qualifiers=[Qualifier(type_="CapabilityRoleQualifier/Required", value="true",
+                                                  semantic_id=REQUIRED, kind="ConceptQualifier")]),
+                        PropertySet={"PropertySet": cd.PropertySet(PropertyContainer={
+                            "ContainerType": cd.PropertyContainer(id_short="ContainerType", PropertyProperty={
+                                "Value": cd.PropertyProperty(id_short="Value", display_name={"en": "ContainerType"},
+                                                             supplemental_semantic_ids=[f"{MEANS}/ContainerType"],
+                                                             value="vial")}),
+                            "GraspDiameter": cd.PropertyContainer(id_short="GraspDiameter", PropertyProperty={
+                                "Value": cd.PropertyProperty(id_short="Value", display_name={"en": "GraspDiameter"},
+                                                             supplemental_semantic_ids=[f"{MEANS}/GraspDiameter"],
+                                                             value="16.0", value_type="xs:double", qualifiers=unit("mm"))}),
+                        })},
+                    ),
                 },
             )},
         ),
@@ -352,38 +468,37 @@ def assembly() -> ps4.ProductionSequence:
         id=ASSEMBLY, id_short="ProductionSequenceAssembly",
         display_name={"en": "Vial 2 mL: filling and closing"},
         ArcheType=ps4.ArcheType(value="Assembly"),
-        Revision=ps4.Revision(value="1"),
+        Revision=ps4.Revision(value="2"),
         Name=ps4.Name(value="Vial 2 mL"),
         Subject=ps4.Subject(value=reference(("AssetAdministrationShell", AAS_ID))),
         Steps=ps4.Steps(Step={
             "Step_0000": ps4.Step(
                 id_short="Step_0000", NodeId=ps4.NodeId(value="FillAndClose"), Kind=ps4.Kind(value="partial"),
                 Name=ps4.StepName(value="Fill and close the vial"), Order=ps4.Order(value="0"),
-                ProcessOrders=ps4.ProcessOrders(ProcessOrder={
-                    "ProcessOrder_0000": ps4.ProcessOrder(
-                        id_short="ProcessOrder_0000", first=step(ASSEMBLY, "Step_0000"),
-                        second=step(ASSEMBLY, "Step_0001"), Reason=ps4.Reason(value="the vial is filled before it is closed")),
-                    "ProcessOrder_0001": ps4.ProcessOrder(
-                        id_short="ProcessOrder_0001", first=step(ASSEMBLY, "Step_0001"),
-                        second=step(ASSEMBLY, "Step_0002"), Reason=ps4.Reason(value="the seal is crimped over the stopper")),
-                    "ProcessOrder_0002": ps4.ProcessOrder(
-                        id_short="ProcessOrder_0002", first=step(ASSEMBLY, "Step_0002"),
-                        second=step(ASSEMBLY, "Step_0003"), Reason=ps4.Reason(value="the closed vial is inspected (GMP)")),
-                }),
                 Steps=ps4.Steps(Step={
 
                     # Filling: nothing before it; no joint (the liquid is incorporated).
                     "Step_0000": ps4.Step(
                         id_short="Step_0000", NodeId=ps4.NodeId(value="Filling"), Kind=ps4.Kind(value="step"),
                         Name=ps4.StepName(value="Filling"), Order=ps4.Order(value="0"),
-                        EstimatedDuration=ps4.EstimatedDuration(value="12"),
                         ProcessReference=process("Filling")),
 
-                    # Stoppering: after Filling; makes the press fit of stopper and vial.
+                    # CheckWeight: the in-process check of the fill; reports the weight.
                     "Step_0001": ps4.Step(
-                        id_short="Step_0001", NodeId=ps4.NodeId(value="Stoppering"), Kind=ps4.Kind(value="step"),
-                        Name=ps4.StepName(value="Stoppering"), Order=ps4.Order(value="1"),
-                        EstimatedDuration=ps4.EstimatedDuration(value="6"),
+                        id_short="Step_0001", NodeId=ps4.NodeId(value="CheckWeight"), Kind=ps4.Kind(value="step"),
+                        Name=ps4.StepName(value="Check the fill weight"), Order=ps4.Order(value="1"),
+                        ProcessReference=process("Weighing"),
+                        Outputs=ps4.Outputs(Output={
+                            "Output_0000": ps4.Output(
+                                id_short="Output_0000", OutputId=ps4.OutputId(value="FillWeight"),
+                                Name=ps4.OutputName(value="Fill weight"), DataType=ps4.DataType(value="number"),
+                                Unit=ps4.Unit(value="g")),
+                        })),
+
+                    # Stoppering: makes the press fit of stopper and vial.
+                    "Step_0002": ps4.Step(
+                        id_short="Step_0002", NodeId=ps4.NodeId(value="Stoppering"), Kind=ps4.Kind(value="step"),
+                        Name=ps4.StepName(value="Stoppering"), Order=ps4.Order(value="2"),
                         ProcessReference=process("Stoppering"),
                         Joints=ps4.Joints(Joint={
                             "J_Stopper": ps4.Joint(
@@ -393,11 +508,10 @@ def assembly() -> ps4.ProductionSequence:
                                 JointType=ps4.JointType(value="PressFit"), JointStandard=ps4.JointStandard(value="DIN 8593-3")),
                         })),
 
-                    # Capping: after Stoppering; makes the crimp of seal and vial.
-                    "Step_0002": ps4.Step(
-                        id_short="Step_0002", NodeId=ps4.NodeId(value="Capping"), Kind=ps4.Kind(value="step"),
-                        Name=ps4.StepName(value="Capping"), Order=ps4.Order(value="2"),
-                        EstimatedDuration=ps4.EstimatedDuration(value="8"),
+                    # Capping: makes the crimp of seal and vial.
+                    "Step_0003": ps4.Step(
+                        id_short="Step_0003", NodeId=ps4.NodeId(value="Capping"), Kind=ps4.Kind(value="step"),
+                        Name=ps4.StepName(value="Capping"), Order=ps4.Order(value="3"),
                         ProcessReference=process("Capping"),
                         Joints=ps4.Joints(Joint={
                             "J_Seal": ps4.Joint(
@@ -407,19 +521,105 @@ def assembly() -> ps4.ProductionSequence:
                                 JointType=ps4.JointType(value="Crimp"), JointStandard=ps4.JointStandard(value="DIN 8593-5")),
                         })),
 
-                    # Inspection: after Capping; declares the two cameras' results.
-                    "Step_0003": ps4.Step(
-                        id_short="Step_0003", NodeId=ps4.NodeId(value="Inspection"), Kind=ps4.Kind(value="step"),
-                        Name=ps4.StepName(value="Inspection"), Order=ps4.Order(value="3"),
-                        EstimatedDuration=ps4.EstimatedDuration(value="4"),
-                        ProcessReference=process("Inspection"),
+                    # The two cameras: each waits only for Capping, so they may run at once.
+                    "Step_0004": ps4.Step(
+                        id_short="Step_0004", NodeId=ps4.NodeId(value="InspectTop"), Kind=ps4.Kind(value="step"),
+                        Name=ps4.StepName(value="Inspect from the top"), Order=ps4.Order(value="4"),
+                        ProcessReference=process("TopInspection"),
                         Outputs=ps4.Outputs(Output={
                             "Output_0000": ps4.Output(
                                 id_short="Output_0000", OutputId=ps4.OutputId(value="TopPassed"),
                                 Name=ps4.OutputName(value="Top camera passed"), DataType=ps4.DataType(value="boolean")),
-                            "Output_0001": ps4.Output(
-                                id_short="Output_0001", OutputId=ps4.OutputId(value="SidePassed"),
+                        })),
+                    "Step_0005": ps4.Step(
+                        id_short="Step_0005", NodeId=ps4.NodeId(value="InspectSide"), Kind=ps4.Kind(value="step"),
+                        Name=ps4.StepName(value="Inspect from the side"), Order=ps4.Order(value="5"),
+                        ProcessReference=process("SideInspection"),
+                        Outputs=ps4.Outputs(Output={
+                            "Output_0000": ps4.Output(
+                                id_short="Output_0000", OutputId=ps4.OutputId(value="SidePassed"),
                                 Name=ps4.OutputName(value="Side camera passed"), DataType=ps4.DataType(value="boolean")),
                         })),
+
+                    # The release: the top camera's result, then the side camera's; a vial that fails
+                    # either is rejected.
+                    "Step_0006": ps4.Step(
+                        id_short="Step_0006", NodeId=ps4.NodeId(value="TopOK"), Kind=ps4.Kind(value="decision"),
+                        Name=ps4.StepName(value="Top camera passed?"), Order=ps4.Order(value="6"),
+                        Condition=ps4.Condition(
+                            ConditionType=ps4.ConditionType(value="comparison"), Operator=ps4.Operator(value="equal"),
+                            Expected=ps4.Expected(DataType=ps4.ExpectedDataType(value="boolean"), Value=ps4.Value(value="1.0")),
+                            Operand=ps4.Operand(OperandType=ps4.OperandType(value="output"), StepId=ps4.StepId(value="InspectTop"),
+                                                OutputId=ps4.OperandOutputId(value="TopPassed"))),
+                        Branches=ps4.Branches(Branch={
+                            "Branch_0000": ps4.Branch(
+                                id_short="Branch_0000", BranchId=ps4.BranchId(value="TopPassed"),
+                                Name=ps4.BranchName(value="Yes: check the side"), Order=ps4.BranchOrder(value="0"),
+                                Steps=ps4.Steps(Step={
+                                    "Step_0000": ps4.Step(
+                                        id_short="Step_0000", NodeId=ps4.NodeId(value="SideOK"), Kind=ps4.Kind(value="decision"),
+                                        Name=ps4.StepName(value="Side camera passed?"), Order=ps4.Order(value="0"),
+                                        Condition=ps4.Condition(
+                                            ConditionType=ps4.ConditionType(value="comparison"),
+                                            Operator=ps4.Operator(value="equal"),
+                                            Expected=ps4.Expected(DataType=ps4.ExpectedDataType(value="boolean"),
+                                                                  Value=ps4.Value(value="1.0")),
+                                            Operand=ps4.Operand(OperandType=ps4.OperandType(value="output"),
+                                                                StepId=ps4.StepId(value="InspectSide"),
+                                                                OutputId=ps4.OperandOutputId(value="SidePassed"))),
+                                        Branches=ps4.Branches(Branch={
+                                            "Branch_0000": ps4.Branch(
+                                                id_short="Branch_0000", BranchId=ps4.BranchId(value="Released"),
+                                                Name=ps4.BranchName(value="Yes: release"), Order=ps4.BranchOrder(value="0"),
+                                                Steps=ps4.Steps(Step={
+                                                    "Step_0000": ps4.Step(
+                                                        id_short="Step_0000", NodeId=ps4.NodeId(value="Unload"),
+                                                        Kind=ps4.Kind(value="step"), Name=ps4.StepName(value="Unload to the tray"),
+                                                        Order=ps4.Order(value="0"), ProcessReference=process("Unloading")),
+                                                })),
+                                            "Branch_0001": ps4.Branch(
+                                                id_short="Branch_0001", BranchId=ps4.BranchId(value="SideFailed"),
+                                                Name=ps4.BranchName(value="No: reject"), Order=ps4.BranchOrder(value="1"),
+                                                Steps=ps4.Steps(Step={
+                                                    "Step_0000": ps4.Step(
+                                                        id_short="Step_0000", NodeId=ps4.NodeId(value="RejectSide"),
+                                                        Kind=ps4.Kind(value="step"), Name=ps4.StepName(value="Reject"),
+                                                        Order=ps4.Order(value="0"), ProcessReference=process("Rejecting")),
+                                                })),
+                                        })),
+                                })),
+                            "Branch_0001": ps4.Branch(
+                                id_short="Branch_0001", BranchId=ps4.BranchId(value="TopFailed"),
+                                Name=ps4.BranchName(value="No: reject"), Order=ps4.BranchOrder(value="1"),
+                                Steps=ps4.Steps(Step={
+                                    "Step_0000": ps4.Step(
+                                        id_short="Step_0000", NodeId=ps4.NodeId(value="RejectTop"),
+                                        Kind=ps4.Kind(value="step"), Name=ps4.StepName(value="Reject"),
+                                        Order=ps4.Order(value="0"), ProcessReference=process("Rejecting")),
+                                })),
+                        })),
+                }),
+                ProcessOrders=ps4.ProcessOrders(ProcessOrder={
+                    "ProcessOrder_0000": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0000", first=step(ASSEMBLY, "Step_0000"), second=step(ASSEMBLY, "Step_0001"),
+                        Reason=ps4.Reason(value="the weight is checked once filled")),
+                    "ProcessOrder_0001": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0001", first=step(ASSEMBLY, "Step_0001"), second=step(ASSEMBLY, "Step_0002"),
+                        Reason=ps4.Reason(value="an underfilled vial is not closed (in-process check)")),
+                    "ProcessOrder_0002": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0002", first=step(ASSEMBLY, "Step_0002"), second=step(ASSEMBLY, "Step_0003"),
+                        Reason=ps4.Reason(value="the seal is crimped over the stopper")),
+                    "ProcessOrder_0003": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0003", first=step(ASSEMBLY, "Step_0003"), second=step(ASSEMBLY, "Step_0004"),
+                        Reason=ps4.Reason(value="the closed vial is inspected (GMP)")),
+                    "ProcessOrder_0004": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0004", first=step(ASSEMBLY, "Step_0003"), second=step(ASSEMBLY, "Step_0005"),
+                        Reason=ps4.Reason(value="the closed vial is inspected (GMP)")),
+                    "ProcessOrder_0005": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0005", first=step(ASSEMBLY, "Step_0004"), second=step(ASSEMBLY, "Step_0006"),
+                        Reason=ps4.Reason(value="the release needs the top camera's result")),
+                    "ProcessOrder_0006": ps4.ProcessOrder(
+                        id_short="ProcessOrder_0006", first=step(ASSEMBLY, "Step_0005"), second=step(ASSEMBLY, "Step_0006"),
+                        Reason=ps4.Reason(value="the release needs the side camera's result")),
                 })),
         }))

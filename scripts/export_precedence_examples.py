@@ -280,6 +280,9 @@ def check(envs: list[dict], against: list[dict]) -> list[str]:
     if idle:
         lines.append("not run by a process AAS here, so not checked for bindings: " + ", ".join(idle))
     steps_total = 0
+    # A process AAS that says DoesNotFit may leave steps unbound: they are listed, not a fault.
+    does_not_fit = any(value(sm, "Result") == "DoesNotFit" for env in envs for sm in env["submodels"]
+                       if sm.get("idShort") == "Validation")
     for env in envs:
         shell = env["assetAdministrationShells"][0]
         bill = next((s for s in env["submodels"] if s["idShort"] == "HierarchicalStructures"), None)
@@ -302,7 +305,8 @@ def check(envs: list[dict], against: list[dict]) -> list[str]:
                     if kind == "step" and sm["id"] in run:
                         steps_total += 1
                         if json.dumps(keys) not in bound:
-                            lines.append(f"UNBOUND {shell['idShort']}/{sm['idShort']}: {value(s, 'NodeId')}")
+                            lines.append(f"{'not bound (DoesNotFit)' if does_not_fit else 'UNBOUND'} "
+                                         f"{shell['idShort']}/{sm['idShort']}: {value(s, 'NodeId')}")
                     for j in (child(s, "Joints") or {}).get("value", []):
                         if j["modelType"] == "AnnotatedRelationshipElement":
                             if j["idShort"] in defined:

@@ -1,17 +1,18 @@
 """The 2 mL vial on the filling line, for the Production Sequence 4.0 (``vial_2ml.py``): the
-reference process AAS of iec61499-mgmt-py (``cell/examples/processes/vial_2ml_on_filling_line.py``)
-with two changes.
+reference process AAS of iec61499-mgmt-py (``cell/examples/processes/vial_2ml_on_filling_line.py``),
+bound to the vial's extended bill of processes.
 
-1. ``Recipe`` names the vial's sequence of the archetype Assembly.
-2. A step's path runs through the partial block: Steps / Step_0000 / Steps / Step_000n.
+    Filling      -> FillingModule.Dispensing     Volume <- Filling.FillVolume (2 mL)
+    Stoppering   -> StopperingModule.Stoppering
+    Capping      -> CappingModule.Capping
+    Unload, RejectTop, RejectSide   manual (no unloading station on the line)
+    CheckWeight, InspectTop, InspectSide   not bound
 
-The modules, skills and the one input binding (Dispensing's Volume is the vial's FillVolume) are the
-same: the line's AASs on the server do not change.
-
-    Filling     -> FillingModule.Dispensing     Volume <- Filling.FillVolume (2 mL)
-    Stoppering  -> StopperingModule.Stoppering
-    Capping     -> CappingModule.Capping
-    Inspection  -> InspectionModule.Inspection
+The line offers four module skills (Dispensing, Stoppering, Capping, Inspection). It weighs inside
+Dispensing and takes both images inside Inspection; no module offers weighing, or one camera's
+inspection, as a skill of its own. So the plan does not fit, and Validation says why: the product asks
+for more than the line offers. A line whose modules offer those skills, or these modules reconfigured,
+would bind them.
 """
 from __future__ import annotations
 
@@ -51,8 +52,8 @@ def vial_2ml_on_filling_line() -> Process:
             Product=pi.Product(value=reference(("AssetAdministrationShell", PRODUCT))),
             Line=pi.Line(value=reference(("AssetAdministrationShell", LINE))),
             Recipe=pi.Recipe(value=reference(("Submodel", RECIPE))),
-            RecipeRevision=pi.RecipeRevision(value="1"),
-            Status=pi.Status(value="Approved"),
+            RecipeRevision=pi.RecipeRevision(value="2"),
+            Status=pi.Status(value="Draft"),
         ),
 
         # ── Bindings: per step of the recipe, the module, its skill and its inputs ──────────────
@@ -89,7 +90,7 @@ def vial_2ml_on_filling_line() -> Process:
                     NodeId=b.NodeId(value="Stoppering"),
                     Step=b.BoundStep(value=reference(
                         ("Submodel", RECIPE), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"),
-                        ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0001"))),
+                        ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0002"))),
                     Resource=b.Resource(value=reference(("AssetAdministrationShell", STOPPERING))),
                     Skill=b.BoundSkill(value=reference(
                         ("Submodel", f"{STOPPERING}/submodels/Skills"), ("SubmodelElementCollection", "Stoppering"))),
@@ -100,22 +101,30 @@ def vial_2ml_on_filling_line() -> Process:
                     NodeId=b.NodeId(value="Capping"),
                     Step=b.BoundStep(value=reference(
                         ("Submodel", RECIPE), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"),
-                        ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0002"))),
+                        ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0003"))),
                     Resource=b.Resource(value=reference(("AssetAdministrationShell", CAPPING))),
                     Skill=b.BoundSkill(value=reference(
                         ("Submodel", f"{CAPPING}/submodels/Skills"), ("SubmodelElementCollection", "Capping"))),
                     ExecutionMode=b.ExecutionMode(value="station"),
                 ),
-                "Inspection": b.ProcessStepBinding(
-                    id_short="Inspection",
-                    NodeId=b.NodeId(value="Inspection"),
-                    Step=b.BoundStep(value=reference(
-                        ("Submodel", RECIPE), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"),
-                        ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0003"))),
-                    Resource=b.Resource(value=reference(("AssetAdministrationShell", INSPECTION))),
-                    Skill=b.BoundSkill(value=reference(
-                        ("Submodel", f"{INSPECTION}/submodels/Skills"), ("SubmodelElementCollection", "Inspection"))),
-                    ExecutionMode=b.ExecutionMode(value="station"),
+                # The release, by hand: the line has no unloading station.
+                "Unload": b.ProcessStepBinding(
+                    id_short="Unload",
+                    NodeId=b.NodeId(value="Unload"),
+                    Step=b.BoundStep(value=reference(("Submodel", RECIPE), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0006"), ("SubmodelElementCollection", "Branches"), ("SubmodelElementCollection", "Branch_0000"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"), ("SubmodelElementCollection", "Branches"), ("SubmodelElementCollection", "Branch_0000"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"))),
+                    ExecutionMode=b.ExecutionMode(value="manual"),
+                ),
+                "RejectSide": b.ProcessStepBinding(
+                    id_short="RejectSide",
+                    NodeId=b.NodeId(value="RejectSide"),
+                    Step=b.BoundStep(value=reference(("Submodel", RECIPE), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0006"), ("SubmodelElementCollection", "Branches"), ("SubmodelElementCollection", "Branch_0000"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"), ("SubmodelElementCollection", "Branches"), ("SubmodelElementCollection", "Branch_0001"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"))),
+                    ExecutionMode=b.ExecutionMode(value="manual"),
+                ),
+                "RejectTop": b.ProcessStepBinding(
+                    id_short="RejectTop",
+                    NodeId=b.NodeId(value="RejectTop"),
+                    Step=b.BoundStep(value=reference(("Submodel", RECIPE), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0006"), ("SubmodelElementCollection", "Branches"), ("SubmodelElementCollection", "Branch_0001"), ("SubmodelElementCollection", "Steps"), ("SubmodelElementCollection", "Step_0000"))),
+                    ExecutionMode=b.ExecutionMode(value="manual"),
                 ),
             },
         ),
@@ -123,8 +132,12 @@ def vial_2ml_on_filling_line() -> Process:
         # ── Validation: the plan check's result ──────────────────────────────────────────────────
         validation=v.Validation(
             id_short="Validation",
-            Result=v.Result(value="Fits"),
-            CheckedBy=v.CheckedBy(value="plan_check"),
-            Findings=v.Findings(value=[]),
+            Result=v.Result(value="DoesNotFit"),
+            CheckedBy=v.CheckedBy(value="by hand, against the line's module skills (26 Nov 2026)"),
+            Findings=v.Findings(value=[
+                v.FindingsItem(value="CheckWeight: no module offers Weighing as a skill; the FillingModule weighs inside Dispensing"),
+                v.FindingsItem(value="InspectTop: no module offers one camera's inspection; the InspectionModule takes both images inside Inspection"),
+                v.FindingsItem(value="InspectSide: as InspectTop"),
+            ]),
         ),
     )
