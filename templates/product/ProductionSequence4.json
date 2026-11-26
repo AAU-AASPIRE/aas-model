@@ -224,7 +224,7 @@
        "description": [
         {
          "language": "en",
-         "text": "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
+         "text": "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part of the bill of material. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
         }
        ],
        "qualifiers": [
@@ -1006,20 +1006,20 @@
         },
         {
          "modelType": "ReferenceElement",
-         "idShort": "SequenceReference",
+         "idShort": "Part",
          "semanticId": {
           "type": "ExternalReference",
           "keys": [
            {
             "type": "GlobalReference",
-            "value": "https://smartproductionlab.aau.dk/ProductionSequence/SequenceReference/1/0"
+            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Part/1/0"
            }
           ]
          },
          "description": [
           {
            "language": "en",
-           "text": "Kind call: the sequence that is run (a submodel)."
+           "text": "Kind call: the part whose own sequence is run, an entity of the Hierarchical Structures of the AAS that holds the step. Its asset id leads to the part's AAS; the sequence run is that AAS's sequence of the same ArcheType."
           }
          ],
          "qualifiers": [
@@ -1055,7 +1055,7 @@
          "description": [
           {
            "language": "en",
-           "text": "Kind call: identifies this use of the called sequence."
+           "text": "Kind call: identifies this use of the part, where the bill of material holds it more than once (a Quantity above 1)."
           }
          ],
          "qualifiers": [
@@ -1076,153 +1076,6 @@
           }
          ],
          "valueType": "xs:string"
-        },
-        {
-         "modelType": "SubmodelElementCollection",
-         "idShort": "Component",
-         "semanticId": {
-          "type": "ExternalReference",
-          "keys": [
-           {
-            "type": "GlobalReference",
-            "value": "https://smartproductionlab.aau.dk/ProductionSequence/Component/1/0"
-           }
-          ]
-         },
-         "description": [
-          {
-           "language": "en",
-           "text": "Kind call: the part the called sequence makes."
-          }
-         ],
-         "qualifiers": [
-          {
-           "type": "SMT/Cardinality",
-           "valueType": "xs:string",
-           "kind": "TemplateQualifier",
-           "value": "ZeroToOne",
-           "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-             {
-              "type": "GlobalReference",
-              "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-             }
-            ]
-           }
-          }
-         ],
-         "value": [
-          {
-           "modelType": "Property",
-           "idShort": "GlobalAssetId",
-           "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-             {
-              "type": "GlobalReference",
-              "value": "https://smartproductionlab.aau.dk/ProductionSequence/GlobalAssetId/1/0"
-             }
-            ]
-           },
-           "description": [
-            {
-             "language": "en",
-             "text": "The part's global asset id."
-            }
-           ],
-           "qualifiers": [
-            {
-             "type": "SMT/Cardinality",
-             "valueType": "xs:string",
-             "kind": "TemplateQualifier",
-             "value": "One",
-             "semanticId": {
-              "type": "ExternalReference",
-              "keys": [
-               {
-                "type": "GlobalReference",
-                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-               }
-              ]
-             }
-            }
-           ],
-           "valueType": "xs:string"
-          },
-          {
-           "modelType": "ReferenceElement",
-           "idShort": "SourceAas",
-           "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-             {
-              "type": "GlobalReference",
-              "value": "https://smartproductionlab.aau.dk/ProductionSequence/SourceAas/1/0"
-             }
-            ]
-           },
-           "description": [
-            {
-             "language": "en",
-             "text": "The AAS the part comes from."
-            }
-           ],
-           "qualifiers": [
-            {
-             "type": "SMT/Cardinality",
-             "valueType": "xs:string",
-             "kind": "TemplateQualifier",
-             "value": "ZeroToOne",
-             "semanticId": {
-              "type": "ExternalReference",
-              "keys": [
-               {
-                "type": "GlobalReference",
-                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-               }
-              ]
-             }
-            }
-           ]
-          },
-          {
-           "modelType": "ReferenceElement",
-           "idShort": "SourceElement",
-           "semanticId": {
-            "type": "ExternalReference",
-            "keys": [
-             {
-              "type": "GlobalReference",
-              "value": "https://smartproductionlab.aau.dk/ProductionSequence/SourceElement/1/0"
-             }
-            ]
-           },
-           "description": [
-            {
-             "language": "en",
-             "text": "The element the part comes from."
-            }
-           ],
-           "qualifiers": [
-            {
-             "type": "SMT/Cardinality",
-             "valueType": "xs:string",
-             "kind": "TemplateQualifier",
-             "value": "ZeroToOne",
-             "semanticId": {
-              "type": "ExternalReference",
-              "keys": [
-               {
-                "type": "GlobalReference",
-                "value": "https://admin-shell.io/SubmodelTemplates/Cardinality/1/0"
-               }
-              ]
-             }
-            }
-           ]
-          }
-         ]
         },
         {
          "modelType": "SubmodelElementCollection",

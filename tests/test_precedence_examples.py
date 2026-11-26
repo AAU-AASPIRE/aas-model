@@ -48,6 +48,20 @@ def test_a_fault_is_found(cases):
     assert "CYCLE" in found and "ORDER" in found
 
 
+def test_a_call_runs_the_sequence_of_its_part(cases):
+    import copy
+    report = examples.check(cases["battery"], [])
+    idle = next((line for line in report if line.startswith("not run by a process AAS")), "")
+    assert "BatteryModule" not in idle                                  # the four modules' sequences are run
+    broken = copy.deepcopy(cases["battery"])
+    sequence = next(sm for sm in broken[0]["submodels"] if sm["idShort"] == "ProductionSequenceDisassembly")
+    call = examples.child(examples.child(examples.child(examples.child(sequence, "Steps"), "Step_0000"), "Steps"),
+                          "Step_0004")
+    examples.child(call, "Part")["value"]["keys"][-1]["value"] = "Busbars"             # a part with no AAS
+    found = [line for line in examples.check(broken, []) if line.startswith("CALL")]
+    assert found and "BatteryModule1" in found[0]
+
+
 def test_the_shell_names_its_asset_and_kind(cases):
     pack = cases["battery"][0]["assetAdministrationShells"][0]["assetInformation"]
     assert pack["globalAssetId"] == "https://smartproductionlab.aau.dk/assets/BatteryPack/SN-0042"

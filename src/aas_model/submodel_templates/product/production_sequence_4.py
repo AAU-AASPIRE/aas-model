@@ -150,40 +150,16 @@ class Outputs(SubmodelElementCollection):
     description: str = "Kind step: what the step reports when done, for a decision to compare."
     Output: Dict[str, Output_t] = {}
 
-class SequenceReference(ReferenceElement):
-    id_short: AasIdString = "SequenceReference"
-    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/SequenceReference/1/0"
-    description: str = "Kind call: the sequence that is run (a submodel)."
+class Part(ReferenceElement):
+    id_short: AasIdString = "Part"
+    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Part/1/0"
+    description: str = "Kind call: the part whose own sequence is run, an entity of the Hierarchical Structures of the AAS that holds the step. Its asset id leads to the part's AAS; the sequence run is that AAS's sequence of the same ArcheType."
 
 class OccurrenceId(Property):
     id_short: AasIdString = "OccurrenceId"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/OccurrenceId/1/0"
-    description: str = "Kind call: identifies this use of the called sequence."
+    description: str = "Kind call: identifies this use of the part, where the bill of material holds it more than once (a Quantity above 1)."
     value_type: str = "xs:string"
-
-class GlobalAssetId(Property):
-    id_short: AasIdString = "GlobalAssetId"
-    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/GlobalAssetId/1/0"
-    description: str = "The part's global asset id."
-    value_type: str = "xs:string"
-
-class SourceAas(ReferenceElement):
-    id_short: AasIdString = "SourceAas"
-    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/SourceAas/1/0"
-    description: str = "The AAS the part comes from."
-
-class SourceElement(ReferenceElement):
-    id_short: AasIdString = "SourceElement"
-    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/SourceElement/1/0"
-    description: str = "The element the part comes from."
-
-class Component(SubmodelElementCollection):
-    id_short: AasIdString = "Component"
-    semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Component/1/0"
-    description: str = "Kind call: the part the called sequence makes."
-    GlobalAssetId: GlobalAssetId_t
-    SourceAas: Optional[SourceAas_t] = None
-    SourceElement: Optional[SourceElement_t] = None
 
 class ConditionType(Property):
     id_short: AasIdString = "ConditionType"
@@ -323,7 +299,7 @@ class Branches(SubmodelElementCollection):
 
 class Step(SubmodelElementCollection):
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Step/1/0"
-    description: str = "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
+    description: str = "One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part of the bill of material. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition."
     NodeId: NodeId_t
     Kind: Kind_t
     Name: Union[StepName, Name]
@@ -334,9 +310,8 @@ class Step(SubmodelElementCollection):
     RequiredCapabilities: Optional[RequiredCapabilities_t] = None
     Joints: Optional[Joints_t] = None
     Outputs: Optional[Outputs_t] = None
-    SequenceReference: Optional[SequenceReference_t] = None
+    Part: Optional[Part_t] = None
     OccurrenceId: Optional[OccurrenceId_t] = None
-    Component: Optional[Component_t] = None
     Condition: Optional[Condition_t] = None
     Steps: Optional[Steps_t] = None
     ProcessOrders: Optional[ProcessOrders_t] = None
@@ -378,12 +353,6 @@ DataType_t: TypeAlias = DataType
 Unit_t: TypeAlias = Unit
 # alias so field ``Output_t`` can name a class of the same id_short
 Output_t: TypeAlias = Output
-# alias so field ``GlobalAssetId_t`` can name a class of the same id_short
-GlobalAssetId_t: TypeAlias = GlobalAssetId
-# alias so field ``SourceAas_t`` can name a class of the same id_short
-SourceAas_t: TypeAlias = SourceAas
-# alias so field ``SourceElement_t`` can name a class of the same id_short
-SourceElement_t: TypeAlias = SourceElement
 # alias so field ``Value_t`` can name a class of the same id_short
 Value_t: TypeAlias = Value
 # alias so field ``OperandType_t`` can name a class of the same id_short
@@ -430,12 +399,10 @@ RequiredCapabilities_t: TypeAlias = RequiredCapabilities
 Joints_t: TypeAlias = Joints
 # alias so field ``Outputs_t`` can name a class of the same id_short
 Outputs_t: TypeAlias = Outputs
-# alias so field ``SequenceReference_t`` can name a class of the same id_short
-SequenceReference_t: TypeAlias = SequenceReference
+# alias so field ``Part_t`` can name a class of the same id_short
+Part_t: TypeAlias = Part
 # alias so field ``OccurrenceId_t`` can name a class of the same id_short
 OccurrenceId_t: TypeAlias = OccurrenceId
-# alias so field ``Component_t`` can name a class of the same id_short
-Component_t: TypeAlias = Component
 # alias so field ``Condition_t`` can name a class of the same id_short
 Condition_t: TypeAlias = Condition
 # alias so field ``ProcessOrders_t`` can name a class of the same id_short
@@ -477,12 +444,8 @@ DataType.model_rebuild()
 Unit.model_rebuild()
 Output.model_rebuild()
 Outputs.model_rebuild()
-SequenceReference.model_rebuild()
+Part.model_rebuild()
 OccurrenceId.model_rebuild()
-GlobalAssetId.model_rebuild()
-SourceAas.model_rebuild()
-SourceElement.model_rebuild()
-Component.model_rebuild()
 ConditionType.model_rebuild()
 EveryNProducts.model_rebuild()
 CounterScope.model_rebuild()

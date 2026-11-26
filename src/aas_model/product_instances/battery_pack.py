@@ -524,14 +524,14 @@ def disassembly() -> ps4.ProductionSequence:
                         EstimatedDuration=ps4.EstimatedDuration(value="60"),
                         ProcessReference=process("Removing")),
 
-                    # The four modules: each a call into the module's own Disassembly sequence, after
-                    # the busbars; four agents take them apart at once.
+                    # The four modules: each a call naming the module in the bill of material; its own
+                    # Disassembly sequence is found through its AAS. After the busbars; four agents take
+                    # them apart at once.
                     **{f"Step_{3 + n:04d}": ps4.Step(
                         id_short=f"Step_{3 + n:04d}", NodeId=ps4.NodeId(value=f"BatteryModule{n}"),
                         Kind=ps4.Kind(value="call"), Name=ps4.StepName(value=f"Take battery module {n} apart"),
                         Order=ps4.Order(value=str(3 + n)),
-                        SequenceReference=ps4.SequenceReference(value=reference(
-                            ("Submodel", sequence_id(MODULES[n - 1], "Disassembly")))))
+                        Part=ps4.Part(value=part(f"BatteryModule{n}")))
                        for n in (1, 2, 3, 4)},
                 })),
         }))

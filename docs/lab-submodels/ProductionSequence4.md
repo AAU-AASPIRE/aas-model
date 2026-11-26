@@ -30,8 +30,11 @@ Classes: `aas_model.submodel_templates.product.production_sequence_4` (generated
   `PlugJoint`, ...). The parameters of the joint (a torque, a force) are those of the step's process
   in Process Parameters. The other archetype's step refers to the joint (`JointReference`) instead of
   defining it again.
-- **A step** (Kind `step`) refers to its process (`ProcessReference`). A **call** (Kind `call`) runs
-  the sequence of a part (`SequenceReference`), e.g. a subassembly with an AAS of its own. A
+- **A step** (Kind `step`) refers to its process (`ProcessReference`). A **call** (Kind `call`) names a
+  part of the bill of material (`Part`, an entity of the Hierarchical Structures), e.g. a subassembly
+  with an AAS of its own; the sequence it runs is found through the part: its asset id, the part's AAS,
+  that AAS's sequence of the same `ArcheType`. No reference from one sequence to another: the bill of
+  material already says which AAS a part has. A
   **decision** (Kind `decision`) takes one of its two branches by comparing an output of a step done
   before (`Outputs`) with `Expected`.
 - **The equipment is the process AAS's.** A step names no resource, skill or binding: the
@@ -49,6 +52,9 @@ Classes: `aas_model.submodel_templates.product.production_sequence_4` (generated
   26 Nov 2026 the order was an `After` list on each step: the same edges, kept on the later step.
 - **Joints in the sequence, not in the Hierarchical Structures:** the bill of material stays a list
   of parts. A joint is what a step does to two parts, so it is defined where the step is.
+- **A call names the part, not its sequence:** until 26 Nov 2026 a call had `SequenceReference` (the
+  called submodel) and `Component` (the part's asset id, its AAS): the same link as the bill of
+  material's entity, stated twice. Now the entity is the one link.
 - **What stays from 2.0 and 3.0:** the step kinds, `Order`, `ProcessReference`, calls, branches,
   conditions, a step's outputs and the decision on them. What is left out: `PlanSchema`, `SequenceId`,
   `Role`, `Subprocesses` and the equipment of a step (`Resource`, `SkillId`, `Skill`,
@@ -80,7 +86,7 @@ In aas-model (`aas_model.product_instances`, built by `scripts/export_precedence
 | `Name` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0` | The name shown for the sequence. |
 | `Subject` | Ref | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Subject/1/0` | The AAS of the product the sequence plans. |
 | `Steps` | SMC | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Steps/1/0` | The nodes of the sequence. |
-| `Steps/{Step}` | SMC | 0..* | `https://smartproductionlab.aau.dk/ProductionSequence/Step/1/0` | One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition. |
+| `Steps/{Step}` | SMC | 0..* | `https://smartproductionlab.aau.dk/ProductionSequence/Step/1/0` | One node of the sequence. Kind step: a process of the product. Kind call: the sequence of a part of the bill of material. Kind partial: steps that run in any order their ProcessOrders allow. Kind parallel: branches that all join. Kind conditional: steps that only run when the condition holds. Kind decision: one of two branches, by the condition. |
 | `Steps/{Step}/NodeId` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/NodeId/1/0` | Identifies the node within its sequence. |
 | `Steps/{Step}/Kind` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Kind/1/0` | step, call, partial, parallel, conditional or decision. |
 | `Steps/{Step}/Name` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0` | The name shown for the node. |
@@ -101,12 +107,8 @@ In aas-model (`aas_model.product_instances`, built by `scripts/export_precedence
 | `Steps/{Step}/Outputs/{Output}/Name` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/Name/1/0` | The name shown for the output. |
 | `Steps/{Step}/Outputs/{Output}/DataType` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/DataType/1/0` | The type of the value, e.g. xs:double, xs:boolean. |
 | `Steps/{Step}/Outputs/{Output}/Unit` | Property (xs:string) | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/Unit/1/0` | The unit of the value. |
-| `Steps/{Step}/SequenceReference` | Ref | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/SequenceReference/1/0` | Kind call: the sequence that is run (a submodel). |
-| `Steps/{Step}/OccurrenceId` | Property (xs:string) | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/OccurrenceId/1/0` | Kind call: identifies this use of the called sequence. |
-| `Steps/{Step}/Component` | SMC | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/Component/1/0` | Kind call: the part the called sequence makes. |
-| `Steps/{Step}/Component/GlobalAssetId` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/GlobalAssetId/1/0` | The part's global asset id. |
-| `Steps/{Step}/Component/SourceAas` | Ref | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/SourceAas/1/0` | The AAS the part comes from. |
-| `Steps/{Step}/Component/SourceElement` | Ref | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/SourceElement/1/0` | The element the part comes from. |
+| `Steps/{Step}/Part` | Ref | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/Part/1/0` | Kind call: the part whose own sequence is run, an entity of the Hierarchical Structures of the AAS that holds the step. Its asset id leads to the part's AAS; the sequence run is that AAS's sequence of the same ArcheType. |
+| `Steps/{Step}/OccurrenceId` | Property (xs:string) | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/OccurrenceId/1/0` | Kind call: identifies this use of the part, where the bill of material holds it more than once (a Quantity above 1). |
 | `Steps/{Step}/Condition` | SMC | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/Condition/1/0` | Kind conditional and decision: when the guarded steps run, or which branch is taken. |
 | `Steps/{Step}/Condition/ConditionType` | Property (xs:string) | 1 | `https://smartproductionlab.aau.dk/ProductionSequence/ConditionType/1/0` | everyNthProduct, or comparison (an output against Expected). |
 | `Steps/{Step}/Condition/EveryNProducts` | Property (xs:positiveInteger) | 0..1 | `https://smartproductionlab.aau.dk/ProductionSequence/EveryNProducts/1/0` | everyNthProduct: every how many products. |

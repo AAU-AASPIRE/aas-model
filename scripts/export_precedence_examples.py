@@ -20,6 +20,8 @@ What is checked, and printed:
 - every partial block: its ProcessOrders join only steps of the block, no cycle, Order respects them;
 - every joint: first and second are entities of the bill of material of the AAS holding the step,
   each joint is defined once in its AAS, a joint referred to from another archetype exists;
+- every call: its Part is an entity of the bill of material whose asset id has an AAS here with a
+  sequence of the same ArcheType (the sequence the call runs);
 - every step of a recipe (and of the sequences it calls) has a binding in the process AAS.
 
 Nothing is sent to a server.
@@ -140,7 +142,7 @@ CASES = {"battery": battery, "pharma": pharma}
 
 # ---- the checks --------------------------------------------------------------------------------------
 # A line of the report that starts with one of these is a fault.
-FAULTS = ("BROKEN", "UNBOUND", "TWICE", "JOINT", "AFTER", "CYCLE", "ORDER")
+FAULTS = ("BROKEN", "UNBOUND", "TWICE", "JOINT", "AFTER", "CYCLE", "ORDER", "CALL")
 
 
 def semantic(element: dict) -> str:
@@ -231,6 +233,39 @@ def check(envs: list[dict], against: list[dict]) -> list[str]:
                     step = child(b, "Step")
                     if step:
                         bound.add(json.dumps([k["value"] for k in step["value"]["keys"]]))
+    # A call names a part of the bill of material; the sequence it runs is the one of the same ArcheType in
+    # the AAS of the part's asset id.
+    by_asset = {e["assetAdministrationShells"][0]["assetInformation"].get("globalAssetId"): e for e in envs}
+
+    def calls(sequence: dict):
+        """The sequences ``sequence`` calls (their ids), and a line for each call it cannot follow."""
+        found, faults = [], []
+
+        def walk(steps):
+            for s in (steps or {}).get("value", []):
+                if s.get("modelType") != "SubmodelElementCollection":
+                    continue
+                if value(s, "Kind") == "call":
+                    part = child(s, "Part")
+                    entity = mine.resolve(part["value"]) if part else None
+                    env = by_asset.get((entity or {}).get("globalAssetId"))
+                    target = next((sm for sm in (env or {}).get("submodels", []) if semantic(sm) == SEQUENCE
+                                   and value(sm, "ArcheType") == value(sequence, "ArcheType")), None)
+                    if target is None:
+                        faults.append(f"CALL {value(s, 'NodeId')} in {sequence['idShort']}: no part, no AAS for its "
+                                      f"asset id, or no {value(sequence, 'ArcheType')} sequence there")
+                    else:
+                        found.append(target["id"])
+                walk(child(s, "Steps"))
+                for br in (child(s, "Branches") or {}).get("value", []):
+                    walk(child(br, "Steps"))
+        walk(child(sequence, "Steps"))
+        return found, faults
+
+    for env in envs:
+        for sm in env["submodels"]:
+            if semantic(sm) == SEQUENCE:
+                lines.extend(calls(sm)[1])
     # The sequences a process AAS runs: its Recipe, and what the Recipe calls.
     run, todo = set(), [child(sm, "Recipe")["value"]["keys"][0]["value"] for env in envs for sm in env["submodels"]
                         if sm.get("idShort") == "ProcessInformation"]
@@ -239,9 +274,7 @@ def check(envs: list[dict], against: list[dict]) -> list[str]:
         if sid in run or sid not in mine.submodels:
             continue
         run.add(sid)
-        for _, r in references(mine.submodels[sid]):
-            if r["keys"][0]["value"] in mine.submodels and semantic(mine.submodels[r["keys"][0]["value"]]) == SEQUENCE:
-                todo.append(r["keys"][0]["value"])
+        todo.extend(calls(mine.submodels[sid])[0])
     idle = [sm["idShort"] + " of " + env["assetAdministrationShells"][0]["idShort"] for env in envs
             for sm in env["submodels"] if semantic(sm) == SEQUENCE and sm["id"] not in run]
     if idle:
