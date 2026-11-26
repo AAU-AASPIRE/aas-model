@@ -1,11 +1,14 @@
-"""Finalize the invocation addresses of a Resource's Operations while authoring it."""
+"""The address a skill's Operation is invoked at.
+
+A skill's Operation is delegated to the DMP by its invocationDelegation qualifier, authored as
+``INVOCATION_URL_TEMPLATE``. Its ``{operation_path}`` is filled when the AAS is built (``inject_ids``), once the
+Skills submodel's id is known; a concrete URL authored instead is kept.
+"""
 
 from __future__ import annotations
 
 import base64
 from urllib.parse import quote
-
-from aas_model.constants import BASE_URL
 
 OPERATION_PATH = "{operation_path}"
 
@@ -21,24 +24,23 @@ def operation_path(submodel_id: str, id_short_path: str) -> str:
     return f"/submodels/{encoded}/submodel-elements/{quote(id_short_path, safe='.')}/invoke"
 
 
-def finalize_invocation_addresses(asset) -> None:
-    """Fill the ``{operation_path}`` of each skill Operation's invocationDelegation qualifier.
-
-    The ids are those the id injector will assign (``{aas_id}/submodels/{idShort}``), unless authored.
-    Explicit concrete invocation URLs are authored data and are left intact.
-    Call again after adding template-based skills to an existing instance.
-    """
-    cci = asset.control_component_instance
-    if cci is None or cci.Skills is None:
+def resolve_invocation_addresses(aas) -> None:
+    """Fill the ``{operation_path}`` of the invocationDelegation qualifier of each Operation in the Skills submodel:
+    a command's (``<skill>.<command>.<operation>``) and, in a skill's short form, the skill's own
+    (``<skill>.<operation>``). The Skills submodel's id must be set."""
+    skills = getattr(aas, "skills", None)
+    if skills is None:
         return
-
-    aas_id = asset.id if asset.id and asset.id != asset.id_short else f"{BASE_URL}/aas/{asset.id_short}"
-    submodel_id = cci.id if cci.id and cci.id != cci.id_short else f"{aas_id}/submodels/{cci.id_short}"
-    for skill_key, skill in (cci.Skills.Skill or {}).items():
-        operation = skill.operation
-        if operation is None:
-            continue
-        path = operation_path(submodel_id, f"{cci.Skills.id_short}.{skill_key}.{operation.id_short}")
-        for qualifier in operation.qualifiers:
-            if qualifier.type_ == "invocationDelegation":
-                qualifier.value = qualifier.value.replace(OPERATION_PATH, path)
+    for skill_key, skill in (skills.Skill or {}).items():
+        # The idShortPath is made of map keys and field names, as the AAS holds it.
+        operations = [(f"{skill_key}.{key}", operation) for key, operation in (skill.SkillOperation or {}).items()]
+        for command in ("Start", "Stop", "Abort", "Reset"):
+            held = getattr(skill, command, None)
+            if held is not None:
+                operations += [(f"{skill_key}.{command}.{key}", operation)
+                               for key, operation in (held.SkillOperation or {}).items()]
+        for id_short_path, operation in operations:
+            path = operation_path(skills.id, id_short_path)
+            for qualifier in operation.qualifiers:
+                if qualifier.type_ == "invocationDelegation":
+                    qualifier.value = qualifier.value.replace(OPERATION_PATH, path)

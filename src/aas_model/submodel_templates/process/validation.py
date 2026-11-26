@@ -4,9 +4,9 @@ Source: templates/process/Validation.json
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, List, Optional, TypeAlias
+from typing import ClassVar, List, Optional, TypeAlias
 from aas_pydantic import (
-    Property, Submodel, SubmodelElement, SubmodelElementCollection, SubmodelElementList,
+    Property, Submodel, SubmodelElementList,
 )
 from aas_pydantic.aas_model import AasIdString
 
@@ -23,6 +23,8 @@ class CheckedBy(Property):
     value_type: str = "xs:string"
 
 class FindingsItem(Property):
+    semantic_id: str = "https://smartproductionlab.aau.dk/ProcessValidation/Finding/1/0"
+    description: str = "One thing the check found."
     value_type: str = "xs:string"
 
 class Findings(SubmodelElementList):
@@ -32,6 +34,7 @@ class Findings(SubmodelElementList):
     type_value_list_element: str = "Property"
     value_type_list_element: str = "xs:string"
     order_relevant: bool = True
+    ITEM_CARDINALITY: ClassVar[str] = 'ZeroToMany'
     item_type: ClassVar = FindingsItem
     value: List[FindingsItem] = []
 

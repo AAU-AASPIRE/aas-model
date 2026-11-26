@@ -5,17 +5,16 @@
 
 from .asset import RESOURCE, ArsoResource, Component, Module, ProductionSystem
 from .submodels import (
-    BasicConstraintContainer, ComposedOf, LocatedEntryNode, LocatedNode, LocatedStructures, ModuleCapabilityContainer,
-    ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet, ModuleComposedOfContainer,
-    ModuleComposedOfSet, ModuleConstraintSet, ModuleControlConfiguration, ModuleInterfaces, ModuleSkill, ModuleSkills, RealizedBySkill, SameAs,
-    StatedProperty, StatedPropertySet, lab_nameplate, structure,
+    BasicConstraintContainer, LabNameplate, lab_nameplate, LocatedEntryNode, LocatedNode, LocatedStructures, ModuleCapabilityContainer,
+    ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet, ModuleConstraintSet,
+    ModuleControlConfiguration, ModuleInterfaces, ModuleSkill, ModuleSkills, RealizedBySkill, SameAs,
+    StatedProperty, StatedPropertySet,
 )
 
 __all__ = [
     "RESOURCE", "ArsoResource", "Component", "Module", "ProductionSystem",
-    "BasicConstraintContainer", "ComposedOf", "LocatedEntryNode", "LocatedNode", "LocatedStructures",
+    "BasicConstraintContainer", "LabNameplate", "lab_nameplate", "LocatedEntryNode", "LocatedNode", "LocatedStructures",
     "ModuleCapabilityContainer", "ModuleCapabilityDescription", "ModuleCapabilityRelations",
-    "ModuleCapabilitySet", "ModuleComposedOfContainer", "ModuleComposedOfSet", "ModuleConstraintSet", "ModuleControlConfiguration", "ModuleInterfaces",
+    "ModuleCapabilitySet", "ModuleConstraintSet", "ModuleControlConfiguration", "ModuleInterfaces",
     "ModuleSkill", "ModuleSkills", "RealizedBySkill", "SameAs", "StatedProperty", "StatedPropertySet",
-    "lab_nameplate", "structure",
 ]

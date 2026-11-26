@@ -4,9 +4,9 @@ Source: templates/arso/ControlConfiguration.json
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, List, Dict, Optional, Union, TypeAlias
+from typing import ClassVar, Dict, List, Optional, TypeAlias, Union
 from aas_pydantic import (
-    Property, ReferenceElement, Submodel, SubmodelElement, SubmodelElementCollection, SubmodelElementList,
+    DynamicSubmodelElementCollection, Property, ReferenceElement, Submodel, SubmodelElementCollection, SubmodelElementList,
 )
 from aas_pydantic.aas_model import AasIdString
 
@@ -133,16 +133,14 @@ class Instances(SubmodelElementCollection):
     description: str = "The blocks of the program that are the resource's skills and the steps of their commands: which block, of which type, is which skill."
     CCfgInstance: Dict[str, CCfgInstance_t] = {}
 
-class ActiveProcedure(SubmodelElementCollection):
+class ActiveProcedure(DynamicSubmodelElementCollection):
     id_short: AasIdString = "ActiveProcedure"
     semantic_id: str = ""
     description: str = "Reference to the Process AAS (and version) whose procedure is active, with NetworkHash, BootFileHash, ActivatedAt."
-    pass
 
-class CCfgChange(SubmodelElementCollection):
+class CCfgChange(DynamicSubmodelElementCollection):
     semantic_id: str = ""
     description: str = "One reconfiguration record."
-    pass
 
 class ChangeLog(SubmodelElementList):
     id_short: AasIdString = "ChangeLog"
@@ -150,6 +148,7 @@ class ChangeLog(SubmodelElementList):
     description: str = "One Change SMC per reconfiguration: Time, Trigger, ChangeClass (a pprl:ChangeClass IRI), From, To, Result, Duration."
     type_value_list_element: str = "SubmodelElementCollection"
     order_relevant: bool = True
+    ITEM_CARDINALITY: ClassVar[str] = 'ZeroToMany'
     item_type: ClassVar = CCfgChange
     value: List[CCfgChange] = []
 

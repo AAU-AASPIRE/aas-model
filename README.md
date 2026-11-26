@@ -7,9 +7,10 @@ submodel templates (IDTA's and the lab's own, ARSO's among them), building and r
 lab's instances (the stations, the planar table and its shuttles, the filling line, products and
 processes). AASPIRE's tools build every AAS with it.
 
-> **A placeholder.** This is the lab's branch `lab-ppr-models` of
-> [aas-model](https://github.com/tristan-schwoerer/aas-model) (Tristan Schwörer), with its history,
-> until it merges with aas-model upstream. Changes to the shared model go upstream first.
+> Since 26 Nov 2026 this is where aas-model is developed: the lab's branch `lab-ppr-models` merged
+> with Tristan Schwörer's line of [aas-model](https://github.com/tristan-schwoerer/aas-model)
+> (`merge-lab-ppr-models`: the execution model, the Skills and Knowledge of every resource, the stations
+> named by what they do, the AP2030 nameplate), with both histories.
 
 | Where | What |
 | --- | --- |

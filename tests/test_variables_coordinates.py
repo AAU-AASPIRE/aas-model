@@ -8,7 +8,6 @@ from basyx.aas.adapter.json import AASToJsonEncoder
 
 from aas_pydantic import Key, ModelReference
 from aas_model import Resource, build_from_model
-from aas_model._serde import parse_submodel_dict
 from aas_model.submodel_templates.coordinates import (
     CoordinateRelativeTo, CoordinateSource, Coordinates, CoordinateX, CoordinateY, CoordinateYaw, CoordinateZ,
     RelativeCoordinate, VAR_COORDINATE,
@@ -27,12 +26,15 @@ def _variables() -> Variables:
     ))
     position = ModelReference(key=(
         Key(type_="Submodel", value="{aas_id}/submodels/Variables"),
+        Key(type_="SubmodelElementCollection", value="Measurements"),
         Key(type_="Property", value="LinearAxis_ActualPosition"),
     ))
     return Variables(
         id_short="Variables",
-        variable={"LinearAxis_ActualPosition": VariableProp(id_short="LinearAxis_ActualPosition", value="0", value_type="xs:double")},
-        Measurements=MeasurementsGroup(value={"Coordinates": Coordinates(coordinate={
+        Measurements=MeasurementsGroup(value={
+            "LinearAxis_ActualPosition": VariableProp(
+                id_short="LinearAxis_ActualPosition", value="0", value_type="xs:double"),
+            "Coordinates": Coordinates(coordinate={
             "ModuleBase": RelativeCoordinate(id_short="ModuleBase", X=CoordinateX(value="240.0"), Y=CoordinateY(value="720.0"), Yaw=CoordinateYaw(value="180.0")),
             "Transfer": RelativeCoordinate(id_short="Transfer", supplemental_semantic_ids=[TRANSFER_POINT],
                                    RelativeTo=CoordinateRelativeTo(value=base), Y=CoordinateY(value="60.0")),
@@ -72,8 +74,9 @@ def test_a_moving_value_names_the_variable_it_is():
     assert _at(axis, "ZSource")["value"]["keys"][-1]["value"] == "LinearAxis_ActualPosition"
 
 
-def test_the_coordinates_parse_back_into_the_model():
-    parsed = parse_submodel_dict(_published(), Variables)
+def test_the_coordinates_read_back_into_the_model():
+    variables = _variables()
+    parsed = Variables.model_validate_json(variables.model_dump_json())
     coordinates = parsed.Measurements.value["Coordinates"]
     assert isinstance(coordinates, Coordinates)
     assert coordinates.coordinate["ModuleBase"].Yaw.value in ("180.0", 180.0)

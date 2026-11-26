@@ -1,7 +1,6 @@
 """Python authoring -> Resource config JSON -> BaSyx AAS."""
 
 import json
-import re
 
 import pytest
 from basyx.aas import model
@@ -10,33 +9,25 @@ from pydantic import ValidationError
 
 from aas_model import Resource, ResourceTypeAAS, build_from_model, inject_ids
 from aas_model.constants import BASE_URL
-from aas_model.resource_template import Position, MqttOperationalStation as Station
-from aas_model.resource_instances.stopperingModule import syntegon_stoppering
-from aas_model.submodel_templates.control_component_instance import ExtendedSkill, SkillOperation
-from aas_model.submodel_templates.variables import VariableProp
+from aas_model.submodel_templates.parameters import Position
+from aas_model.resource_template import MqttOperationalStation as Station
+from aas_model.resource_instances import stoppering_station
+from aas_model.submodel_templates.control_component_instance import SkillOperation
+from aas_model.submodel_templates.skills import ModuleSkill
+from aas_model.submodel_templates.time_series import TimeSeriesCollection
+from aas_model.submodel_templates.variables import MeasurementsGroup, VariableProp
 from aas_pydantic import Capability, Property, Submodel
 from aas_pydantic.submodel_templates.capability_description import (
     CapabilityContainer, CapabilityDescription, CapabilitySet,
 )
-from aas_pydantic.convert_util import strip_temp_id_short_attributes
-from aas_model.constants import BASE_URL
 from aas_model.invocation_authoring import operation_path
 
 
 def _document(store):
-    strip_temp_id_short_attributes(store)
     document = json.loads(json_serialization.object_store_to_json(store))
-    # Registration imports the base Resource schema, intentionally erasing the
-    # Python subclass name stored in authoring-only IEC 61360 metadata.
-    for referable in (*document.get("assetAdministrationShells", []), *document.get("submodels", [])):
-        for specification in referable.get("embeddedDataSpecifications", []):
-            content = specification.get("dataSpecificationContent", {})
-            if content.get("preferredName") == [{"language": "en", "text": "class"}]:
-                content["value"] = "<authoring-class>"
 
     def normalize(value):
-        # The fork generates random data-specification IDs; shell references
-        # and top-level submodels are unordered collections in BaSyx.
+        # Shell references and top-level submodels are unordered collections in BaSyx.
         if isinstance(value, dict):
             result = {key: normalize(child) for key, child in value.items()}
             for key in ("submodels", "submodel"):
@@ -45,8 +36,6 @@ def _document(store):
             return result
         if isinstance(value, list):
             return [normalize(child) for child in value]
-        if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{32}", value):
-            return "generated-id"
         return value
 
     return normalize(document)
@@ -56,25 +45,22 @@ def test_resource_keeps_existing_public_type_name():
     assert ResourceTypeAAS is Resource
 
 
-def test_resource_instance_package_exports_the_module_factory():
-    from aas_model.resource_instances import syntegon_stoppering as package_factory
-
-    assert package_factory is syntegon_stoppering
-
-
-def test_resource_defaults_are_independent_and_have_authored_invocation_urls():
+def test_resource_defaults_are_independent_and_their_invocation_urls_resolve_when_built():
     first = Station(id_short="First")
     second = Station(id_short="Second")
-    first.variables.variable["PackMLState"].value = "IDLE"
+    first.variables.State.value.clear()
     first.parameters.parameter["Location"].x.parameter.value = 100.0
 
-    assert second.variables.variable["PackMLState"].value == ""
+    assert set(second.variables.State.value) == {"Station"}
     assert second.parameters.parameter["Location"].x.parameter.value == 480.0
     for resource in (first, second):
-        for name, skill in resource.control_component_instance.Skills.Skill.items():
-            invocation = next(q for q in skill.operation.qualifiers if q.type_ == "invocationDelegation")
+        resource = resource.model_copy(deep=True)
+        inject_ids(resource)
+        for name, skill in resource.skills.Skill.items():
+            invocation = next(q for q in skill.Start.SkillOperation["Start"].qualifiers
+                          if q.type_ == "invocationDelegation")
             assert invocation.value == "http://dmp:8080" + operation_path(
-                f"{BASE_URL}/aas/{resource.id_short}/submodels/ControlComponentInstance", f"Skills.{name}.operation")
+                f"{BASE_URL}/aas/{resource.id_short}/submodels/Skills", f"{name}.Start.Start")
 
 
 def test_resource_aid_defaults_populate_optional_mqtt_containers_and_round_trip():
@@ -97,7 +83,7 @@ def test_resolving_one_resource_does_not_change_reference_defaults_for_the_next(
     first = Station(id_short="FirstIdentity")
     inject_ids(first)
     second = Station(id_short="SecondIdentity")
-    native = second.control_component_instance.Skills.Skill["Halt"].interface_reference.value
+    native = second.skills.Skill["Halt"].Start.InterfaceReference.value
     mapping = second.asset_interfaces_mapping_configuration.MappingConfigurations.value[0]
 
     assert native.key[0].value == "{aas_id}/submodels/AssetInterfacesDescription"
@@ -105,7 +91,7 @@ def test_resolving_one_resource_does_not_change_reference_defaults_for_the_next(
     assert mapping.Sinks.value[0].Sink.value.key[0].value == "{aas_id}/submodels/Variables"
 
 
-@pytest.mark.parametrize("factory", [lambda: Station(id_short="Generic"), syntegon_stoppering])
+@pytest.mark.parametrize("factory", [lambda: Station(id_short="Generic"), stoppering_station])
 def test_complete_resource_json_round_trip(factory):
     resource = factory()
     resource.parameters.parameter["Location"].x.parameter.value = 123.5
@@ -119,22 +105,22 @@ def test_complete_resource_json_round_trip(factory):
     assert restored.parameters.parameter["Location"].x.parameter.value == 123.5
     assert restored.parameters.parameter["Location"].y.parameter.value == 456.5
     assert restored.parameters.parameter["Location"].yaw.parameter.value == 90.0
-    assert isinstance(restored.variables.variable["PackMLState"], VariableProp)
+    assert isinstance(restored.variables.State.value["Station"], TimeSeriesCollection)
     assert isinstance(restored.capability_description, CapabilityDescription)
-    halt = restored.control_component_instance.Skills.Skill["Halt"]
-    assert isinstance(halt, ExtendedSkill)
-    assert isinstance(halt.operation, SkillOperation)
+    halt = restored.skills.Skill["Halt"]
+    assert isinstance(halt, ModuleSkill)
+    assert isinstance(halt.Start.SkillOperation["Start"], SkillOperation)
 
 
 def test_python_resource_and_restored_config_build_the_same_aas():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     restored = Resource.model_validate_json(resource.model_dump_json())
 
     assert _document(build_from_model(resource)) == _document(build_from_model(restored))
 
 
 def test_build_from_model_resolves_references_without_mutating_resource():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     before = resource.model_dump_json()
     store = build_from_model(resource)
     shell = next(obj for obj in store if isinstance(obj, model.AssetAdministrationShell))
@@ -142,32 +128,32 @@ def test_build_from_model_resolves_references_without_mutating_resource():
     assert resource.model_dump_json() == before
     assert shell.id == f"{BASE_URL}/aas/{resource.id_short}"
     assert len(shell.submodel) == 8
+    knowledge = store.get_item(f"{shell.id}/submodels/Variables").get_referable("Knowledge")
+    assert {e.id_short for e in knowledge.value} == {"OccupiedBy", "Target"}      # what is known: its occupancy
     assert all(reference.resolve(store) is not None for reference in shell.submodel)
     submodels = {obj.id_short: obj for obj in store if isinstance(obj, model.Submodel)}
     assert "CapabilityDescription" in submodels
-    cci = submodels["ControlComponentInstance"]
-    skills = next(element for element in cci.submodel_element if element.id_short == "Skills")
-    stoppering = next(element for element in skills.value if element.id_short == "Stoppering")
-    native = next(element for element in stoppering.value if element.id_short == "interface_reference")
+    native = submodels["Skills"].get_referable(["Stoppering", "Start", "InterfaceReference"])
     assert native.value.resolve(store).id_short == "Stoppering"
 
 
 def test_json_import_and_model_build_preserve_authored_container_structure():
     resource = Resource(id_short="ExactStructure")
-    resource.variables.variable = {"Custom": VariableProp(id_short="Custom", value="READY")}
+    resource.variables.Measurements = MeasurementsGroup(value={"Custom": VariableProp(value="READY")})
     resource.parameters.parameter = {}
     restored = Resource.model_validate_json(resource.model_dump_json())
     store = build_from_model(restored)
     submodels = {obj.id_short: obj for obj in store if isinstance(obj, model.Submodel)}
 
-    assert set(restored.variables.variable) == {"Custom"}
+    assert set(restored.variables.Measurements.value) == {"Custom"}
     assert restored.parameters.parameter == {}
-    assert {element.id_short for element in submodels["Variables"].submodel_element} == {"Custom"}
+    measurements = submodels["Variables"].get_referable("Measurements")
+    assert {element.id_short for element in measurements.value} == {"Custom"}
     assert not submodels["Parameters"].submodel_element
 
 
 def test_pydantic_dict_and_json_loading_build_the_same_aas():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     encoded = resource.model_dump_json()
     expected = _document(build_from_model(resource))
 
@@ -177,14 +163,13 @@ def test_pydantic_dict_and_json_loading_build_the_same_aas():
 
 @pytest.mark.parametrize("source", ["dict", "file"])
 def test_pydantic_loading_preserves_empty_containers_without_default_overlay(source, tmp_path):
-    resource = syntegon_stoppering()
-    resource.variables.variable.clear()
+    resource = stoppering_station()
     resource.variables.State = None
     resource.variables.Log = None
+    resource.variables.Knowledge = None
     resource.parameters.parameter.clear()
     resource.asset_interfaces_description.InterfaceTemplateForMQTT.clear()
-    resource.control_component_instance.Skills.Skill.clear()
-    resource.control_component_instance.Endpoints.Endpoint.clear()
+    resource.skills.Skill.clear()
     resource.asset_interfaces_mapping_configuration.MappingConfigurations.value.clear()
     encoded = resource.model_dump_json()
     data = json.loads(encoded)
@@ -202,9 +187,7 @@ def test_pydantic_loading_preserves_empty_containers_without_default_overlay(sou
     assert not submodels["Variables"].submodel_element
     assert not submodels["Parameters"].submodel_element
     assert not submodels["AssetInterfacesDescription"].submodel_element
-    cci = {child.id_short: child for child in submodels["ControlComponentInstance"].submodel_element}
-    assert not cci["Skills"].value
-    assert not cci["Endpoints"].value
+    assert not [e for e in submodels["Skills"].submodel_element if e.id_short != "Errors"]
     mappings = next(iter(submodels["AssetInterfacesMappingConfiguration"].submodel_element))
     assert not mappings.value
 
@@ -220,13 +203,13 @@ def test_pydantic_rejects_invalid_exported_field_types():
 
 
 def test_pydantic_import_preserves_explicitly_empty_invocation_qualifiers():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     data = json.loads(resource.model_dump_json())
-    data["control_component_instance"]["Skills"]["Skill"]["Halt"]["operation"]["qualifiers"] = []
+    data["skills"]["Skill"]["Halt"]["Start"]["SkillOperation"]["Start"]["qualifiers"] = []
 
     restored = Resource.model_validate_json(json.dumps(data))
 
-    assert restored.control_component_instance.Skills.Skill["Halt"].operation.qualifiers == []
+    assert restored.skills.Skill["Halt"].Start.SkillOperation["Start"].qualifiers == []
 
 
 def test_build_from_model_keeps_resource_subclass_fields():
@@ -246,17 +229,17 @@ def test_build_from_model_keeps_resource_subclass_fields():
 
 
 def test_concrete_resources_are_fresh_instances():
-    first = syntegon_stoppering()
-    first.nameplate.SerialNumber.value = "changed"
-    first.control_component_instance.Skills.Skill.clear()
-    second = syntegon_stoppering()
+    first = stoppering_station()
+    first.nameplate.ManufacturerProductDesignation.value = {"en": "changed"}
+    first.skills.Skill.clear()
+    second = stoppering_station()
 
-    assert second.nameplate.SerialNumber.value == "SYN-SS-2024-001"
-    assert set(second.control_component_instance.Skills.Skill) == {"Halt", "Occupy", "Release", "Stoppering"}
+    assert second.nameplate.ManufacturerProductDesignation.value == {"en": "Stoppering station of the AP2030 filling line"}
+    assert set(second.skills.Skill) == {"Halt", "Occupy", "Release", "Stoppering"}
 
 
 def test_build_from_model_does_not_revalidate_or_serialize_the_model(monkeypatch):
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
 
     def unexpected_validation(*args, **kwargs):
         raise AssertionError("Building a typed model must not serialize or revalidate it")
@@ -264,7 +247,7 @@ def test_build_from_model_does_not_revalidate_or_serialize_the_model(monkeypatch
     monkeypatch.setattr(Resource, "model_validate", unexpected_validation)
     monkeypatch.setattr(Resource, "model_dump", unexpected_validation)
 
-    assert len(build_from_model(resource)) == 9
+    assert len(build_from_model(resource)) == 9      # the shell and its eight submodels
 
 
 def test_resource_capability_description_defaults_are_independent():

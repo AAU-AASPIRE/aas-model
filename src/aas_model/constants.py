@@ -17,7 +17,9 @@ SCHEMA_BASE = "https://aausmartproductionlab.github.io/AP2030-UNS/MQTTSchemas"
 # Infrastructure defaults
 # ═══════════════════════════════════════════════════════════════════════════════
 
-BROKER = "mqtt://192.168.0.104:1883"
+# The MQTT broker the resources' interfaces name: for now the local stack's (compose service hivemq-broker, as the DMP
+# and the simulated stations reach it on the Docker network; the lab's broker is mqtt://192.168.0.104:1883).
+BROKER = "mqtt://hivemq-broker:1883"
 SITE = "NN/Nybrovej/InnoLab"
 
 # Shared invocation service origin. Resource-specific identity belongs in
@@ -32,6 +34,122 @@ INVOCATION_URL_TEMPLATE = f"{INVOCATION_ORIGIN}{{operation_path}}"
 # ═══════════════════════════════════════════════════════════════════════════════
 
 CSSX = "http://www.w3id.org/aau-ra/cssx"
+
+# The concepts of an operational device's state: its PackML state and its occupation (the process queue).
+STATE_OPERATIONAL = "https://w3id.org/2026/apex/semantic/state/operational"
+STATE_OCCUPIED = "https://w3id.org/2026/apex/semantic/state/occupied"
+
+# The lab vocabulary (iec61499-mgmt-py, ontology/Vocabulary): what capabilities, properties and skill types mean.
+# Elements carry these as supplemental semantic ids; their semantic id names the AAS structure.
+LAB = f"{BASE_URL}/semantics/"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Execution semantics — what a capability needs and changes (plans/kg-planning-execution-PLAN.md, 4.2)
+# ═══════════════════════════════════════════════════════════════════════════════
+# In a capability's CapabilityRelations, beside 02020's relations and ConstraintSet (which the lab leaves as IDTA
+# has it): Subjects (who takes part), ConditionSet (Pre, Invariant, Post) and EffectSet (Start, During, End), each
+# a tree of terms. A term's kind is its semantic id; the property it is about rides as a supplemental semantic id.
+
+EXECUTION_SUBJECTS = f"{BASE_URL}/execution/Subjects/1/0"
+EXECUTION_SUBJECT = f"{BASE_URL}/execution/Subject/1/0"
+# A subject that is what the unit's product requires (a property of one of its required capabilities, found by its
+# meaning): bound when the behaviour tree is built, from the batch's product type.
+EXECUTION_SUBJECT_REQUIREMENT = f"{BASE_URL}/execution/Subject/Requirement/1/0"
+
+# What a resource is, as its asset type says (the ARSO ontology recognises an AAS by the beginning of it): css:Resource,
+# then its ARSO kind (a Module, a Component of one, a System of modules; software has no ARSO kind), then the kind of
+# resource it is (…/Resource/Module/LoadingStation). The lab's nameplates derive their product hierarchy from it.
+RESOURCE_TYPE = f"{BASE_URL}/Resource"
+MODULE_TYPE = f"{RESOURCE_TYPE}/Module"
+COMPONENT_TYPE = f"{RESOURCE_TYPE}/Component"
+SYSTEM_TYPE = f"{RESOURCE_TYPE}/System"
+SOFTWARE_TYPE = f"{RESOURCE_TYPE}/Software"
+
+# What a unit of any product is (the asset type of a product type AAS): what a subject that is a unit stands for.
+PRODUCT_ASSET_TYPE = f"{BASE_URL}/Product"
+# What a shuttle is (the asset type of the shuttles begins with it): what a subject that is a carrier stands for.
+SHUTTLE_ASSET_TYPE = f"{COMPONENT_TYPE}/Shuttle"
+
+# How long an action takes, in seconds, where no Rate of an End effect says it.
+EXECUTION_DURATION = f"{BASE_URL}/execution/Duration/1/0"
+
+# The batch AAS (D10, D13): what is made, how many, and the goal every unit is to reach. Units are not listed: each
+# BT instance mints the IRI of the unit it makes (urn:uuid:<uuid>, D35).
+BATCH_ASSET_TYPE = f"{BASE_URL}/Batch"
+SM_BATCH_INFORMATION = f"{BASE_URL}/submodels/BatchInformation/1/0"
+SM_GOAL = f"{BASE_URL}/submodels/Goal/1/0"
+BATCH_PRODUCT_TYPE = f"{BASE_URL}/batch/ProductType/1/0"
+BATCH_QUANTITY = f"{BASE_URL}/batch/Quantity/1/0"
+GOAL_CONDITION = f"{BASE_URL}/goal/Condition/1/0"
+EXECUTION_CONDITION_SET = f"{BASE_URL}/execution/ConditionSet/1/0"
+EXECUTION_PRE = f"{BASE_URL}/execution/ConditionSet/Pre/1/0"
+EXECUTION_INVARIANT = f"{BASE_URL}/execution/ConditionSet/Invariant/1/0"
+EXECUTION_POST = f"{BASE_URL}/execution/ConditionSet/Post/1/0"
+EXECUTION_EFFECT_SET = f"{BASE_URL}/execution/EffectSet/1/0"
+EXECUTION_START = f"{BASE_URL}/execution/EffectSet/Start/1/0"
+EXECUTION_DURING = f"{BASE_URL}/execution/EffectSet/During/1/0"
+EXECUTION_END = f"{BASE_URL}/execution/EffectSet/End/1/0"
+EXECUTION_CONDITION = f"{BASE_URL}/execution/Condition/1/0"
+EXECUTION_EFFECT = f"{BASE_URL}/execution/Effect/1/0"
+EXECUTION_TERM_SUBJECT = f"{BASE_URL}/execution/Term/Subject/1/0"
+EXECUTION_CONDITION_OPERATOR = f"{BASE_URL}/execution/Condition/Operator/1/0"
+EXECUTION_EFFECT_OPERATOR = f"{BASE_URL}/execution/Effect/Operator/1/0"
+EXECUTION_TERM_VALUE = f"{BASE_URL}/execution/Term/Value/1/0"
+EXECUTION_TERM_VALUE_REFERENCE = f"{BASE_URL}/execution/Term/ValueReference/1/0"
+EXECUTION_TERM_FORMULA = f"{BASE_URL}/execution/Term/Formula/1/0"
+EXECUTION_FORMULA_USES = f"{BASE_URL}/execution/Term/Uses/1/0"
+EXECUTION_FORMULA_USE = f"{BASE_URL}/execution/Term/Use/1/0"
+EXECUTION_RATE = f"{BASE_URL}/execution/Effect/Rate/1/0"
+EXECUTION_AND = f"{BASE_URL}/execution/And/1/0"
+EXECUTION_OR = f"{BASE_URL}/execution/Or/1/0"
+EXECUTION_NOT = f"{BASE_URL}/execution/Not/1/0"
+EXECUTION_EXISTS = f"{BASE_URL}/execution/Exists/1/0"
+EXECUTION_FOR_ALL = f"{BASE_URL}/execution/ForAll/1/0"
+EXECUTION_QUANTIFIED_VARIABLE = f"{BASE_URL}/execution/Variable/1/0"
+EXECUTION_BODY = f"{BASE_URL}/execution/Body/1/0"
+EXECUTION_WHEN = f"{BASE_URL}/execution/When/1/0"
+EXECUTION_WHEN_CONDITION = f"{BASE_URL}/execution/When/Condition/1/0"
+EXECUTION_WHEN_THEN = f"{BASE_URL}/execution/When/Then/1/0"
+EXECUTION_ONE_OF = f"{BASE_URL}/execution/OneOf/1/0"
+EXECUTION_OUTCOME = f"{BASE_URL}/execution/OneOf/Outcome/1/0"
+
+# How the behaviour tree calls the realizing skill and reads its answer (D34): two Lua scripts in the capability's
+# CapabilityRelations, beside its Subjects, conditions and effects.
+EXECUTION_TRANSLATION = f"{BASE_URL}/execution/Translation/1/0"
+EXECUTION_TRANSLATION_CALL = f"{BASE_URL}/execution/Translation/Call/1/0"
+EXECUTION_TRANSLATION_REPLY = f"{BASE_URL}/execution/Translation/Reply/1/0"
+
+# The role of an Operation variable (D27): a parameter the payload is built from.
+OPERATION_VARIABLE_PARAMETER = f"{BASE_URL}/aas/OperationVariable/Parameter/1/0"
+# A parameter that may be sent as a reference, resolved by the DMP at the call (D27).
+OPERATION_VARIABLE_ACCEPTS_REFERENCE = f"{BASE_URL}/aas/OperationVariable/AcceptsReference/1/0"
+
+# The Knowledge of an asset's Variables: the state variables of a subject, of which kind each is, and where they are kept.
+VARIABLES_KNOWLEDGE = f"{BASE_URL}/variables/Knowledge/1/0"
+STATE_VARIABLE = f"{BASE_URL}/state/StateVariable/1/0"
+STATE_VARIABLE_INITIAL = f"{BASE_URL}/state/StateVariable/Initial/1/0"
+STATE_VARIABLE_SUBJECT = f"{BASE_URL}/state/StateVariable/Subject/1/0"
+STATE_VARIABLE_VALUE_TYPE = f"{BASE_URL}/state/StateVariable/ValueType/1/0"
+STATE_VARIABLE_CARDINALITY = f"{BASE_URL}/state/StateVariable/Cardinality/1/0"
+STATE_SPARQL_TARGET = f"{BASE_URL}/state/SparqlTarget/1/0"
+STATE_SPARQL_TARGET_ENDPOINT = f"{BASE_URL}/state/SparqlTarget/Endpoint/1/0"
+STATE_SPARQL_TARGET_GRAPH = f"{BASE_URL}/state/SparqlTarget/Graph/1/0"
+
+# The state store every Knowledge of this workspace points at (plans/kg-planning-execution-PLAN.md, 4.1).
+STATE_STORE_ORIGIN = "http://state-store:7878"
+STATE_STORE_GRAPH = f"{BASE_URL}/state"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Submodel ids
+# ═══════════════════════════════════════════════════════════════════════════════
+# The id injector gives each submodel of a resource the id ``{aas_id}/submodels/<idShort>``; references into a
+# resource's own submodels are authored against these and resolved with it.
+
+AID_SUBMODEL_ID = "{aas_id}/submodels/AssetInterfacesDescription"
+SKILLS_SUBMODEL_ID = "{aas_id}/submodels/Skills"
+VARIABLES_SUBMODEL_ID = "{aas_id}/submodels/Variables"
+CAPABILITIES_SUBMODEL_ID = "{aas_id}/submodels/CapabilityDescription"
+HIERARCHICAL_STRUCTURES_SUBMODEL_ID = "{aas_id}/submodels/HierarchicalStructures"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # AID extension (docs/aid-extension.md) — WoT TD terms AID 1.2 does not carry.

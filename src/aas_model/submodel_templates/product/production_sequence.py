@@ -4,9 +4,9 @@ Source: templates/product/ProductionSequence.json
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, List, Dict, Optional, Union, TypeAlias
+from typing import ClassVar, Dict, Optional, TypeAlias, Union
 from aas_pydantic import (
-    Property, ReferenceElement, Submodel, SubmodelElement, SubmodelElementCollection, SubmodelElementList,
+    Property, ReferenceElement, Submodel, SubmodelElementCollection,
 )
 from aas_pydantic.aas_model import AasIdString
 

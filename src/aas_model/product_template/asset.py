@@ -6,6 +6,8 @@
   each with the product's values, the materials it uses and the capability it requires.
 - **Capability Description** (IDTA 02020, role Required): those capabilities with their values.
 - **Production Sequence** (the process sequence planner's): the recipe, its steps in order.
+- **Variables** (the lab's), its **Knowledge** alone: the state of a unit that the capabilities' effects change (its
+  content, whether it is stoppered), what a unit starts with, and the store the values are kept in.
 
 One per product type: an order of many items uses the same one, and a part with a recipe of its own
 has one too. The recipe bound to a line is a process AAS (``aas_model.process_template``).
@@ -17,15 +19,20 @@ import base64
 from typing import ClassVar, Dict, Optional
 
 from aas_pydantic import AAS, Property
-from aas_pydantic.submodel_templates import capability_description as cd
-from aas_pydantic.submodel_templates.hierarchical_structures import ArcheType, EntryNode, HierarchicalStructures, Node
-from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation, Nameplate
+from aas_pydantic.submodel_templates.hierarchical_structures import (
+    ArcheType, ArcheType_t, EntryNode, HierarchicalStructures, Node,
+)
+from aas_pydantic.submodel_templates.nameplate import (
+    ManufacturerProductDesignation, ManufacturerProductDesignation_t, Nameplate,
+)
 from pydantic import model_validator
 
-from aas_model.constants import BASE_URL
-from aas_model.resource_template.modules.submodels import lab_nameplate
+from aas_model.constants import BASE_URL, PRODUCT_ASSET_TYPE
+from aas_model.resource_template.modules.submodels import LabNameplate
 from aas_model.submodel_templates.product.process_parameters import Processes, ProcessParameters
+from aas_model.submodel_templates.capability_description import ModuleCapabilityDescription
 from aas_model.submodel_templates.product.production_sequence import ProductionSequence
+from aas_model.submodel_templates.variables import Variables
 
 PLANS = f"{BASE_URL}/sm/process-plan"
 QUANTITY = f"{BASE_URL}/semantics/Quantity"
@@ -63,23 +70,22 @@ class ProductPart(Node):
 
 
 class ProductEntry(EntryNode):
-    """The product itself, the entry node of its bill of material."""
+    """The product itself, the entry node of its bill of material: its asset's id is its AAS's id (resolved when
+    the AAS is built)."""
     description: str = ""
+    global_asset_id: str = "{aas_id}"
     Node: Dict[str, ProductPart] = {}
 
 
 class BillOfMaterial(HierarchicalStructures):
+    """The product as entry node and its direct parts (OneDown)."""
     EntryNode: ProductEntry = ProductEntry()
+    ArcheType: ArcheType_t = ArcheType(value="OneDown")
 
 
-def bill_of_material() -> BillOfMaterial:
-    return BillOfMaterial(id_short="HierarchicalStructures", EntryNode=ProductEntry(), ArcheType=ArcheType(value="OneDown"))
-
-
-def product_nameplate() -> Nameplate:
-    plate = lab_nameplate()
-    plate.ManufacturerProductDesignation = ManufacturerProductDesignation(value={"en": "Product"})
-    return plate
+class ProductNameplate(LabNameplate):
+    ManufacturerProductDesignation: ManufacturerProductDesignation_t = ManufacturerProductDesignation(
+        value={"en": "Product"})
 
 
 class Product(AAS):
@@ -88,12 +94,20 @@ class Product(AAS):
     model_config = {"extra": "forbid"}
     # A product AAS describes a kind of product, not one item of it.
     ASSET_KIND: ClassVar[str] = "Type"
-    asset_type: str = f"{BASE_URL}/Product"
-    nameplate: Nameplate = product_nameplate()
-    hierarchical_structures: BillOfMaterial = bill_of_material()
+    asset_type: str = PRODUCT_ASSET_TYPE
+    nameplate: Nameplate = ProductNameplate()
+    hierarchical_structures: BillOfMaterial = BillOfMaterial()
     process_parameters: ProcessParameters = ProcessParameters(id_short="ProcessParameters", Processes=Processes())
-    capability_description: Optional[cd.CapabilityDescription] = None
+    capability_description: Optional[ModuleCapabilityDescription] = None
     production_sequence: Optional[ProductionSequence] = None
+    # Its Knowledge: the state of its units that effects change, what a unit starts with, and the store it is kept in.
+    variables: Optional[Variables] = None
+
+    @model_validator(mode="after")
+    def _nameplate_says_what_it_is(self):
+        if getattr(self.nameplate, "DERIVES_PRODUCT_HIERARCHY", False):
+            self.nameplate.derive_from(self.asset_type)
+        return self
 
     @model_validator(mode="after")
     def the_recipe_has_the_planners_identifier(self):

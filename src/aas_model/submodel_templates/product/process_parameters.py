@@ -4,9 +4,9 @@ Source: templates/product/ProcessParameters.json
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, List, Dict, Optional, TypeAlias
+from typing import ClassVar, Dict, Optional, TypeAlias
 from aas_pydantic import (
-    MultiLanguageProperty, Property, ReferenceElement, Submodel, SubmodelElement, SubmodelElementCollection, SubmodelElementList,
+    MultiLanguageProperty, Property, ReferenceElement, Submodel, SubmodelElementCollection,
 )
 from aas_pydantic.aas_model import AasIdString
 

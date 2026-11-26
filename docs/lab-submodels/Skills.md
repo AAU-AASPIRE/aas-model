@@ -2,12 +2,12 @@
 
 The skills of a resource: what it can do, how each skill is called, and what a skill made of other
 skills runs. The resource ontology ARSO's control component (`https://w3id.org/2025/arso`, module
-`skills.ttl`). It takes the place of IDTA 02015's Control Component Instance in a module and in a
-component of a module (`aas_model.resource_template.modules`); the lab's MQTT and OPC UA stations
-keep the Control Component Instance.
+`skills.ttl`). It takes the place of IDTA 02015's Control Component Instance in every resource of the
+lab: a module and its components (`aas_model.resource_template.modules`), and the MQTT and OPC UA
+stations, the shuttles and the software resources (`aas_model.resource_template.resources`).
 
-Classes: `aas_model.submodel_templates.arso.skills` (generated), `ModuleSkill` and `ModuleSkills`
-(`aas_model.resource_template.modules`).
+Classes: `aas_model.submodel_templates.arso.skills` (generated), `ModuleSkill`, `ModuleSkills` and
+`command_skill` (`aas_model.submodel_templates.skills`).
 
 ## Structure
 
@@ -48,6 +48,13 @@ Skills
   parameters.
 - **What a step hands its skill** is a binding per input of that skill: a constant (`Value`) or a
   variable of the command's own Operation (`SourceElement`), and the input itself (`InputReference`).
+- **A station's skill is one command.** A PackML station (or a shuttle, or a software resource) carries
+  each skill out on one action of its interface: the skill has a Start command whose `InterfaceReference`
+  names that action and whose Operation (`Skills/<skill>/Start/Start`) holds the action's variables
+  (`Uuid`, `State`, `Outcome` and the parameters); `command_skill` builds it. Occupy, Release and Halt are
+  `.../skill/ModuleControl`, the process skill (Loading, Dispensing, MoveToPosition) `.../skill/Primitive`.
+  The AIMC mapping that has the Operation's variables as Sources binds the call to the action (its
+  Sinks); the DMP matches nothing by name.
 - **Deployment**: `Built` when the module's program carries the skill out, `Described` when it is in
   the AAS only. A described skill is built online by the integrator's tools; until then the capability
   it realizes is offered after a reconfiguration.

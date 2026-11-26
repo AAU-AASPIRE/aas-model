@@ -1,0 +1,190 @@
+"""The dispensing station: the PackML contract, a Dispensing skill
+with a configurable volume and the scale's live weight, all over OPC UA."""
+
+from aas_pydantic import Property
+from aas_model.constants import BASE_URL, CSSX, LAB, SCHEMA_BASE
+from aas_model.resource_template.modules import lab_nameplate
+from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
+from aas_model.resource_template.operational import (
+    COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, OPCUA_STATION, OperationalOpcuaSkills,
+    OperationalOpcuaInterfaces, OperationalOpcuaMappings, OperationalVariables,
+)
+from aas_model.resource_template.resources import DispensingStation
+from aas_model.resource_template.translations import COMMAND_STATE_REPLY, UNIT_UUID
+
+# Dispensing's call: the volume the unit's product requires, for the unit whose uuid holds the station's queue.
+DISPENSING_CALL = UNIT_UUID + """function call(subjects, properties)
+  return { Uuid = unit_uuid(subjects[2]), Volume = subjects[3].value }
+end
+"""
+from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
+from aas_model.resource_template.references import (
+    OPCUA_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
+    skill_ref, subject_ref,
+)
+from aas_model.submodel_templates.control_component_instance import (
+    AcceptsReference, OptionalVariable, ParameterVariable, SkillOperation,
+)
+from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
+from aas_model.submodel_templates.execution import (
+    EffectOperator, EffectSet, EndTerms, StateEffect, TermSubject, TermValueReference, Translation,
+)
+from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
+from aas_model.submodel_templates.capability_description import OFFERED_CAPABILITIES, RealizedBySkill
+from aas_model.json_schema_aid import datapoint_from_schema, load_schema
+from aas_model.submodel_templates.variables import MeasurementsGroup
+from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, DmpForm, OpcuaAction, OpcuaActionForm
+from aas_pydantic.submodel_templates.asset_interfaces_description import Title
+from aas_model.submodel_templates.time_series import (
+    DmpLinkedSegment, InfluxDb2Target, RecordField, TimeSeriesCollection, TimeSeriesMetadata, TimeSeriesRecord,
+    TimeSeriesSegments,
+)
+from aas_pydantic.submodel_templates.time_series import Name
+from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
+
+
+# The Dispensing Method's InputArguments: the command plus the volume to fill.
+DISPENSE_COMMAND = {
+    "type": "object",
+    "properties": {
+        "Uuid": {"type": "string", "description": "The UUID of the command"},
+        "Volume": {"type": "number", "minimum": 0, "unit": "ml", "description": "The volume to dispense"},
+    },
+    "required": ["Uuid", "Volume"],
+}
+
+
+def dispensing_station() -> DispensingStation:
+    identity = "DispensingStationAAS"
+    parent = "aauFillingLineAAS"
+    resource_id = f"{BASE_URL}/aas/{identity}"
+    resource = DispensingStation(
+        id_short=identity,
+        id=resource_id,
+        nameplate=lab_nameplate("Dispensing station of the AP2030 filling line"),
+        hierarchical_structures=ResourceHierarchicalStructures(
+            ArcheType="OneUp",
+            EntryNode=EntryNode(
+                global_asset_id=resource_id, Node={parent: Node(global_asset_id=f"{BASE_URL}/aas/{parent}")}
+            ),
+        ),
+        asset_interfaces_description=OperationalOpcuaInterfaces(id_short="AssetInterfacesDescription"),
+        skills=OperationalOpcuaSkills(id_short="Skills"),
+        asset_interfaces_mapping_configuration=OperationalOpcuaMappings(
+            id_short="AssetInterfacesMappingConfiguration",
+        ),
+        variables=OperationalVariables(),
+    )
+    opcua = resource.asset_interfaces_description.InterfaceTemplateForOPCUA[OPCUA_INTERFACE]
+    opcua.title.value = "Dispensing station"
+    opcua.EndpointMetadata.base.value = "opc.tcp://dispensing-station:4840/dispensing/"
+    resource.parameters.parameter["Location"].x.parameter.value = 240.0
+    interaction = opcua.InteractionMetadata
+    mappings = resource.asset_interfaces_mapping_configuration.MappingConfigurations.value
+
+    # Dispensing: the Method Station.Dispensing(Uuid, Volume) -> commandResponse.
+    name = "Dispensing"
+    interaction.actions.property_name[name] = OpcuaAction(
+        title=name,
+        uav_componentOf=OPCUA_STATION,
+        synchronous="true",
+        input=datapoint_from_schema(DISPENSE_COMMAND, cls=DmpActionInput),
+        output=datapoint_from_schema(
+            COMMAND_RESPONSE_SCHEMA, cls=DmpActionOutput, schema_url=COMMAND_RESPONSE_SCHEMA_URL
+        ),
+        forms=OpcuaActionForm(href=f"/?id={f'{OPCUA_STATION}.{name}'}"),
+    )
+    resource.skills.Skill[name] = command_skill(
+        name, PRIMITIVE, affordance_ref(OPCUA_INTERFACE, "actions", name), SkillOperation(
+            input_variable=[
+                ParameterVariable(
+                    id_short="Volume", value="1.0", value_type="xs:double", description="The volume to dispense in ml",
+                    supplemental_semantic_ids=[f"{LAB}Volume"], qualifiers=[AcceptsReference()],
+                ),
+            ],
+            in_output_variable=[Property(id_short="Uuid", description="The UUID of the command")],
+            output_variable=[
+                Property(id_short="State", description="The state of the command being executed"),
+                Property(id_short="Outcome", value="0", value_type="xs:integer", qualifiers=[OptionalVariable()]),
+            ],
+        ),
+    )
+    # The mapping addresses the members of the Method's arguments: each
+    # InputArgument is a Sink, each OutputArgument a ResponseSource, and the
+    # Operation (its InOut and output variables) is the ResponseSink.
+    command = ("Uuid", "Volume")
+    reply = ("Uuid", "State", "Outcome")
+    mappings.append(AimcMappingConfiguration(
+        id_short=name, DefaultPollingInterval="0.0",
+        # Every input the device is sent is a Source.
+        Sources=[SourcesItem(SourceId=member, Source=operation_variable_ref(name, member)) for member in command],
+        Sinks=[SinksItem(SinkId=member,
+            Sink=action_member_ref(OPCUA_INTERFACE, name, "input", member),
+        ) for member in command],
+        Transformation=(
+            "function aimc_main(sources) "
+            "return { Uuid = sources.Uuid, Volume = sources.Volume } end"
+        ),
+        ResponseSources=[
+            DmpResponseSource(SourceId=member, Source=action_member_ref(OPCUA_INTERFACE, name, "output", member))
+            for member in reply],
+        # Outcome is an Optional output (as in the commandResponse): a nil Outcome is left out.
+        ResponseTransformation=(
+            "function aimc_main(sources) return { Uuid = sources.Uuid, "
+            "State = sources.State, Outcome = sources.Outcome } end"
+        ),
+        ResponseSinks=[
+            DmpResponseSink(SinkId=member, Sink=operation_variable_ref(name, member)) for member in reply
+        ],
+    ))
+    container = resource.capability_description.CapabilitySet[OFFERED_CAPABILITIES].CapabilityContainer[name]
+    relations = container.CapabilityRelations
+    relations.CapabilityRealizedBy[f"RealizedBy_{name}"] = RealizedBySkill(
+        id_short=f"RealizedBy_{name}", first=capability_ref(OFFERED_CAPABILITIES, name), second=skill_ref(name))
+    # The type says Filling needs the unit empty; this station's call fills the unit with the volume its product
+    # requires (the Translation: the unit's uuid is the command's, its claim on the station): the unit ends holding the
+    # Volume it was given.
+    relations.EffectSet = EffectSet(End=EndTerms(term={"Term_00": StateEffect(
+        display_name={"en": "Unit holds the volume"}, supplemental_semantic_ids=[f"{LAB}ContentVolume"],
+        Subject=TermSubject(value=subject_ref(OFFERED_CAPABILITIES, name, 1)),
+        Operator=EffectOperator(value="increase"),
+        ValueReference=TermValueReference(value=operation_variable_ref(name, "Volume")),
+    )}))
+    relations.Translation = Translation.lua(DISPENSING_CALL, COMMAND_STATE_REPLY)
+
+    # Weight: the scale's reading, sampled every 100 ms while it changes.
+    weight = load_schema(f"{SCHEMA_BASE}/weight.schema.json")["properties"]["Weight"]
+    interaction.properties.property_name["Weight"] = datapoint_from_schema(
+        {**weight, "unit": "g"},
+        key="Weight",
+        title=Title(value="Weight"),
+        observable="true",
+        readOnly="true",
+        forms=DmpForm(href=f"/?id={f'{OPCUA_STATION}.Weight'}"),
+    )
+    # One row per sample into Variables/Measurements/Weight.
+    resource.variables.Measurements = MeasurementsGroup(value={"Weight": TimeSeriesCollection(
+        Metadata=TimeSeriesMetadata(Name=Name(value={"en": "Dispensed weight"}), Record=TimeSeriesRecord(field={
+            "Weight": RecordField(value_type="xs:double", supplemental_semantic_ids=[f"{CSSX}#Weight"],
+                                  description="Weight in g"),
+        })),
+        Segments=TimeSeriesSegments(LinkedSegment={
+            "Live": DmpLinkedSegment(InfluxDb2Target=InfluxDb2Target(Measurement="dispensing_weight")),
+        }),
+    )})
+    mappings.append(
+        AimcMappingConfiguration(
+            id_short="Weight",
+            DefaultPollingInterval="0.0",
+            Sources=[
+                SourcesItem(
+                    Source=affordance_ref(OPCUA_INTERFACE, "properties", "Weight"),
+                    SourceId="Weight",
+                    PollingInterval="0.1",
+                )
+            ],
+            Sinks=[SinksItem(Sink=series_segment_ref("Measurements", "Weight"), SinkId="Live")],
+            Transformation="function aimc_main(sources) return { Live = { Weight = sources.Weight } } end",
+        )
+    )
+    return resource

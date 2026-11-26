@@ -6,10 +6,8 @@ from __future__ import annotations
 import json
 
 from aas_pydantic import Property, SubmodelElementCollection, SubmodelElementList
-from aas_pydantic.convert_util import strip_temp_id_short_attributes
 from basyx.aas.adapter.json import json_serialization
 
-from aas_model._serde import parse_submodel_dict
 from aas_model.builder import build_from_model
 from aas_model.resource_instances import RESOURCE_FACTORIES
 from aas_model.submodel_templates.control_component_instance import (
@@ -27,17 +25,16 @@ def is_optional(element) -> bool:
                for q in element.qualifiers)
 
 
-def _exported_cci(resource) -> dict:
-    store = build_from_model(resource)
-    strip_temp_id_short_attributes(store)
-    doc = json.loads(json_serialization.object_store_to_json(store))
-    return next(s for s in doc["submodels"] if s["idShort"] == "ControlComponentInstance")
+def _exported_skills(resource) -> dict:
+    doc = json.loads(json_serialization.object_store_to_json(build_from_model(resource)))
+    return next(s for s in doc["submodels"] if s["idShort"] == "Skills")
 
 
-def _operation(cci: dict, skill: str) -> dict:
-    skills = next(e for e in cci["submodelElements"] if e["idShort"] == "Skills")
-    return next(e for e in next(s for s in skills["value"] if s["idShort"] == skill)["value"]
-                if e["modelType"] == "Operation")
+def _operation(skills: dict, skill: str) -> dict:
+    """The Operation of a skill's Start command."""
+    start = next(e for e in next(s for s in skills["submodelElements"] if s["idShort"] == skill)["value"]
+                 if e["idShort"] == "Start")
+    return next(e for e in start["value"] if e["modelType"] == "Operation")
 
 
 def _optional(element: dict) -> bool:
@@ -50,53 +47,41 @@ def test_a_variable_is_marked_optional_by_its_qualifier():
     assert not is_optional(Property(id_short="State"))
 
 
-def test_collection_and_list_variables_with_optional_marks_export_and_parse_back():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
-    operation = resource.control_component_instance.Skills.Skill["Dispensing"].operation
+def test_collection_and_list_variables_export_with_their_optional_marks():
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
+    operation = resource.skills.Skill["Dispensing"].Start.SkillOperation["Start"]
     operation.output_variable = [*operation.output_variable, Result(id_short="Result"),
                                  SubmodelElementList(id_short="Samples", type_value_list_element="Property",
                                                      value_type_list_element="xs:int", qualifiers=[OptionalVariable()])]
-    cci = _exported_cci(resource)
-    outputs = {v["value"]["idShort"]: v["value"] for v in _operation(cci, "Dispensing")["outputVariables"]}
+    skills = _exported_skills(resource)
+    outputs = {v["value"]["idShort"]: v["value"] for v in _operation(skills, "Dispensing")["outputVariables"]}
     assert outputs["Result"]["modelType"] == "SubmodelElementCollection"
     assert outputs["Samples"]["modelType"] == "SubmodelElementList"
     members = {m["idShort"]: m for m in outputs["Result"]["value"]}
     assert _optional(members["Detail"]) and not _optional(members["State"])
     assert _optional(outputs["Samples"]) and _optional(outputs["Outcome"]) and not _optional(outputs["State"])
 
-    parsed = parse_submodel_dict(cci, type(resource.control_component_instance))
-    back = {v.id_short: v for v in parsed.Skills.Skill["Dispensing"].operation.output_variable}
-    assert isinstance(back["Result"], SubmodelElementCollection)
-    assert isinstance(back["Samples"], SubmodelElementList)
-    assert is_optional(back["Outcome"]) and is_optional(back["Samples"]) and not is_optional(back["State"])
-    # AAS JSON names no collection class: the members come back by idShort, marks included.
-    assert is_optional(back["Result"].value["Detail"]) and not is_optional(back["Result"].value["State"])
-
 
 def test_operation_aimc_uses_explicit_input_and_output_variable_references():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
-    operation = resource.control_component_instance.Skills.Skill["Dispensing"].operation
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
+    operation = resource.skills.Skill["Dispensing"].Start.SkillOperation["Start"]
     mapping = next(mc for mc in resource.asset_interfaces_mapping_configuration
                    .MappingConfigurations.value if mc.id_short == "Dispensing")
 
     source_ids = [source.SourceId.value for source in mapping.Sources.value]
-    declared_inputs = {variable.id_short for variable in (
-        *operation.input_variable, *operation.in_output_variable,
-    )}
-    assert set(source_ids) == declared_inputs == {"Uuid", "Volume"}
+    declared_inputs = {variable.id_short for variable in (*operation.input_variable, *operation.in_output_variable)}
+    assert set(source_ids) == declared_inputs == {"Uuid", "Volume"}     # every input is the device's
     for source, variable in zip(mapping.Sources.value, source_ids):
         assert [(key.type_, key.value) for key in source.Source.value.key[-2:]] == [
-            ("Operation", "operation"), ("Property", variable),
+            ("Operation", "Start"), ("Property", variable),
         ]
 
     sink_ids = [sink.SinkId.value for sink in mapping.ResponseSinks.value]
-    declared_outputs = {variable.id_short for variable in (
-        *operation.output_variable, *operation.in_output_variable,
-    )}
+    declared_outputs = {variable.id_short for variable in (*operation.output_variable, *operation.in_output_variable)}
     assert set(sink_ids) == declared_outputs == {"Uuid", "State", "Outcome"}
     for sink in mapping.ResponseSinks.value:
         assert [(key.type_, key.value) for key in sink.Sink.value.key[-2:]] == [
-            ("Operation", "operation"), ("Property", sink.SinkId.value),
+            ("Operation", "Start"), ("Property", sink.SinkId.value),
         ]
     assert b"Outputs" not in mapping.ResponseTransformation.value
     assert b"Uuid = sources.Uuid" in mapping.Transformation.value

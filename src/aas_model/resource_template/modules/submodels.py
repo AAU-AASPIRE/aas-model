@@ -3,135 +3,120 @@
 The classes of ARSO's own submodels are generated (``aas_model.submodel_templates.arso``). Declared
 here is what they leave open, and the changes to IDTA templates a module needs:
 
-- **Skills**: a skill under a name of its own (``ModuleSkill``), so it is not read back as the
-  Control Component Instance's ``Skill``.
-- **Capability Description** (IDTA 02020): a capability is realized by a skill of the same AAS or of
-  a component's (a model reference, where IDTA leaves an external one); a property is the variable
-  of the module it is (``SameAs``); a constraint is a ``BasicConstraint`` expression.
+- **Skills**: a skill under a name of its own (``ModuleSkill``, ``submodel_templates.skills``, shared with the
+  stations).
+- **Capability Description** (IDTA 02020): the lab's extension, shared with the stations
+  (``aas_model.submodel_templates.capability_description``).
 - **Asset Interfaces Description**: one OPC UA server, no MQTT.
 - **Hierarchical Structures**: parts that have parts in turn.
 """
 
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import ClassVar, Dict, Optional, TypeAlias
 
-from aas_pydantic import ModelReference, Property
-from aas_pydantic.submodel_templates import capability_description as cd
-from aas_pydantic.submodel_templates.hierarchical_structures import ArcheType, EntryNode, HierarchicalStructures, Node
+from aas_pydantic import Property
+from aas_pydantic.submodel_templates.hierarchical_structures import (
+    ArcheType, ArcheType_t, EntryNode, HierarchicalStructures, Node,
+)
+from aas_pydantic import MultiLanguageProperty
+from aas_pydantic.aas_model import AasIdString
 from aas_pydantic.submodel_templates.nameplate import (
-    AddressInformation, CityTown, CountryOfOrigin, ManufacturerName, ManufacturerProductDesignation, Nameplate,
-    NationalCode, OrderCodeOfManufacturer, Street, URIOfTheProduct, YearOfConstruction, Zipcode,
+    AddressInformation, AddressInformation_t, CityTown, CityTown_t, CompanyLogo, CompanyLogo_t, CountryOfOrigin,
+    CountryOfOrigin_t, ManufacturerName, ManufacturerName_t, ManufacturerProductDesignation,
+    ManufacturerProductDesignation_t, ManufacturerProductFamily, ManufacturerProductRoot, ManufacturerProductRoot_t,
+    ManufacturerProductType, NationalCode, NationalCode_t, OrderCodeOfManufacturer, OrderCodeOfManufacturer_t, Street,
+    Street_t, URIOfTheProduct, URIOfTheProduct_t, YearOfConstruction, YearOfConstruction_t, Zipcode, Zipcode_t,
 )
 
 from aas_model.constants import BASE_URL
+from aas_model.resource_template.resources import ResourceNameplate
 from aas_model.submodel_templates.aid import DmpAssetInterfacesDescription, DmpOpcuaInterface, MqttInterface
-from aas_model.submodel_templates.arso import skills
 from aas_model.submodel_templates.arso.control_configuration import ControlConfiguration
+# The Capability Description as the modules state it is the lab's extension of IDTA 02020, which the stations
+# use too; imported here, where modreg finds it.
+from aas_model.submodel_templates.capability_description import (  # noqa: F401
+    BasicConstraintContainer, ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations,
+    ModuleCapabilitySet, ModuleConstraintSet, RealizedBySkill, SameAs, StatedProperty, StatedPropertySet,
+)
 
 
-def lab_nameplate() -> Nameplate:
-    """The nameplate of the lab, which a resource or a product then states its own values in."""
-    return Nameplate(
-        id_short="Nameplate",
-        URIOfTheProduct=URIOfTheProduct(value=f"{BASE_URL}/product/1"),
-        ManufacturerName=ManufacturerName(value={"en": "AAU Smart Production Lab"}),
-        ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Pharmaceutical Processing Resource"}),
-        AddressInformation=AddressInformation(
-            Street=Street(value={"en": "Fibigerstræde 14"}), Zipcode=Zipcode(value={"en": "9220"}),
-            CityTown=CityTown(value={"en": "Aalborg Øst"}), NationalCode=NationalCode(value={"en": "DK"})),
-        OrderCodeOfManufacturer=OrderCodeOfManufacturer(value=""),
-        YearOfConstruction=YearOfConstruction(value="2026"),
-        CountryOfOrigin=CountryOfOrigin(value="DK"),
-    )
+# The lab's AddressInformation adds the company and the department, which the Nameplate's AddressInformation (the
+# SMT drop-in) leaves out, as the Contact Information template (IDTA 02002) states them: the same semantic ids.
+class Company(MultiLanguageProperty):
+    id_short: AasIdString = "Company"
+    semantic_id: str = "0173-1#02-AAW001#001"
+
+Company_t: TypeAlias = Company  # a field may share the class's id_short
 
 
-# ── Skills ────────────────────────────────────────────────────────────────────
+class Department(MultiLanguageProperty):
+    id_short: AasIdString = "Department"
+    semantic_id: str = "0173-1#02-AAO127#003"
 
-class ModuleSkill(skills.Skill):
-    """A skill as its commands (Start, Stop, Abort, Reset), each with the interface action that calls
-    it, its Operation and, for a composite, its steps. Named apart from the Control Component
-    Instance's ``Skill``: an element is read back as the class its dump names."""
-
-
-class ModuleSkills(skills.Skills):
-    """The Skills submodel: the skills, the module's own commands (``Module``) and the errors."""
-    Skill: Dict[str, ModuleSkill] = {}
-    Errors: skills.Errors = skills.Errors()
+Department_t: TypeAlias = Department  # a field may share the class's id_short
 
 
-# ── Capability Description ───────────────────────────────────────────────────
-
-class RealizedBySkill(cd.CapabilityRealizedBy):
-    """IDTA 02020 leaves the skill open (an external reference); ARSO wants a skill of the same AAS
-    or of a component's (its primitive), so here it is a model reference to it."""
-    second: ModelReference = ModelReference()
-
-
-class SameAs(cd.SameProperty):
-    """IDTA 02020 leaves both ends open; here the property (first) names the variable of the module
-    it is (second), so that the capabilities naming it talk of one state."""
-    first: ModelReference = ModelReference()
-    second: ModelReference = ModelReference()
+class LabAddressInformation(AddressInformation):
+    """Where the AP2030 Project is: Aalborg University, its Department of Materials and Production and the Robotics &
+    Automation Group, at the lab's address."""
+    Company: Company_t = Company(value={"en": "Aalborg University"})
+    Department: Department_t = Department(
+        value={"en": "Department of Materials and Production, Robotics & Automation Group"})
+    Street: Street_t = Street(value={"en": "Fibigerstræde 14"})
+    Zipcode: Zipcode_t = Zipcode(value={"en": "9220"})
+    CityTown: CityTown_t = CityTown(value={"en": "Aalborg Øst"})
+    NationalCode: NationalCode_t = NationalCode(value={"en": "DK"})
 
 
-class StatedProperty(cd.PropertyContainer):
-    SameProperty: Dict[str, SameAs] = {}
+# The AP2030 logo, an asset of the package (``aas_model/assets``): registration uploads it as the attachment of each
+# CompanyLogo that names it.
+AP2030_LOGO = "AP2030-logo.png"
 
 
-class StatedPropertySet(cd.PropertySet):
-    PropertyContainer: Dict[str, StatedProperty] = {}
+class LabNameplate(ResourceNameplate):
+    """The nameplate of an asset the AP2030 Project builds itself: the project as manufacturer, Aalborg University and
+    its department and group in the address, and the project's logo. Its product hierarchy is what the asset is in the
+    ontology, read from its asset type (``derive_from``): ManufacturerProductRoot the CSS class (Resource, Product),
+    ManufacturerProductFamily the ARSO kind (Module, Component, System; Software), ManufacturerProductType the kind of
+    resource (LoadingStation, FillingModule). An asset states its designation (``lab_nameplate``); its URI is its AAS
+    id."""
+    # The resource or product whose nameplate this is fills the product hierarchy from its asset type.
+    DERIVES_PRODUCT_HIERARCHY: ClassVar[bool] = True
+    URIOfTheProduct: URIOfTheProduct_t = URIOfTheProduct(value="{aas_id}")
+    ManufacturerName: ManufacturerName_t = ManufacturerName(value={"en": "AP2030 Project"})
+    ManufacturerProductDesignation: ManufacturerProductDesignation_t = ManufacturerProductDesignation(
+        value={"en": "Pharmaceutical Processing Resource"})
+    AddressInformation: AddressInformation_t = LabAddressInformation()
+    OrderCodeOfManufacturer: OrderCodeOfManufacturer_t = OrderCodeOfManufacturer(value="")
+    YearOfConstruction: YearOfConstruction_t = YearOfConstruction(value="2026")
+    CountryOfOrigin: CountryOfOrigin_t = CountryOfOrigin(value="DK")
+    CompanyLogo: CompanyLogo_t = CompanyLogo(value=AP2030_LOGO)
+
+    def derive_from(self, asset_type: str) -> None:
+        """Fill the product hierarchy the nameplate does not state from ``asset_type`` (``<BASE_URL>/Resource/Module/
+        LoadingStation``: Resource, Module, LoadingStation; ``<BASE_URL>/Product``: Product)."""
+        if not asset_type.startswith(BASE_URL + "/"):
+            return
+        path = asset_type[len(BASE_URL) + 1:].split("/")
+        if self.ManufacturerProductRoot is None:
+            self.ManufacturerProductRoot = ManufacturerProductRoot(value={"en": path[0]})
+        if len(path) > 1 and self.ManufacturerProductFamily is None:
+            self.ManufacturerProductFamily = ManufacturerProductFamily(value={"en": path[1]})
+        if len(path) > 2 and self.ManufacturerProductType is None:
+            self.ManufacturerProductType = ManufacturerProductType(value=path[-1])
 
 
-class BasicConstraintContainer(cd.PropertyConstraintContainer):
-    """A property constraint in the form a resource states it (ARSO 0.11): a BasicConstraint, an
-    expression over the capability's properties. IDTA 02020 has exactly one of four forms; the
-    generated class asks for all four."""
-    CustomConstraint: Optional[cd.CustomConstraint] = None
-    OCLConstraint: Optional[cd.OCLConstraint] = None
-    OperationConstraint: Optional[cd.OperationConstraint] = None
+def lab_nameplate(designation: str, **values) -> LabNameplate:
+    """The lab's nameplate of one asset with its designation ("Loading station of the AP2030 filling line"); the
+    product hierarchy follows from the asset's type."""
+    return LabNameplate(ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": designation}),
+                        **values)
 
 
-class ModuleConstraintSet(cd.ConstraintSet):
-    PropertyConstraintContainer: Dict[str, BasicConstraintContainer] = {}
-
-
-class ComposedOf(cd.CapabilityComposedOf):
-    """A capability (first) composed of the capability of a component (second): what the primitive a
-    step of its skill runs realizes. IDTA 02020 draws both ends from one submodel; here the second is
-    a model reference into the component's own Capability Description."""
-    first: ModelReference = ModelReference()
-    second: ModelReference = ModelReference()
-
-
-class ModuleComposedOfContainer(cd.ComposedOfContainer):
-    CapabilityComposedOf: Dict[str, ComposedOf] = {}
-
-
-class ModuleComposedOfSet(cd.ComposedOfSet):
-    ComposedOfContainer: Dict[str, ModuleComposedOfContainer] = {}
-
-
-class ModuleCapabilityRelations(cd.CapabilityRelations):
-    CapabilityRealizedBy: Dict[str, RealizedBySkill] = {}
-    ComposedOfSet: Optional[ModuleComposedOfSet] = None
-    ConstraintSet: Dict[str, ModuleConstraintSet] = {}
-
-
-class ModuleCapabilityContainer(cd.CapabilityContainer):
-    PropertySet: Dict[str, StatedPropertySet] = {}
-    CapabilityRelations: Optional[ModuleCapabilityRelations] = None
-
-
-class ModuleCapabilitySet(cd.CapabilitySet):
-    CapabilityContainer: Dict[str, ModuleCapabilityContainer] = {}
-
-
-class ModuleCapabilityDescription(cd.CapabilityDescription):
-    """The capabilities of a resource. A module's: those it offers, each realized by one of its
-    skills and composed of its components' capabilities. A component's: in one set named after it,
-    the capabilities its primitives realize (ARSO 0.11)."""
-    CapabilitySet: Dict[str, ModuleCapabilitySet] = {}
+# ModuleSkill and ModuleSkills are every resource's (``submodel_templates.skills``); imported here, where modreg
+# finds them.
+from aas_model.submodel_templates.skills import ModuleSkill, ModuleSkills  # noqa: E402,F401
 
 
 # ── Control Configuration ────────────────────────────────────────────────────
@@ -157,17 +142,15 @@ class LocatedNode(Node):
 
 
 class LocatedEntryNode(EntryNode):
+    # The resource itself: its asset's id is its AAS's id (resolved when the AAS is built).
+    global_asset_id: str = "{aas_id}"
     Node: Dict[str, LocatedNode] = {}
 
 
 class LocatedStructures(HierarchicalStructures):
+    """Hierarchical Structures with the resource as entry node and its direct parts (OneDown)."""
     EntryNode: LocatedEntryNode = LocatedEntryNode()
+    ArcheType: ArcheType_t = ArcheType(value="OneDown")
 
 
 LocatedNode.model_rebuild()
-
-
-def structure() -> LocatedStructures:
-    """Hierarchical Structures with the resource as entry node and its direct parts (OneDown)."""
-    return LocatedStructures(id_short="HierarchicalStructures", EntryNode=LocatedEntryNode(),
-                             ArcheType=ArcheType(value="OneDown"))

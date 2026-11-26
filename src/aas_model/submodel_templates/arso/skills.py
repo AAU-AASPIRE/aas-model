@@ -4,11 +4,11 @@ Source: templates/arso/Skills.json
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, List, Dict, Optional, TypeAlias
+from typing import ClassVar, Dict, Optional, TypeAlias
 from aas_pydantic import (
-    Operation, Property, ReferenceElement, Submodel, SubmodelElement, SubmodelElementCollection, SubmodelElementList,
+    Operation, Property, ReferenceElement, Submodel, SubmodelElementCollection,
 )
-from pydantic import Field
+from pydantic import Field as _Field
 from aas_pydantic.aas_model import AasIdString
 from aas_model.submodel_templates.control_component_instance import SkillOperation as DelegatedOperation
 
@@ -150,7 +150,7 @@ class FlowConditions(SubmodelElementCollection):
     id_short: AasIdString = "Conditions"
     semantic_id: str = "https://smartproductionlab.aau.dk/ProductionSequence/Conditions/1/0"
     description: str = "The conditions of a group: all of them hold (ConditionType all) or one does (any)."
-    Condition: Dict[str, Condition_t] = Field(default_factory=dict, json_schema_extra={"idta_min_cardinality": 1})
+    Condition: Dict[str, Condition_t] = _Field(default_factory=dict, json_schema_extra={"idta_min_cardinality": 1})
 
 class ConditionType(Property):
     id_short: AasIdString = "ConditionType"

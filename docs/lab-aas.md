@@ -23,26 +23,57 @@ too (`cell/examples/example_line.py`).
 | Type | Asset kind, asset type | Submodels |
 | --- | --- | --- |
 | `Module` | Instance, `.../Resource/Module` | Nameplate, Hierarchical Structures (its components), Asset Interfaces Description (one OPC UA server), Asset Interfaces Mapping Configuration, [Skills](lab-submodels/Skills.md), [Variables](#variables-and-coordinates), Capability Description (offered; optional); optional [Control Configuration](lab-submodels/ControlConfiguration.md) and [Parameters](lab-submodels/Parameters.md) |
-| `Component` | Instance, `.../Resource/Component/<Kind>` | [Skills](lab-submodels/Skills.md): its primitives, which its module carries out; Capability Description (optional): the capabilities they realize |
+| `Component` | Instance, `.../Resource/Component/<Kind>` | [Skills](lab-submodels/Skills.md): its primitives, which its module carries out |
 | `ProductionSystem` | Instance, `.../Resource/System` | Hierarchical Structures (its modules, each by its asset id); optional [Variables](#variables-and-coordinates) with the coordinates of its own points |
-| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md) |
+| `Product` | Type, `.../Product` | Nameplate, Hierarchical Structures (its bill of material; a part states its `Quantity` and `QuantityUnit`), [Process Parameters](lab-submodels/ProcessParameters.md), Capability Description (required), [Production Sequence](lab-submodels/ProductionSequence.md); optional [Variables](#variables-and-coordinates) with its Knowledge alone (the state of its units: asserted, observed or derived, D36) |
+| `Batch` | Instance, `.../Batch` | Batch Information (the product type AAS, the quantity), Goal (Subjects and a condition tree every unit is to reach; the planner reads it, D13). Units are not listed: each BT instance mints the IRI of the unit it makes (`urn:uuid:<uuid>`, D10, D35), whose uuid the stations queue |
 | `Process` | Type, `.../Process` | [Process Information](lab-submodels/ProcessInformation.md), [Bindings](lab-submodels/Bindings.md), [Validation](lab-submodels/Validation.md) |
 
 `Module`, `Component` and `ProductionSystem` are `Resource`s (through `ArsoResource`); a submodel of
 `Resource` a kind does not have is left out (`None`). What changes from IDTA's templates
 (`resource_template/modules/submodels.py`):
 
-- **Capability Description (IDTA 02020):** a capability is realized by a skill of the same AAS or a
-  component's (`RealizedBySkill`, a model reference where IDTA leaves an external one). A component's
-  capabilities are in its own AAS, in one set named after it; a module's capability is composed of
-  them (`ComposedOf`: the capabilities the primitives its skill runs realize). A property is
-  the variable of the module it is (`SameAs`); a constraint is a `BasicConstraint` expression. A
-  property may list the values a module takes (IDTA's `SubmodelElementList` kind: the containers
-  vial, syringe, cartridge).
+- **Capability Description (IDTA 02020):** the lab's extension, shared with the stations
+  (`submodel_templates.capability_description`): a capability is realized by a skill of the same AAS or a
+  component's (`RealizedBySkill`, a model reference where IDTA leaves an external one); a property is
+  the variable of the module it is (`SameAs`); a property constraint is a `BasicConstraint` expression. A
+  property may list the values a module takes (IDTA's `SubmodelElementList` kind: the containers vial,
+  syringe, cartridge). The ConstraintSet is otherwise as IDTA has it; the lab does not use it to say what a
+  capability needs and changes. That is in the CapabilityRelations (`submodel_templates.execution`), which the
+  planners and the behaviour tree read and the DMP does not:
+  - **Subjects:** who takes part, an ordered list (SML) of ReferenceElements, each with a display name
+    ("Container in the nest"); a term references a subject by its index. Its value is the AAS it is (Self, a component), or an external reference to the semantic id of what it stands
+    for where it is only known at run time (a unit: the products' asset type; a place: a coordinate; a requirement
+    of the unit's product, `RequirementSubject`: the meaning of the required property). Who a run-time subject is,
+    the behaviour tree binds: a unit is the IRI its tree instance minted (`urn:uuid:<uuid>`), a requirement the
+    element of the batch's product type with that meaning. The planar shuttle's move has the
+    subjects "This shuttle" and "Target place" and ends with the shuttle at that place; a module's Occupying needs a
+    shuttle at its transfer point holding the unit, and moves custody (`HeldBy`) to the module, which Filling needs.
+  - **ConditionSet:** what must hold of the subjects, Pre (at the start), Invariant (throughout) and Post (at
+    the end).
+  - **EffectSet:** what changes, Start, During (definitions while it runs) and End.
+  - **Translation** (D34): two Lua scripts the behaviour tree runs around the call. `Call` builds the realizing
+    Operation's inputs from the subjects and the capability's properties (the unit's uuid for a station's command,
+    the volume the product requires, the place's projected pose); `Reply` reads its outputs and says whether the
+    action succeeded and which outcome of a OneOf happened (Filling's weight against the product's required
+    FillWeight), or which of the skill's Errors it failed with. Neither writes state: the tree applies the declared
+    effects of that outcome. A capability the tree runs is realized by exactly one skill, whose Operation holds only
+    what the device's action takes and answers; the DMP maps it to the action and back and reads nothing else. A
+    parameter with the `AcceptsReference` qualifier may be sent as a ReferenceElement under its own idShort, which
+    the DMP resolves at the call (D27).
+
+  Each holds trees of terms whose kind is their semantic id (Condition, Effect, And, Or, Not, Exists,
+  ForAll, When, OneOf), nesting freely; a Condition or Effect names its Subject, and the property as a
+  supplemental semantic id. A term's idShort (`Term_00`) only orders it; its display name says what it states.
+  A **Duration** (a nominal value, or a formula over the capability's properties and the call's parameters) says
+  how long the action takes where no Rate of an End effect does. Whether a state property has one value or a
+  set, and its kind of value, is its meaning's: `lab:cardinality` and `lab:valueType`, proposed for the lab
+  vocabulary in `vocabulary/lab-execution.ttl` (with `Location`, `Occupying`, `FillResult`); every state
+  property the example line uses has both (`tests/test_vocabulary.py`). They are what the planners, the behaviour tree and the DMP read.
 - **Asset Interfaces Description:** one OPC UA interface (`ModuleInterfaces`).
 - **Hierarchical Structures:** parts that have parts in turn (`LocatedNode`). Where a part is, is a
   coordinate, not a statement of the node.
-- **Nameplate:** the lab's (`lab_nameplate`), for each instance to state its own values in.
+- **Nameplate:** the lab's (`LabNameplate`), for each instance to state its own values in.
 
 ## Submodels that are the lab's own
 
@@ -56,7 +87,7 @@ too (`cell/examples/example_line.py`).
 | Process Information | `https://smartproductionlab.aau.dk/ProcessInformation/1/0/Submodel` | `templates/process/ProcessInformation.json` | `submodel_templates.process.process_information` | [Process Information](lab-submodels/ProcessInformation.md) |
 | Bindings | `https://smartproductionlab.aau.dk/ProcessBindings/1/0/Submodel` | `templates/process/Bindings.json` | `submodel_templates.process.bindings` | [Bindings](lab-submodels/Bindings.md) |
 | Validation | `https://smartproductionlab.aau.dk/ProcessValidation/1/0/Submodel` | `templates/process/Validation.json` | `submodel_templates.process.validation` | [Validation](lab-submodels/Validation.md) |
-| Variables, with Coordinates | `https://smartproductionlab.aau.dk/submodels/Variables/1/0` | none (hand-written classes) | `submodel_templates.variables`, `submodel_templates.coordinates` | [below](#variables-and-coordinates) |
+| Variables, with Coordinates and Knowledge | `https://smartproductionlab.aau.dk/submodels/Variables/1/0` | none (hand-written classes) | `submodel_templates.variables`, `submodel_templates.coordinates`, `submodel_templates.knowledge` | [below](#variables-and-coordinates) |
 
 **How they are made:**
 
@@ -87,17 +118,22 @@ latest value or a span.
 
 ```
 Variables
-├── {variable}                    VariableProp: a live value the mapping feeds; what it shows is its
-│                                 supplemental semantic id (a skill's state, a parameter, an input)
 ├── State                         time series of discrete status (PackML state, occupation)
-├── Measurements                  time series of measured values, and:
+├── Measurements                  time series of measured values; a value that is not a series is a
+│                                 VariableProp in its group (its meaning a supplemental semantic id); and:
 │   └── Coordinates               where the asset and its points are
 │       └── {coordinate}          RelativeCoordinate; its meaning a supplemental semantic id
 │           ├── RelativeTo        the coordinate it is relative to, in this AAS or another
 │           ├── X, Y, Z           mm, along the parent's axes          (IDTA 02075 x/y/zframe)
 │           ├── Roll, Pitch, Yaw  degrees, about the parent's fixed X, then Y, then Z axis
 │           └── {value}Source     the variable a moving value is (ZSource)
-└── Log                           time series of what is logged (skill calls)
+├── Log                           time series of what is logged (skill calls)
+└── Knowledge                     the asset's state as the knowledge graph keeps it
+    ├── {variable}                StateVariable; its meaning (the lab vocabulary) a supplemental semantic id
+    │   ├── Subject               who it is about: the AAS, or an element of it (a place); none on a product type
+    │   ├── ValueType, Cardinality  the meaning's, from the vocabulary
+    │   └── Initial               what a new subject starts with
+    └── Target                    SparqlTarget: the state store (Endpoint, Graph) the values are written to
 ```
 
 | Element | Class | Semantic id |
@@ -108,6 +144,18 @@ Variables
 | `.../{coordinate}/X`, `Y`, `Z` | `CoordinateX`, `CoordinateY`, `CoordinateZ` | `https://admin-shell.io/idta/cds/xframe/1`, `yframe`, `zframe` (xs:double, mm) |
 | `.../{coordinate}/Roll`, `Pitch`, `Yaw` | `CoordinateRoll`, `CoordinatePitch`, `CoordinateYaw` | `https://admin-shell.io/idta/cds/rxframe/1`, `ryframe`, `rzframe` (xs:double, deg) |
 | `.../{coordinate}/{value}Source` | `CoordinateSource` | `https://smartproductionlab.aau.dk/variables/Coordinate/Source/1/0` |
+| `Knowledge` | `Knowledge` | `https://smartproductionlab.aau.dk/variables/Knowledge/1/0` |
+| `Knowledge/{variable}` | `StateVariable` | `https://smartproductionlab.aau.dk/state/StateVariable/1/0` |
+| `Knowledge/{variable}/Subject`, `ValueType`, `Cardinality`, `Initial` | `StateVariableSubject`, ... | `https://smartproductionlab.aau.dk/state/StateVariable/<Member>/1/0` |
+| `Knowledge/Target` | `SparqlTarget` | `https://smartproductionlab.aau.dk/state/SparqlTarget/1/0` (`Endpoint`, `Graph`) |
+
+- **Knowledge is kept as a time series is.** A series states the fields of its rows and the database its
+  segment is in; the Knowledge states the statements kept about the asset (each variable a predicate of the
+  lab vocabulary about its subject) and the state store they are in. A mapping sinks into a variable as into
+  a series segment (`Variables/Knowledge/<variable>`): such a variable is *observed*, as a station's
+  `OccupiedBy` is the head of its process queue; one no mapping sinks into is *asserted* by the behaviour
+  tree's effects; one whose meaning is `lab:derived` is computed by query (D36). A product type's Variables
+  hold its Knowledge alone: the state of each of its units.
 
 - **A tree of transforms across AASs,** rooted at one coordinate without `RelativeTo` (in the lab, the
   planar table's base): a module's base is relative to it, the module's points and mounts to its
@@ -134,6 +182,13 @@ vial = Product(id_short="Vial2mLAAS", id="https://smartproductionlab.aau.dk/aas/
                production_sequence=ps.ProductionSequence(...))
 store = build_from_model(vial)          # a BaSyx object store: the shell and its submodels
 ```
+
+Two of them are written out here too, with the execution model: the filling module and its three components
+(`aas_model.resource_instances.modules`: each component offers its capability in its own AAS, in
+`AuxiliaryCapabilities`; the module states what holds of each in this station, a specialization of the
+component's (GeneralizedBy across the AASs), and the offered Filling derived from them) the 2 mL vial (`aas_model.product_instances`, with the Knowledge
+of its units) and a batch of three of them with its goal (`aas_model.batch_instances`); `tests/test_example_line.py` builds them as one line and resolves every reference across them. Their AAS JSON is checked in under `examples/aas/`
+(`scripts/export_examples.py`).
 
 The lab's reference instances, written out in full, are in iec61499-mgmt-py: the products
 (`cell/examples/products`), the processes (`cell/examples/processes`), and the modules, the line, the

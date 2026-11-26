@@ -9,14 +9,26 @@ configures such a gateway."""
 from __future__ import annotations
 
 from aas_pydantic.submodel_templates.asset_interfaces_description import (
-    EndpointMetadata_t, InterfaceTemplateForCAN as _BaseInterface, Title,
+    EndpointMetadata_t, InterfaceTemplateForCAN as _BaseInterface, Title, forms_CAN,
 )
 
 from aas_model.submodel_templates.aid.affordances import DmpInteractionMetadata
+from aas_model.submodel_templates.aid.forms import DmpForm
 from aas_model.submodel_templates.aid.interface import DmpEndpointMetadata
+
+
+class CanForm(DmpForm, forms_CAN):
+    """The form of a CAN property."""
+
+
+class CanInteractionMetadata(DmpInteractionMetadata):
+    """CAN interaction metadata: properties only. AID 1.2 Annex E.2 describes a frame's signals as properties, neither
+    actions nor events."""
+    actions: None = None
+    events: None = None
 
 
 class DmpCanInterface(_BaseInterface):
     title: Title = Title()
     EndpointMetadata: EndpointMetadata_t = DmpEndpointMetadata()
-    InteractionMetadata: DmpInteractionMetadata = DmpInteractionMetadata()
+    InteractionMetadata: CanInteractionMetadata = CanInteractionMetadata()

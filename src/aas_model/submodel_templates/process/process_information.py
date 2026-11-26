@@ -4,9 +4,9 @@ Source: templates/process/ProcessInformation.json
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, List, TypeAlias
+from typing import ClassVar, TypeAlias
 from aas_pydantic import (
-    Property, ReferenceElement, Submodel, SubmodelElement, SubmodelElementCollection, SubmodelElementList,
+    Property, ReferenceElement, Submodel,
 )
 from aas_pydantic.aas_model import AasIdString
 

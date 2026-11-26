@@ -8,7 +8,6 @@ import json
 from basyx.aas.adapter.json import json_serialization
 
 from aas_pydantic import Key, ModelReference, Property, Qualifier
-from aas_pydantic.convert_util import strip_temp_id_short_attributes
 from aas_model import Resource, build_from_model
 from aas_model.constants import BASE_URL
 from aas_model.process_template import Process
@@ -17,7 +16,7 @@ from aas_model.resource_template.modules import Component, Module, ModuleSkill, 
 from aas_model.submodel_templates.arso import skills as s
 from aas_model.submodel_templates.process import bindings as b, process_information as pi, validation as v
 from aas_model.submodel_templates.product import production_sequence as ps
-from aas_model.submodel_templates.variables import VariableProp
+from aas_model.submodel_templates.variables import MeasurementsGroup, VariableProp
 
 SKILL = f"{BASE_URL}/skill"
 MODULE_ID = f"{BASE_URL}/aas/DemoModuleAAS"
@@ -32,7 +31,6 @@ def reference(*keys: tuple[str, str]) -> ModelReference:
 
 def document(model) -> dict:
     store = build_from_model(model)
-    strip_temp_id_short_attributes(store)
     return json.loads(json_serialization.object_store_to_json(store))
 
 
@@ -72,7 +70,8 @@ def module() -> Module:
     made.skills.Skill["Dispensing"] = ModuleSkill(
         id_short="Dispensing", supplemental_semantic_ids=[f"{SKILL}/Composite"],
         SemanticId=s.SemanticId(value=f"{BASE_URL}/skills/Dispensing"), Start=start)
-    made.variables.variable["Weight"] = VariableProp(id_short="Weight", value="0", value_type="xs:double")
+    made.variables.Measurements = MeasurementsGroup(value={
+        "Weight": VariableProp(id_short="Weight", value="0", value_type="xs:double")})
     return made
 
 
