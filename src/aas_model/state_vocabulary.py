@@ -1,6 +1,6 @@
 """What the lab vocabulary says of each state property: its value type and cardinality (plan D14).
 
-The vocabulary (``vocabulary/lab-execution.ttl``, to be merged into the lab's) is where they are defined; this table is
+The lab vocabulary (AAU-AASPIRE/ontologies, ``Vocabulary/capabilities.ttl``, 0.11) is where they are defined; this table is
 what aas-model writes into every StateVariable from it (D32: an AAS is generated complete, so its consumers, the DMP
 among them, read one element and infer nothing from the vocabulary at run time). ``tests/test_vocabulary.py`` checks
 that the two agree.

@@ -1,5 +1,6 @@
-"""The proposed vocabulary additions (vocabulary/lab-execution.ttl) give every state property the example line uses a
-cardinality and a value type (D14: a state property without a cardinality is an error)."""
+"""The lab vocabulary (AAU-AASPIRE/ontologies, Vocabulary/capabilities.ttl, beside this repository) gives every state
+property the example line uses a cardinality and a value type (D14: a state property without a cardinality is an
+error). Without the ontologies repository beside this one, or $LAB_VOCABULARY naming the file, the tests are skipped."""
 
 from __future__ import annotations
 
@@ -13,7 +14,13 @@ from aas_model.constants import EXECUTION_CONDITION, EXECUTION_EFFECT, EXECUTION
 
 rdflib = pytest.importorskip("rdflib")
 
-VOCABULARY = Path(__file__).resolve().parents[1] / "vocabulary" / "lab-execution.ttl"
+import os
+
+VOCABULARY = Path(os.environ.get("LAB_VOCABULARY") or
+                  Path(__file__).resolve().parents[2] / "ontologies" / "Vocabulary" / "capabilities.ttl")
+if not VOCABULARY.is_file():
+    pytest.skip(f"no lab vocabulary at {VOCABULARY} (clone AAU-AASPIRE/ontologies beside aas-model)",
+                allow_module_level=True)
 LAB = rdflib.Namespace("https://smartproductionlab.aau.dk/semantics/")
 
 

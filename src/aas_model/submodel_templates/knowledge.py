@@ -30,7 +30,7 @@ Which kind a variable is, is stated where it is decided: no mapping sinks into a
 observed one, and its meaning marks a derived one. A resource's variable names its ``Subject`` explicitly: its own AAS,
 or an element of it (a coordinate: a place); a product type declares the state of its units, and its variables name
 none. Whether a state variable has one value or a set, and what kind of value, is its meaning's (the lab vocabulary's
-lab:cardinality and lab:valueType; vocabulary/lab-execution.ttl), written onto the variable so that no consumer
+lab:cardinality and lab:valueType; AAU-AASPIRE/ontologies, Vocabulary/capabilities.ttl), written onto the variable so that no consumer
 reads the vocabulary at run time.
 
 A subject's IRI in the state store: an AAS is its id; an element is ``<submodel id>#<idShortPath>`` (list items by

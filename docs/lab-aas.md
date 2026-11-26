@@ -67,8 +67,8 @@ too (`cell/examples/example_line.py`).
   supplemental semantic id. A term's idShort (`Term_00`) only orders it; its display name says what it states.
   A **Duration** (a nominal value, or a formula over the capability's properties and the call's parameters) says
   how long the action takes where no Rate of an End effect does. Whether a state property has one value or a
-  set, and its kind of value, is its meaning's: `lab:cardinality` and `lab:valueType`, proposed for the lab
-  vocabulary in `vocabulary/lab-execution.ttl` (with `Location`, `Occupying`, `FillResult`); every state
+  set, and its kind of value, is its meaning's: `lab:cardinality` and `lab:valueType` of the lab vocabulary
+  (AAU-AASPIRE/ontologies, `Vocabulary/capabilities.ttl` 0.11, with `Location`, `Occupying`, `FillResult`); every state
   property the example line uses has both (`tests/test_vocabulary.py`). They are what the planners, the behaviour tree and the DMP read.
 - **Asset Interfaces Description:** one OPC UA interface (`ModuleInterfaces`).
 - **Hierarchical Structures:** parts that have parts in turn (`LocatedNode`). Where a part is, is a
