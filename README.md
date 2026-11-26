@@ -17,7 +17,7 @@ processes). AASPIRE's tools build every AAS with it.
 | `src/aas_model/` | The types (`resource_template`, `product_template`, `process_template`), the lab's submodel templates (`submodel_templates`), the builder, the instances (`resource_instances`, ...) |
 | `src/aas_pydantic/` | The IDTA submodel templates as pydantic classes, and the conversion to and from BaSyx |
 | `templates/` | The templates as JSON (`templates/arso` written by modreg from the ontology) |
-| `docs/` | The model, one page per submodel (`docs/lab-submodels`), the lab's AASs (`docs/lab-aas.md`) |
+| `docs/` | The model, one page per submodel (`docs/lab-submodels`), the lab's AASs (`docs/lab-aas.md`), the execution model's specification (`docs/execution-model.md`) |
 | `scripts/` | Generating the classes from the templates; exporting instances |
 | `submodel-templates/`, `MQTTSchemas/` | Submodules: IDTA's published templates, the MQTT message schemas |
 
