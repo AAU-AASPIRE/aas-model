@@ -9,13 +9,14 @@ from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration impo
     Source as SourceReference, Sink as SinkReference, SourcesItem, SinksItem,
 )
 from aas_model.submodel_templates.capability_description import (
+    AUXILIARY_CAPABILITIES,
     ModuleCapabilityContainer, ModuleCapabilityRelations, ModuleCapabilitySet, RealizedBySkill,
 )
 
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema, populate_datapoint
 from aas_model.constants import BASE_URL, BROKER, CSSX, SCHEMA_BASE, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_model.resource_template.resources import MqttSoftwareResource
 from aas_model.resource_template.operational import COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, station_state
 from aas_model.resource_template.references import (
@@ -45,19 +46,11 @@ except ImportError:
 
 def orchestrator() -> MqttSoftwareResource:
     identity = "orchestratorAAS"
-    serial = "AAU-BT-2024-001"
     resource = MqttSoftwareResource(
         id_short=identity, id=f"{BASE_URL}/aas/{identity}",
-        asset_type=f"{CSSX}#Orchestrator", specific_asset_ids={"serialNumber": serial},
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=f"{BASE_URL}/aas/{identity}",
-            ManufacturerName=ManufacturerName(value={"en": "Aalborg University"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "AAU Orchestrator"}),
-            ManufacturerProductType="AAU Orchestrator",
-            OrderCodeOfManufacturer=serial,
-            SerialNumber=serial, YearOfConstruction="2024",
-            CountryOfOrigin="DK",
-        ),
+        asset_type=f"{CSSX}#Orchestrator",
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Orchestrator"})),
     )
     aid = resource.asset_interfaces_description
     mqtt = aid.InterfaceTemplateForMQTT["interface_mqtt"]
@@ -109,8 +102,8 @@ def orchestrator() -> MqttSoftwareResource:
             name, MODULE_CONTROL, affordance_ref(MQTT_INTERFACE, "actions", name), operation)
         mappings.append(mapping)
     resource.capability_description.CapabilitySet = {
-        "Coordination": ModuleCapabilitySet(
-            id_short="Coordination",
+        AUXILIARY_CAPABILITIES: ModuleCapabilitySet(
+            id_short=AUXILIARY_CAPABILITIES,
             CapabilityContainer={
                 "Orchestrate": ModuleCapabilityContainer(
                     id_short="Orchestrate",
@@ -118,7 +111,7 @@ def orchestrator() -> MqttSoftwareResource:
                     CapabilityRelations=ModuleCapabilityRelations(
                         CapabilityRealizedBy={
                             "RealizedBy_Start": RealizedBySkill(
-                                first=capability_ref("Coordination", "Orchestrate"),
+                                first=capability_ref(AUXILIARY_CAPABILITIES, "Orchestrate"),
                                 second=skill_ref("Start"),
                             ),
                         }

@@ -590,7 +590,7 @@ def test_a_shuttle_brings_a_vial_the_module_takes_it_and_fills_it():
     vial, place = "urn:uuid:7f3a9c2e-5b1d-4e8a-9f60-2d4c8b1a0e57", _reference_key(ModelReference(key=TRANSFER_POINT))
     state_initial = {(vial, f"{LAB}Weighed"): False}
     module = _submodel(store, MODULE, "CapabilityDescription")
-    move = _submodel(store, shuttle.id, "CapabilityDescription").get_referable(["Transport", "MoveToPosition"])
+    move = _submodel(store, shuttle.id, "CapabilityDescription").get_referable(["AuxiliaryCapabilities", "MoveToPosition"])
     state = {(vial, f"{LAB}HeldBy"): shuttle.id, (vial, f"{LAB}ContentVolume"): 0.0, **state_initial}
     line = _Ground(store, state)
 
@@ -652,7 +652,7 @@ def test_every_capability_of_the_line_says_how_long_it_takes():
     for identifiable in build_from_model(RESOURCE_FACTORIES["planarShuttle1"]()):
         store.add(identifiable)
     shuttle_move = _submodel(store, RESOURCE_FACTORIES["planarShuttle1"]().id, "CapabilityDescription").get_referable(
-        ["Transport", "MoveToPosition"])
+        ["AuxiliaryCapabilities", "MoveToPosition"])
     timed = {}
     for container in (*_module_containers(store, every=True), shuttle_move):
         relations = container.get_referable("CapabilityRelations")

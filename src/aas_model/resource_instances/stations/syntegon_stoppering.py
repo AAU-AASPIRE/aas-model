@@ -1,10 +1,10 @@
-"""Syntegon stoppering station instance: the PackML contract and its
+"""The stoppering station: the PackML contract and its
 Stoppering skill, all over MQTT."""
 
 from aas_pydantic import Property
 from aas_model.constants import BASE_URL, BROKER, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, COMMAND_SCHEMA, COMMAND_SCHEMA_URL,
@@ -20,7 +20,7 @@ from aas_model.submodel_templates.control_component_instance import (
 from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
-from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
+from aas_model.submodel_templates.capability_description import OFFERED_CAPABILITIES, ModuleCapabilityRelations, RealizedBySkill
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm
 from aas_model.json_schema_aid import datapoint_from_schema
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
@@ -28,23 +28,13 @@ from aas_model.submodel_templates.hierarchical_structures import ResourceHierarc
 
 def syntegon_stoppering() -> StopperingStation:
     identity = "syntegonStopperingSystemAAS"
-    serial = "SYN-SS-2024-001"
     parent = "aauFillingLineAAS"
     resource_id = f"{BASE_URL}/aas/{identity}"
     resource = StopperingStation(
         id_short=identity,
         id=resource_id,
-        specific_asset_ids={"serialNumber": serial},
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=resource_id,
-            ManufacturerName=ManufacturerName(value={"en": "Syntegon Technology GmbH"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Stoppering System 2024"}),
-            ManufacturerProductType="Pharmaceutical Stoppering Station",
-            OrderCodeOfManufacturer=serial,
-            SerialNumber=serial,
-            YearOfConstruction="2024",
-            CountryOfOrigin="DE",
-        ),
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Stoppering station"})),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(
@@ -59,7 +49,7 @@ def syntegon_stoppering() -> StopperingStation:
         variables=OperationalVariables(),
     )
     mqtt = resource.asset_interfaces_description.InterfaceTemplateForMQTT[MQTT_INTERFACE]
-    mqtt.title.value = "Syntegon Stoppering System"
+    mqtt.title.value = "Stoppering station"
     mqtt.EndpointMetadata.base.value = f"{BROKER}/{SITE}/Stoppering/"
     resource.parameters.parameter["Location"].x.parameter.value = 480.0
 
@@ -101,8 +91,8 @@ def syntegon_stoppering() -> StopperingStation:
                            for member in ("Uuid", "State", "Outcome")],
         ),
     )
-    container = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer[name]
+    container = resource.capability_description.CapabilitySet[OFFERED_CAPABILITIES].CapabilityContainer[name]
     container.CapabilityRelations = ModuleCapabilityRelations(CapabilityRealizedBy={
-        f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Processing", name), second=skill_ref(name)),
+        f"RealizedBy_{name}": RealizedBySkill(first=capability_ref(OFFERED_CAPABILITIES, name), second=skill_ref(name)),
     })
     return resource

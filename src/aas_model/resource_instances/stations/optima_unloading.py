@@ -1,9 +1,9 @@
-"""Optima unloading station instance."""
+"""The unloading station."""
 
 from aas_pydantic import Property
 from aas_model.constants import BASE_URL, BROKER, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
@@ -20,30 +20,20 @@ from aas_model.submodel_templates.control_component_instance import (
 )
 from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
-from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
+from aas_model.submodel_templates.capability_description import AUXILIARY_CAPABILITIES, ModuleCapabilityRelations, RealizedBySkill
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 
 
 def optima_unloading() -> UnloadingStation:
     identity = "optimaUnloadingSystemAAS"
-    serial = "OPTIMA-ULS-2024-001"
     parent = "aauFillingLineAAS"
     resource_id = f"{BASE_URL}/aas/{identity}"
     resource = UnloadingStation(
         id_short=identity,
         id=resource_id,
-        specific_asset_ids={"serialNumber": serial},
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=resource_id,
-            ManufacturerName=ManufacturerName(value={"en": "Optima"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Optima Unloading System"}),
-            ManufacturerProductType="Optima Unloading System",
-            OrderCodeOfManufacturer=serial,
-            SerialNumber=serial,
-            YearOfConstruction="2024",
-            CountryOfOrigin="DE",
-        ),
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Unloading station"})),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(
@@ -58,7 +48,7 @@ def optima_unloading() -> UnloadingStation:
         variables=OperationalVariables(),
     )
     mqtt = resource.asset_interfaces_description.InterfaceTemplateForMQTT["interface_mqtt"]
-    mqtt.title.value = "Optima Unloading System"
+    mqtt.title.value = "Unloading station"
     mqtt.EndpointMetadata.base.value = f"{BROKER}/{SITE}/Unloading/"
     resource.parameters.parameter["Location"].y.parameter.value = 240.0
     mqtt_actions = resource.asset_interfaces_description.InterfaceTemplateForMQTT[
@@ -101,11 +91,11 @@ def optima_unloading() -> UnloadingStation:
             ResponseSinks=[DmpResponseSink(SinkId=member, Sink=operation_variable_ref(name, member))
                            for member in ("Uuid", "State", "Outcome")],
         ))
-        container = resource.capability_description.CapabilitySet["Handling"].CapabilityContainer[name]
+        container = resource.capability_description.CapabilitySet[AUXILIARY_CAPABILITIES].CapabilityContainer[name]
         container.CapabilityRelations = ModuleCapabilityRelations(
             CapabilityRealizedBy={
                 f"RealizedBy_{name}": RealizedBySkill(
-                    first=capability_ref("Handling", name), second=skill_ref(name)
+                    first=capability_ref(AUXILIARY_CAPABILITIES, name), second=skill_ref(name)
                 )
             }
         )

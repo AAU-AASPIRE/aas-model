@@ -103,7 +103,7 @@ def test_module_control_states_what_it_needs_and_changes_in_its_relations():
 
 def test_dispensing_binds_the_unit_and_the_volume_of_its_operation():
     resource = RESOURCE_FACTORIES["imaDispensing"]()
-    relations = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer[
+    relations = resource.capability_description.CapabilitySet["OfferedCapabilities"].CapabilityContainer[
         "Dispensing"].CapabilityRelations
     unit = relations.Subjects.value[1]
     assert unit.value.type_ == "ExternalReference" and unit.value.key[0].value == PRODUCT_ASSET_TYPE
@@ -134,7 +134,7 @@ def test_a_shuttle_move_takes_the_shuttle_to_a_place_the_call_names():
     from aas_model.submodel_templates.coordinates import VAR_COORDINATE
 
     resource = RESOURCE_FACTORIES["planarShuttle1"]()
-    container = resource.capability_description.CapabilitySet["Transport"].CapabilityContainer["MoveToPosition"]
+    container = resource.capability_description.CapabilitySet["AuxiliaryCapabilities"].CapabilityContainer["MoveToPosition"]
     assert container.Capability.supplemental_semantic_ids == [f"{LAB}Transporting"]
     relations = container.CapabilityRelations
     shuttle, place = relations.Subjects.value
@@ -189,11 +189,11 @@ def test_term_kinds_nest_survive_json_and_are_told_apart_by_semantic_id_in_aas()
     assert (type(end["Term_00"]), type(end["Term_01"])) == (When, OneOfEffects)
 
     resource = RESOURCE_FACTORIES["imaDispensing"]()
-    relations = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer[
+    relations = resource.capability_description.CapabilitySet["OfferedCapabilities"].CapabilityContainer[
         "Dispensing"].CapabilityRelations
     relations.ConditionSet, relations.EffectSet = conditions, effects
     built = _capability_description(build_from_model(resource)).get_referable(
-        ["Processing", "Dispensing", "CapabilityRelations"])
+        ["OfferedCapabilities", "Dispensing", "CapabilityRelations"])
     ids = {path: built.get_referable(path.split("/")).semantic_id.key[0].value for path in (
         "ConditionSet/Pre/Term_00", "ConditionSet/Pre/Term_00/Term_01", "ConditionSet/Pre/Term_01",
         "ConditionSet/Pre/Term_00/Term_00", "EffectSet/End/Term_00", "EffectSet/End/Term_01",

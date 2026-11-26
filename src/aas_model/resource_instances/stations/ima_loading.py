@@ -1,9 +1,9 @@
-"""IMA loading station instance."""
+"""The loading station."""
 
 from aas_pydantic import Property
 from aas_model.constants import BASE_URL, BROKER, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
@@ -20,30 +20,20 @@ from aas_model.submodel_templates.control_component_instance import (
 from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
-from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
+from aas_model.submodel_templates.capability_description import AUXILIARY_CAPABILITIES, ModuleCapabilityRelations, RealizedBySkill
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 
 
 def ima_loading() -> LoadingStation:
     identity = "imaLoadingSystemAAS"
-    serial = "IMA-LS-2024-001"
     parent = "aauFillingLineAAS"
     resource_id = f"{BASE_URL}/aas/{identity}"
     resource = LoadingStation(
         id_short=identity,
         id=resource_id,
-        specific_asset_ids={"serialNumber": serial},
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=resource_id,
-            ManufacturerName=ManufacturerName(value={"en": "IMA"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "IMA Loading System"}),
-            ManufacturerProductType="IMA Loading System",
-            OrderCodeOfManufacturer=serial,
-            SerialNumber=serial,
-            YearOfConstruction="2024",
-            CountryOfOrigin="IT",
-        ),
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Loading station"})),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(
@@ -58,7 +48,7 @@ def ima_loading() -> LoadingStation:
         variables=OperationalVariables(),
     )
     mqtt = resource.asset_interfaces_description.InterfaceTemplateForMQTT["interface_mqtt"]
-    mqtt.title.value = "IMA Loading System"
+    mqtt.title.value = "Loading station"
     mqtt.EndpointMetadata.base.value = f"{BROKER}/{SITE}/Loading/"
     position = resource.parameters.parameter["Location"]
     position.x.parameter.value = 360.0
@@ -104,10 +94,10 @@ def ima_loading() -> LoadingStation:
                            for member in ("Uuid", "State", "Outcome")],
         ),
     )
-    container = resource.capability_description.CapabilitySet["Handling"].CapabilityContainer[name]
+    container = resource.capability_description.CapabilitySet[AUXILIARY_CAPABILITIES].CapabilityContainer[name]
     container.CapabilityRelations = ModuleCapabilityRelations(
         CapabilityRealizedBy={
-            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Handling", name), second=skill_ref(name))
+            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref(AUXILIARY_CAPABILITIES, name), second=skill_ref(name))
         }
     )
     return resource

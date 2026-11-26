@@ -24,6 +24,7 @@ from aas_pydantic.submodel_templates.nameplate import (
 from aas_model.constants import BASE_URL, CSSX, LAB, SHUTTLE_ASSET_TYPE
 from aas_model.submodel_templates import Aimc, AimcMappingConfigurations
 from aas_model.submodel_templates.capability_description import (
+    AUXILIARY_CAPABILITIES, OFFERED_CAPABILITIES,
     ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
 )
 from aas_model.submodel_templates.execution import (
@@ -206,7 +207,7 @@ class StopperingStation(ProcessingStation):
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Processing": ModuleCapabilitySet(CapabilityContainer={
+            OFFERED_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Stoppering": ModuleCapabilityContainer(Capability=Capability(
                     semantic_id=f"{CSSX}#Stoppering", supplemental_semantic_ids=[f"{LAB}Stoppering"],
                 )),
@@ -220,7 +221,7 @@ class CappingStation(ProcessingStation):
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Processing": ModuleCapabilitySet(CapabilityContainer={
+            OFFERED_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Capping": ModuleCapabilityContainer(Capability=Capability(
                     semantic_id=f"{CSSX}#Capping", supplemental_semantic_ids=[f"{LAB}Capping"],
                 )),
@@ -236,7 +237,7 @@ class DispensingStation(ProcessingStation):
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Processing": ModuleCapabilitySet(CapabilityContainer={
+            OFFERED_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Dispensing": ModuleCapabilityContainer(
                     Capability=Capability(
                         semantic_id=f"{CSSX}#Dispensing", supplemental_semantic_ids=[f"{LAB}Filling"],
@@ -249,7 +250,7 @@ class DispensingStation(ProcessingStation):
                         ]),
                         ConditionSet=ConditionSet(Pre=PreTerms(term={"Term_00": StateCondition(
                             display_name={"en": "Unit empty"}, supplemental_semantic_ids=[f"{LAB}ContentVolume"],
-                            Subject=TermSubject(value=subject_ref("Processing", "Dispensing", 1)),
+                            Subject=TermSubject(value=subject_ref(OFFERED_CAPABILITIES, "Dispensing", 1)),
                             Operator=ConditionOperator(value="equal"),
                             Value=TermValue(value="0.0", value_type="xs:double"),
                         )})),
@@ -265,7 +266,7 @@ class LoadingStation(HandlingStation):
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Handling": ModuleCapabilitySet(CapabilityContainer={
+            AUXILIARY_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Loading": ModuleCapabilityContainer(Capability=Capability(
                     semantic_id=f"{CSSX}#Loading", supplemental_semantic_ids=[f"{LAB}Loading"],
                 )),
@@ -280,7 +281,7 @@ class UnloadingStation(HandlingStation):
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Handling": ModuleCapabilitySet(CapabilityContainer={
+            AUXILIARY_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Unloading": ModuleCapabilityContainer(Capability=Capability(
                     semantic_id=f"{CSSX}#Unloading", supplemental_semantic_ids=[f"{LAB}Unloading"],
                 )),
@@ -295,7 +296,7 @@ class InspectionStation(Station):
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Inspection": ModuleCapabilitySet(CapabilityContainer={
+            OFFERED_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Capture": ModuleCapabilityContainer(Capability=Capability(
                     semantic_id=f"{CSSX}#Capture", supplemental_semantic_ids=[f"{LAB}Inspection"],
                 )),
@@ -363,7 +364,7 @@ class PlanarShuttle(Shuttle):
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            "Transport": ModuleCapabilitySet(CapabilityContainer={
+            AUXILIARY_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "MoveToPosition": ModuleCapabilityContainer(
                     Capability=Capability(
                         semantic_id=f"{CSSX}#MoveToPosition", supplemental_semantic_ids=[f"{LAB}Transporting"],
@@ -374,9 +375,9 @@ class PlanarShuttle(Shuttle):
                         EffectSet=EffectSet(End=EndTerms(term={"Term_00": StateEffect(
                             display_name={"en": "Shuttle at the target place"},
                             supplemental_semantic_ids=[f"{LAB}Location"],
-                            Subject=TermSubject(value=subject_ref("Transport", "MoveToPosition", 0)),
+                            Subject=TermSubject(value=subject_ref(AUXILIARY_CAPABILITIES, "MoveToPosition", 0)),
                             Operator=EffectOperator(value="assign"),
-                            ValueReference=TermValueReference(value=subject_ref("Transport", "MoveToPosition", 1)),
+                            ValueReference=TermValueReference(value=subject_ref(AUXILIARY_CAPABILITIES, "MoveToPosition", 1)),
                         )})),
                         # Nominal, until the time series says how long moves take (D11).
                         Duration=ExecutionDuration(Value=TermValue(value="3.0", value_type="xs:double")),

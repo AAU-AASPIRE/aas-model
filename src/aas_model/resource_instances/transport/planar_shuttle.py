@@ -3,7 +3,7 @@
 from aas_pydantic import Property
 from aas_pydantic.submodel_templates.asset_interfaces_description import Title
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SinksItem, SourcesItem
-from aas_model.submodel_templates.capability_description import RealizedBySkill
+from aas_model.submodel_templates.capability_description import AUXILIARY_CAPABILITIES, RealizedBySkill
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
 from aas_model.resource_template import ResourceNameplate
@@ -129,9 +129,9 @@ end
         ResponseSinks=[DmpResponseSink(SinkId=member, Sink=operation_variable_ref(name, member))
                        for member in ("Uuid", "State", "Outcome", "ProductID")],
     ))
-    container = resource.capability_description.CapabilitySet["Transport"].CapabilityContainer[name]
+    container = resource.capability_description.CapabilitySet[AUXILIARY_CAPABILITIES].CapabilityContainer[name]
     container.CapabilityRelations.CapabilityRealizedBy[f"RealizedBy_{name}"] = RealizedBySkill(
-        id_short=f"RealizedBy_{name}", first=capability_ref("Transport", name), second=skill_ref(name))
+        id_short=f"RealizedBy_{name}", first=capability_ref(AUXILIARY_CAPABILITIES, name), second=skill_ref(name))
 
     # Location: the reported position, as Properties and, one row per report, into Variables/Measurements/Location.
     location_url = f"{SCHEMA_BASE}/positionStamped.schema.json"

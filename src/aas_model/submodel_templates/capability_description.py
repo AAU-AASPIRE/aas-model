@@ -83,6 +83,15 @@ class ModuleCapabilityRelations(cd.CapabilityRelations):
     Translation: Optional[Translation_t] = None
 
 
+# The CapabilitySets every resource groups its capabilities in (plan D8): what a product can require, matched against
+# its requirements (OfferedCapabilities); what the resource can do that no product asks for directly, a component's or a
+# station's transport, handling, coordination (AuxiliaryCapabilities); and taking a unit and handing it back
+# (ModuleControl). A product type's are its RequiredCapabilities.
+OFFERED_CAPABILITIES = "OfferedCapabilities"
+AUXILIARY_CAPABILITIES = "AuxiliaryCapabilities"
+MODULE_CONTROL_CAPABILITIES = "ModuleControl"
+
+
 class ModuleCapabilityContainer(cd.CapabilityContainer):
     """One capability: its properties and its relations, with who takes part and what it needs and changes."""
     PropertySet: Dict[str, StatedPropertySet] = {}

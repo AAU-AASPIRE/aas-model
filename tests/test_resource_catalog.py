@@ -295,7 +295,7 @@ def test_dispensing_type_declares_capability_but_not_vendor_skill_or_weight():
     from aas_model.resource_template.resources import DispensingStation
 
     station = DispensingStation(id_short="GenericDispensing")
-    assert set(station.capability_description.CapabilitySet["Processing"].CapabilityContainer) == {"Dispensing"}
+    assert set(station.capability_description.CapabilitySet["OfferedCapabilities"].CapabilityContainer) == {"Dispensing"}
     assert station.variables.Measurements is None
     assert "Dispensing" not in station.skills.Skill
     assert _interfaces(station) == {}
@@ -354,8 +354,8 @@ def test_direct_typed_defaults_are_independent_across_resources():
 
     first_capability = StopperingStation(id_short="First")
     second_capability = StopperingStation(id_short="Second")
-    first_capability.capability_description.CapabilitySet["Processing"].CapabilityContainer.clear()
-    assert "Stoppering" in second_capability.capability_description.CapabilitySet["Processing"].CapabilityContainer
+    first_capability.capability_description.CapabilitySet["OfferedCapabilities"].CapabilityContainer.clear()
+    assert "Stoppering" in second_capability.capability_description.CapabilitySet["OfferedCapabilities"].CapabilityContainer
 
 
 def test_graph_validation_rejects_invalid_direct_dict_insertions_before_aas_export():
@@ -401,8 +401,8 @@ def test_factory_authored_skills_resolve_their_invocations_and_empty_imports_sta
 
 
 @pytest.mark.parametrize("names, template, group", [
-    (("syntegonStoppering", "cytivaCapping", "imaDispensing"), ProcessingStation, "Processing"),
-    (("imaLoadingSystem", "optimaUnloading"), HandlingStation, "Handling"),
+    (("syntegonStoppering", "cytivaCapping", "imaDispensing"), ProcessingStation, "OfferedCapabilities"),
+    (("imaLoadingSystem", "optimaUnloading"), HandlingStation, "AuxiliaryCapabilities"),
 ])
 def test_related_stations_share_their_type_and_capability_group(names, template, group):
     for name in names:
@@ -414,7 +414,7 @@ def test_related_stations_share_their_type_and_capability_group(names, template,
 def test_capability_realization_is_explicit_and_not_a_skill_naming_rule():
     resource = RESOURCE_FACTORIES["imaDispensing"]()
     relations = resource.capability_description.CapabilitySet[
-        "Processing"
+        "OfferedCapabilities"
     ].CapabilityContainer["Dispensing"].CapabilityRelations.CapabilityRealizedBy
     assert relations["RealizedBy_Dispensing"].first.key[-1].value == "Capability"
     # The realizing skill is an element of this AAS: a ModelReference into its Skills.
@@ -431,16 +431,16 @@ def test_capability_realization_is_explicit_and_not_a_skill_naming_rule():
 
 
 @pytest.mark.parametrize("name, group, capability, skill", [
-    ("syntegonStoppering", "Processing", "Stoppering", "Stoppering"),
-    ("cytivaCapping", "Processing", "Capping", "Capping"),
-    ("imaDispensing", "Processing", "Dispensing", "Dispensing"),
-    ("imaLoadingSystem", "Handling", "Loading", "Loading"),
-    ("optimaUnloading", "Handling", "Unloading", "Unloading"),
-    ("optimaUnloading", "Handling", "Scrap", "Scrap"),
-    ("omronCamera", "Inspection", "Capture", "Capture"),
-    ("planarShuttle1", "Transport", "MoveToPosition", "MoveToPosition"),
-    ("orchestrator", "Coordination", "Orchestrate", "Start"),
-    ("productionPlanner", "Planning", "Plan", "Plan"),
+    ("syntegonStoppering", "OfferedCapabilities", "Stoppering", "Stoppering"),
+    ("cytivaCapping", "OfferedCapabilities", "Capping", "Capping"),
+    ("imaDispensing", "OfferedCapabilities", "Dispensing", "Dispensing"),
+    ("imaLoadingSystem", "AuxiliaryCapabilities", "Loading", "Loading"),
+    ("optimaUnloading", "AuxiliaryCapabilities", "Unloading", "Unloading"),
+    ("optimaUnloading", "AuxiliaryCapabilities", "Scrap", "Scrap"),
+    ("omronCamera", "OfferedCapabilities", "Capture", "Capture"),
+    ("planarShuttle1", "AuxiliaryCapabilities", "MoveToPosition", "MoveToPosition"),
+    ("orchestrator", "AuxiliaryCapabilities", "Orchestrate", "Start"),
+    ("productionPlanner", "AuxiliaryCapabilities", "Plan", "Plan"),
 ])
 def test_capabilities_explicitly_link_to_the_selected_implementation(name, group, capability, skill):
     resource = RESOURCE_FACTORIES[name]()

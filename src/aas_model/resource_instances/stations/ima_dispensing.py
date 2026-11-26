@@ -1,10 +1,10 @@
-"""IMA dispensing station instance: the PackML contract, a Dispensing skill
+"""The dispensing station: the PackML contract, a Dispensing skill
 with a configurable volume and the scale's live weight, all over OPC UA."""
 
 from aas_pydantic import Property
 from aas_model.constants import BASE_URL, CSSX, LAB, SCHEMA_BASE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, OPCUA_STATION, OperationalOpcuaSkills,
@@ -31,7 +31,7 @@ from aas_model.submodel_templates.execution import (
     EffectOperator, EffectSet, EndTerms, StateEffect, TermSubject, TermValueReference, Translation,
 )
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
-from aas_model.submodel_templates.capability_description import RealizedBySkill
+from aas_model.submodel_templates.capability_description import OFFERED_CAPABILITIES, RealizedBySkill
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_model.submodel_templates.variables import MeasurementsGroup
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, DmpForm, OpcuaAction, OpcuaActionForm
@@ -57,23 +57,13 @@ DISPENSE_COMMAND = {
 
 def ima_dispensing() -> DispensingStation:
     identity = "imaDispensingSystemAAS"
-    serial = "IMA-DS-2024-001"
     parent = "aauFillingLineAAS"
     resource_id = f"{BASE_URL}/aas/{identity}"
     resource = DispensingStation(
         id_short=identity,
         id=resource_id,
-        specific_asset_ids={"serialNumber": serial},
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=resource_id,
-            ManufacturerName=ManufacturerName(value={"en": "IMA"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "IMA Dispensing System"}),
-            ManufacturerProductType="IMA Dispensing System",
-            OrderCodeOfManufacturer=serial,
-            SerialNumber=serial,
-            YearOfConstruction="2024",
-            CountryOfOrigin="IT",
-        ),
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Dispensing station"})),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(
@@ -88,7 +78,7 @@ def ima_dispensing() -> DispensingStation:
         variables=OperationalVariables(),
     )
     opcua = resource.asset_interfaces_description.InterfaceTemplateForOPCUA[OPCUA_INTERFACE]
-    opcua.title.value = "IMA Dispensing System"
+    opcua.title.value = "Dispensing station"
     opcua.EndpointMetadata.base.value = "opc.tcp://dispensing-station:4840/dispensing/"
     resource.parameters.parameter["Location"].x.parameter.value = 240.0
     interaction = opcua.InteractionMetadata
@@ -149,16 +139,16 @@ def ima_dispensing() -> DispensingStation:
             DmpResponseSink(SinkId=member, Sink=operation_variable_ref(name, member)) for member in reply
         ],
     ))
-    container = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer[name]
+    container = resource.capability_description.CapabilitySet[OFFERED_CAPABILITIES].CapabilityContainer[name]
     relations = container.CapabilityRelations
     relations.CapabilityRealizedBy[f"RealizedBy_{name}"] = RealizedBySkill(
-        id_short=f"RealizedBy_{name}", first=capability_ref("Processing", name), second=skill_ref(name))
+        id_short=f"RealizedBy_{name}", first=capability_ref(OFFERED_CAPABILITIES, name), second=skill_ref(name))
     # The type says Filling needs the unit empty; this station's call fills the unit with the volume its product
     # requires (the Translation: the unit's uuid is the command's, its claim on the station): the unit ends holding the
     # Volume it was given.
     relations.EffectSet = EffectSet(End=EndTerms(term={"Term_00": StateEffect(
         display_name={"en": "Unit holds the volume"}, supplemental_semantic_ids=[f"{LAB}ContentVolume"],
-        Subject=TermSubject(value=subject_ref("Processing", name, 1)),
+        Subject=TermSubject(value=subject_ref(OFFERED_CAPABILITIES, name, 1)),
         Operator=EffectOperator(value="increase"),
         ValueReference=TermValueReference(value=operation_variable_ref(name, "Volume")),
     )}))

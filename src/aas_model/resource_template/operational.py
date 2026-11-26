@@ -41,8 +41,8 @@ from typing import Dict
 
 from aas_pydantic import Capability, Property
 from aas_model.submodel_templates.capability_description import (
-    ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
-    RealizedBySkill,
+    MODULE_CONTROL_CAPABILITIES, ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations,
+    ModuleCapabilitySet, RealizedBySkill,
 )
 from aas_pydantic.submodel_templates.asset_interfaces_description import (
     Base, ContentType, EndpointMetadata, Title, securityDefinitions, security_t,
@@ -94,7 +94,7 @@ INVOKE_ONLY_SKILLS = ("Halt",)
 LOGGED_SKILLS = tuple(name for name in PACKML_SKILLS if name not in INVOKE_ONLY_SKILLS)
 
 # The CapabilitySet of the capabilities the PackML contract gives every operational device.
-MODULE_CONTROL = "ModuleControl"
+MODULE_CONTROL = MODULE_CONTROL_CAPABILITIES
 
 # The OPC UA Object owning the PackML Methods and variables.
 OPCUA_STATION = "ns=2;s=Station"

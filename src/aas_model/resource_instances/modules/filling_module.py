@@ -55,6 +55,7 @@ from aas_model.resource_template.modules import (
 )
 from aas_model.submodel_templates.arso import skills as s
 from aas_model.submodel_templates.capability_description import (
+    AUXILIARY_CAPABILITIES, MODULE_CONTROL_CAPABILITIES, OFFERED_CAPABILITIES,
     ModuleCapabilityContainer, ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet,
     RealizedBySkill, StatedProperty, StatedPropertySet,
 )
@@ -83,7 +84,7 @@ from aas_model.submodel_templates.variables import MeasurementsGroup, Variables
 SKILL = f"{BASE_URL}/skill"                 # a skill's commands and kinds (iec61499-mgmt-py, commands.ttl)
 SKILL_TYPE = f"{BASE_URL}/skills"           # what a skill does (skills.ttl)
 SMC = "SubmodelElementCollection"
-AUXILIARY = "AuxiliaryCapabilities"         # the CapabilitySet of the capabilities no product asks for directly
+AUXILIARY = AUXILIARY_CAPABILITIES          # the CapabilitySet of the capabilities no product asks for directly
 
 MODULE = f"{BASE_URL}/aas/FillingModuleAAS"
 LINEAR_AXIS = f"{BASE_URL}/aas/FillingLinearAxisAAS"
@@ -118,7 +119,7 @@ SCALE_WEIGHING = (Key(type_="Submodel", value=f"{SCALE}/submodels/CapabilityDesc
 # The module's control skills (take a unit off a shuttle, put it back), and their capabilities.
 OCCUPY = (MODULE_SKILLS, Key(type_=SMC, value="Occupy"))
 RELEASE = (MODULE_SKILLS, Key(type_=SMC, value="Release"))
-MODULE_CONTROL = "ModuleControl"
+MODULE_CONTROL = MODULE_CONTROL_CAPABILITIES
 OCCUPYING = (MODULE_CAPABILITIES, Key(type_=SMC, value=MODULE_CONTROL), Key(type_=SMC, value="Occupying"))
 RELEASING = (MODULE_CAPABILITIES, Key(type_=SMC, value=MODULE_CONTROL), Key(type_=SMC, value="Releasing"))
 
@@ -131,7 +132,7 @@ DISPENSING_STEPS = (*DISPENSING, Key(type_=SMC, value="Start"), Key(type_=SMC, v
 POSITIONING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Positioning"))
 DOSING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Dosing"))
 WEIGHING = (MODULE_CAPABILITIES, Key(type_=SMC, value=AUXILIARY), Key(type_=SMC, value="Weighing"))
-FILLING = (MODULE_CAPABILITIES, Key(type_=SMC, value="OfferedCapabilities"), Key(type_=SMC, value="Filling"))
+FILLING = (MODULE_CAPABILITIES, Key(type_=SMC, value=OFFERED_CAPABILITIES), Key(type_=SMC, value="Filling"))
 
 # The errors the module's answer can carry (its ErrorID): each is an outcome a FOND plan branches on, beside success
 # (D23). Codes as the module's program reports them; Filling's reply names them.
@@ -797,7 +798,7 @@ def filling_module() -> Module:
         })),
 
         capability_description=ModuleCapabilityDescription(id_short="CapabilityDescription", CapabilitySet={
-            "OfferedCapabilities": ModuleCapabilitySet(CapabilityContainer={"Filling": filling}),
+            OFFERED_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={"Filling": filling}),
             AUXILIARY: ModuleCapabilitySet(CapabilityContainer={
                 "Positioning": positioning, "Dosing": dosing, "Weighing": weighing}),
             MODULE_CONTROL: ModuleCapabilitySet(CapabilityContainer={"Occupying": occupying, "Releasing": releasing}),

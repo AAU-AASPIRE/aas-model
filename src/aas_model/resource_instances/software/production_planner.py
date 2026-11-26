@@ -1,8 +1,8 @@
 """AAU production planner instance."""
 
 from aas_model.constants import BASE_URL, BROKER, CSSX, SCHEMA_BASE, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_model.resource_template.resources import MqttSoftwareResource
 from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
@@ -20,6 +20,7 @@ from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration impo
     Source as SourceReference, Sink as SinkReference, SourcesItem, SinksItem,
 )
 from aas_model.submodel_templates.capability_description import (
+    AUXILIARY_CAPABILITIES,
     ModuleCapabilityContainer, ModuleCapabilityRelations, ModuleCapabilitySet, RealizedBySkill,
 )
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema, without
@@ -29,19 +30,11 @@ from aas_pydantic.submodel_templates.asset_interfaces_description import Title
 
 def production_planner() -> MqttSoftwareResource:
     identity = "productionPlannerAAS"
-    serial = "AAU-PP-2024-001"
     resource = MqttSoftwareResource(
         id_short=identity, id=f"{BASE_URL}/aas/{identity}",
-        asset_type=f"{CSSX}#ProductionPlanner", specific_asset_ids={"serialNumber": serial},
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=f"{BASE_URL}/aas/{identity}",
-            ManufacturerName=ManufacturerName(value={"en": "Aalborg University"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "AAU Production Planner"}),
-            ManufacturerProductType="AAU Production Planner",
-            OrderCodeOfManufacturer=serial,
-            SerialNumber=serial, YearOfConstruction="2024",
-            CountryOfOrigin="DK",
-        ),
+        asset_type=f"{CSSX}#ProductionPlanner",
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Production planner"})),
     )
     input_url = f"{SCHEMA_BASE}/planningCommand.schema.json"
     output_url = f"{SCHEMA_BASE}/planningResponse.schema.json"
@@ -127,8 +120,8 @@ end
         )
     )
     resource.capability_description.CapabilitySet = {
-        "Planning": ModuleCapabilitySet(
-            id_short="Planning",
+        AUXILIARY_CAPABILITIES: ModuleCapabilitySet(
+            id_short=AUXILIARY_CAPABILITIES,
             CapabilityContainer={
                 "Plan": ModuleCapabilityContainer(
                     id_short="Plan",
@@ -136,7 +129,7 @@ end
                     CapabilityRelations=ModuleCapabilityRelations(
                         CapabilityRealizedBy={
                             "RealizedBy_Plan": RealizedBySkill(
-                                first=capability_ref("Planning", "Plan"),
+                                first=capability_ref(AUXILIARY_CAPABILITIES, "Plan"),
                                 second=skill_ref("Plan"),
                             )
                         }

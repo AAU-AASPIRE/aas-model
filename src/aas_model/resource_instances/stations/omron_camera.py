@@ -1,10 +1,10 @@
-"""Omron inspection camera instance."""
+"""The inspection station (a camera)."""
 
 from aas_pydantic import Property
 from aas_model.constants import CSSX, SCHEMA_BASE
 from aas_model.constants import BASE_URL, BROKER, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
@@ -20,7 +20,7 @@ from aas_model.submodel_templates.control_component_instance import (
     SkillOperation, OptionalVariable,
 )
 from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
-from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
+from aas_model.submodel_templates.capability_description import OFFERED_CAPABILITIES, ModuleCapabilityRelations, RealizedBySkill
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema
 from aas_model.submodel_templates.variables import MeasurementsGroup, VariableProp
 from aas_model.submodel_templates.time_series import (
@@ -35,23 +35,13 @@ from aas_model.submodel_templates.hierarchical_structures import ResourceHierarc
 
 def omron_camera() -> InspectionStation:
     identity = "omronCameraSystemAAS"
-    serial = "OMRON-CAM-2024-001"
     parent = "aauFillingLineAAS"
     resource_id = f"{BASE_URL}/aas/{identity}"
     resource = InspectionStation(
         id_short=identity,
         id=resource_id,
-        specific_asset_ids={"serialNumber": serial},
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=resource_id,
-            ManufacturerName=ManufacturerName(value={"en": "Omron"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Omron Camera System"}),
-            ManufacturerProductType="Omron Camera System",
-            OrderCodeOfManufacturer=serial,
-            SerialNumber=serial,
-            YearOfConstruction="2024",
-            CountryOfOrigin="JP",
-        ),
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Inspection station"})),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(
@@ -66,7 +56,7 @@ def omron_camera() -> InspectionStation:
         variables=OperationalVariables(),
     )
     mqtt = resource.asset_interfaces_description.InterfaceTemplateForMQTT["interface_mqtt"]
-    mqtt.title.value = "Omron Camera System"
+    mqtt.title.value = "Inspection station"
     mqtt.EndpointMetadata.base.value = f"{BROKER}/{SITE}/QualityControl/"
     position = resource.parameters.parameter["Location"]
     position.x.parameter.value = 480.0
@@ -109,10 +99,10 @@ def omron_camera() -> InspectionStation:
         ResponseSinks=[DmpResponseSink(SinkId=member, Sink=operation_variable_ref(name, member))
                        for member in ("Uuid", "State", "Outcome")],
     ))
-    container = resource.capability_description.CapabilitySet["Inspection"].CapabilityContainer[name]
+    container = resource.capability_description.CapabilitySet[OFFERED_CAPABILITIES].CapabilityContainer[name]
     container.CapabilityRelations = ModuleCapabilityRelations(
         CapabilityRealizedBy={
-            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Inspection", name), second=skill_ref(name))
+            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref(OFFERED_CAPABILITIES, name), second=skill_ref(name))
         }
     )
 

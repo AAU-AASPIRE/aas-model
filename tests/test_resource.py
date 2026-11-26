@@ -230,11 +230,11 @@ def test_build_from_model_keeps_resource_subclass_fields():
 
 def test_concrete_resources_are_fresh_instances():
     first = syntegon_stoppering()
-    first.nameplate.SerialNumber.value = "changed"
+    first.nameplate.ManufacturerProductDesignation.value = {"en": "changed"}
     first.skills.Skill.clear()
     second = syntegon_stoppering()
 
-    assert second.nameplate.SerialNumber.value == "SYN-SS-2024-001"
+    assert second.nameplate.ManufacturerProductDesignation.value == {"en": "Stoppering station"}
     assert set(second.skills.Skill) == {"Halt", "Occupy", "Release", "Stoppering"}
 
 

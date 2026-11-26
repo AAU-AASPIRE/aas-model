@@ -1,9 +1,9 @@
-"""Cytiva capping station instance."""
+"""The capping station."""
 
 from aas_pydantic import Property
 from aas_model.constants import BASE_URL, BROKER, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
-from aas_model.resource_template import ResourceNameplate
+from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
+from aas_model.resource_template.modules import LabNameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
@@ -20,7 +20,7 @@ from aas_model.submodel_templates.control_component_instance import (
 from aas_model.submodel_templates.skills import PRIMITIVE, command_skill
 from aas_pydantic.submodel_templates.asset_interfaces_mapping_configuration import SourcesItem, SinksItem
 from aas_model.submodel_templates import AimcMappingConfiguration, DmpResponseSink, DmpResponseSource
-from aas_model.submodel_templates.capability_description import ModuleCapabilityRelations, RealizedBySkill
+from aas_model.submodel_templates.capability_description import OFFERED_CAPABILITIES, ModuleCapabilityRelations, RealizedBySkill
 from aas_model.submodel_templates.aid import DmpActionInput, DmpActionOutput, MqttAction, MqttActionForm
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 
@@ -32,16 +32,8 @@ def cytiva_capping() -> CappingStation:
     resource = CappingStation(
         id_short=identity,
         id=resource_id,
-        nameplate=ResourceNameplate(
-            URIOfTheProduct=resource_id,
-            ManufacturerName=ManufacturerName(value={"en": "Cytiva"}),
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Cytiva Capping System"}),
-            ManufacturerProductType="Cytiva Capping System",
-            # The legacy serial duplicates the Syntegon asset and is unreliable.
-            OrderCodeOfManufacturer="",
-            YearOfConstruction="2024",
-            CountryOfOrigin="DK",
-        ),
+        nameplate=LabNameplate(
+            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Capping station"})),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(
@@ -56,7 +48,7 @@ def cytiva_capping() -> CappingStation:
         variables=OperationalVariables(),
     )
     mqtt = resource.asset_interfaces_description.InterfaceTemplateForMQTT["interface_mqtt"]
-    mqtt.title.value = "Cytiva Capping System"
+    mqtt.title.value = "Capping station"
     mqtt.EndpointMetadata.base.value = f"{BROKER}/{SITE}/Capping/"
     resource.parameters.parameter["Location"].x.parameter.value = 240.0
     resource.parameters.parameter["Location"].y.parameter.value = 240.0
@@ -98,10 +90,10 @@ def cytiva_capping() -> CappingStation:
                            for member in ("Uuid", "State", "Outcome")],
         ),
     )
-    container = resource.capability_description.CapabilitySet["Processing"].CapabilityContainer[name]
+    container = resource.capability_description.CapabilitySet[OFFERED_CAPABILITIES].CapabilityContainer[name]
     container.CapabilityRelations = ModuleCapabilityRelations(
         CapabilityRealizedBy={
-            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref("Processing", name), second=skill_ref(name))
+            f"RealizedBy_{name}": RealizedBySkill(first=capability_ref(OFFERED_CAPABILITIES, name), second=skill_ref(name))
         }
     )
     return resource
