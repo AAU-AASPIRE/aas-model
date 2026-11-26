@@ -1,6 +1,6 @@
 [submodule "MQTTSchemas"]
 	path = MQTTSchemas
-	url = https://github.com/tristan-schwoerer/mqtt_message_schemas.git
+	url = https://github.com/AAU-AASPIRE/mqtt_schemas.git
 [submodule "submodel-templates"]
 	path = submodel-templates
-	url = https://github.com/tristan-schwoerer/submodel-templates.git
+	url = https://github.com/AAU-AASPIRE/submodel-templates.git
