@@ -11,15 +11,16 @@ Third-party semantic IDs (w3.org, schema.org, purl.org, etc.) stay inline in the
 # ═══════════════════════════════════════════════════════════════════════════════
 
 BASE_URL = "https://smartproductionlab.aau.dk"
-SCHEMA_BASE = "https://aausmartproductionlab.github.io/AP2030-UNS/MQTTSchemas"
+# Where the MQTT message schemas are published (AAU-AASPIRE/mqtt_schemas, this repository's MQTTSchemas submodule).
+SCHEMA_BASE = "https://aau-aaspire.github.io/mqtt_schemas"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Infrastructure defaults
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# The MQTT broker the resources' interfaces name: for now the local stack's (compose service hivemq-broker, as the DMP
-# and the simulated stations reach it on the Docker network; the lab's broker is mqtt://192.168.0.104:1883).
-BROKER = "mqtt://hivemq-broker:1883"
+# The MQTT broker the resources' interfaces name: for now the local stack's (deploy's compose service mosquitto, as the
+# DMP and the simulated stations reach it on the Docker network; the lab's broker is mqtt://192.168.0.104:1883).
+BROKER = "mqtt://mosquitto:1883"
 SITE = "NN/Nybrovej/InnoLab"
 
 # Shared invocation service origin. Resource-specific identity belongs in
