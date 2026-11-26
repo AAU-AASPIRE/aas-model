@@ -6,7 +6,7 @@
 > states what the plan left open where Phase 1 needs an answer. Answers marked **Provisional** are this draft's (open
 > questions 6, 13 and 16); they hold until the ARSO owners agree or change them. aas-model's templates
 > (`submodel_templates/execution.py`, `knowledge.py`, `batch.py`) implement the structure; where this text and
-> they differ, section 15 lists it.
+> they differ, section 16 lists it.
 >
 > "Must" is a rule the validator checks (its code in brackets, section 11); "should" is advice it may warn about.
 
@@ -146,7 +146,7 @@ The variable ranges over the objects of that kind **in the problem**: for a plan
 run time, the subjects the state store knows of that kind. The behaviour tree never binds a quantifier's variable;
 the compiled query does.
 
-This replaces aas-model's current `QuantifiedVariable`, which references an item of Subjects (section 15). No
+This replaces aas-model's current `QuantifiedVariable`, which references an item of Subjects (section 16). No
 example uses a quantifier yet.
 
 ### 5.4 Operators
@@ -459,7 +459,69 @@ retract, weigh; Phase 5 makes modplan compose write it):
 So the slice is expressible end to end, with two findings for Phase 1: the OneOf and Filling's Pre come from levels
 other than the module's parts (the line, and the class), and the module's specializations are not yet complete supersets (section 10).
 
-## 15. Where aas-model differs, and what Phase 1 changes
+## 15. The canonical reading (fixtures)
+
+The shared fixtures (`aas-model/tests/fixtures/execution/<nn-name>/`) state what a reader must read from an AAS, in a
+form no language owns, so the Python package now and other readers later are tested against the same files. Each
+fixture holds:
+
+| File | Content |
+|---|---|
+| `aas.json` | an AAS environment (AAS JSON), built by `build.py` beside the fixtures from aas-model's classes; the test regenerates it and compares, so it never drifts from the templates |
+| `expected.json` | the canonical reading below, or the expected findings of the validator |
+| `vocabulary.ttl` | optional: terms the fixture needs beyond the lab vocabulary (a set-valued property), in `urn:fixture:` |
+
+**Reading.** One object per capability, keyed by its idShort path from the submodel
+(`"CapabilityDescription/OfferedCapabilities/Filling"`), or `"goal"` for a Goal:
+
+```json
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/FixtureAAS",
+      "meaning": "lab:Dosing",
+      "subjects": [
+        {"name": "This module", "fixed": "https://smartproductionlab.aau.dk/aas/FixtureAAS"},
+        {"name": "Unit", "standsFor": "https://smartproductionlab.aau.dk/Product"},
+        {"name": "Required fill volume", "requirement": "lab:FillVolume"}
+      ],
+      "pre": [], "invariant": [], "post": [], "start": [], "during": [], "end": [],
+      "duration": null,
+      "features": ["numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}
+```
+
+- **IRIs** are written with the prefixes `lab:` (`https://smartproductionlab.aau.dk/semantics/`), `exec:` (the
+  execution model's, without the version suffix) and `fixture:` (`urn:fixture:`); any other IRI in full.
+- **Terms** are in idShort order. An atom is `{"condition": {…}}` or `{"effect": {…}}` with `subject` (a
+  reference: `{"subject": i}` or `{"variable": "v0"}`), `property`, `op`, `operand` (absent where there is none) and,
+  for an effect, `rate` (an operand, or absent). Connectives: `{"and": [terms]}`, `{"or": […]}`, `{"not": term}`,
+  `{"exists": {"variable": V, "body": […]}}`, `{"forall": {…}}`, `{"when": {"if": […], "then": […]}}`,
+  `{"oneOf": {"meaning": IRI, "outcomes": [{"id": idShort, "meaning": IRI, "effects": […]}]}}`. A quantifier's
+  `V` is `{"id": "v0", "name": "…", "standsFor": IRI}`, numbered in document order across the capability.
+- **Operands:** `{"number": 2.0}`, `{"boolean": true}`, `{"string": "…"}`, `{"iri": "lab:InTolerance"}` (literals);
+  `{"subject": i}` or `{"variable": "v0"}` (an identity); `{"parameter": {"operation": "<idShort path>", "variable":
+  "<idShort>"}}` (an Operation variable, its path from the Skills submodel); `{"element": "<idShort path>"}` (a
+  constant of the same AAS; `{"element": "<AAS id>#<idShort path>"}` of another); `{"state": {"subject": i,
+  "property": IRI}}` (a subject's property, in Uses only); `{"formula": AST, "uses": {"Alias": operand}}` with AST
+  `{"number": x}`, `{"pi": true}`, `{"alias": "X"}`, `{"neg": AST}`, `{"+": [AST, AST]}` (also `-`, `*`, `/`),
+  left-associative as parsed.
+- **Duration:** an operand, or `null` where none is stated (5.7's rule 2 is an evaluator's, not the reader's).
+- **Features:** sorted names of section 12.
+- **Knowledge:** `[{"aas": id, "subject": IRI or null, "property": IRI, "valueType": …, "cardinality": …, "initial":
+  operand or null, "kind": "observed" | "asserted" | "derived"}]` for every StateVariable of the environment, sorted by
+  aas, subject, property.
+- **Goal:** `{"aas": id, "subjects": […], "condition": [terms]}`.
+- **Findings:** `[{"code": "…", "severity": "error" | "warning", "path": "<idShort path of the element>"}]`, sorted
+  by path, then code. A valid fixture has none; an invalid fixture (group D) states exactly its one finding and
+  may leave the rest of the reading out.
+
+## 16. Where aas-model differs, and what Phase 1 changes
 
 - **Quantifier variables** (5.3): `QuantifiedVariable` references a Subjects item; it becomes an ExternalReference
   inside the quantifier, with a displayName. No example is affected.
@@ -467,7 +529,7 @@ other than the module's parts (the line, and the class), and the module's specia
 - **Specializations** are not complete supersets (section 10); `level.incomplete` stays a warning until Phase 13.
 - **The plan's 4.2.3 and 4.2.8** are superseded by this document; the plan points here.
 
-## 16. Left open (for later phases)
+## 17. Left open (for later phases)
 
 | Question | What remains | Needed by |
 |---|---|---|
