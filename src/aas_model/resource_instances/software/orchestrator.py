@@ -14,9 +14,8 @@ from aas_model.submodel_templates.capability_description import (
 )
 
 from aas_model.json_schema_aid import datapoint_from_schema, load_schema, populate_datapoint
-from aas_model.constants import BASE_URL, BROKER, CSSX, SCHEMA_BASE, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
-from aas_model.resource_template.modules import LabNameplate
+from aas_model.constants import BASE_URL, BROKER, CSSX, SCHEMA_BASE, SITE, SOFTWARE_TYPE
+from aas_model.resource_template.modules import lab_nameplate
 from aas_model.resource_template.resources import MqttSoftwareResource
 from aas_model.resource_template.operational import COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, station_state
 from aas_model.resource_template.references import (
@@ -48,9 +47,8 @@ def orchestrator() -> MqttSoftwareResource:
     identity = "orchestratorAAS"
     resource = MqttSoftwareResource(
         id_short=identity, id=f"{BASE_URL}/aas/{identity}",
-        asset_type=f"{CSSX}#Orchestrator",
-        nameplate=LabNameplate(
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Orchestrator"})),
+        asset_type=f"{SOFTWARE_TYPE}/Orchestrator",
+        nameplate=lab_nameplate("Orchestrator of the AP2030 filling line"),
     )
     aid = resource.asset_interfaces_description
     mqtt = aid.InterfaceTemplateForMQTT["interface_mqtt"]

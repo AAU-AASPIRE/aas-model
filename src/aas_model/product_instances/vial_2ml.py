@@ -18,7 +18,7 @@ planner's pharma example), with what the execution model adds:
 from aas_pydantic import Capability, Key, ModelReference, Qualifier
 from aas_pydantic.submodel_templates.capability_description import PropertyProperty, PropertyRange
 from aas_pydantic.submodel_templates.nameplate import (
-    ManufacturerProductDesignation, OrderCodeOfManufacturer, URIOfTheProduct,
+    ManufacturerProductDesignation, ManufacturerProductType, OrderCodeOfManufacturer, URIOfTheProduct,
 )
 
 from aas_model.constants import BASE_URL, LAB
@@ -60,6 +60,7 @@ def vial_2ml() -> Product:
         nameplate=ProductNameplate(
             URIOfTheProduct=URIOfTheProduct(value=ASSET_ID),
             ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Filled vial 2 mL"}),
+            ManufacturerProductType=ManufacturerProductType(value="Vial2mL"),
             OrderCodeOfManufacturer=OrderCodeOfManufacturer(value="VIAL-2ML"),
         ),
 

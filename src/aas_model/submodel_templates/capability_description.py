@@ -83,10 +83,11 @@ class ModuleCapabilityRelations(cd.CapabilityRelations):
     Translation: Optional[Translation_t] = None
 
 
-# The CapabilitySets every resource groups its capabilities in (plan D8): what a product can require, matched against
-# its requirements (OfferedCapabilities); what the resource can do that no product asks for directly, a component's or a
-# station's transport, handling, coordination (AuxiliaryCapabilities); and taking a unit and handing it back
-# (ModuleControl). A product type's are its RequiredCapabilities.
+# The CapabilitySets every resource groups its capabilities in, as the lab vocabulary splits them (plan D8): a process
+# capability (lab:ProcessCapability: what a product can require, matched against its requirements: Filling, Loading,
+# Inspection, ...) is offered (OfferedCapabilities); an auxiliary one (lab:AuxiliaryCapability: it serves other skills:
+# Positioning, Transporting, ...) is auxiliary (AuxiliaryCapabilities); taking a unit and handing it back, what the
+# resource's ModuleControl skills realize, is ModuleControl. A product type's are its RequiredCapabilities.
 OFFERED_CAPABILITIES = "OfferedCapabilities"
 AUXILIARY_CAPABILITIES = "AuxiliaryCapabilities"
 MODULE_CONTROL_CAPABILITIES = "ModuleControl"

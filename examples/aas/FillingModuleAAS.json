@@ -3,7 +3,7 @@
     {
       "assetInformation": {
         "assetKind": "Instance",
-        "assetType": "https://smartproductionlab.aau.dk/Resource/Module",
+        "assetType": "https://smartproductionlab.aau.dk/Resource/Module/FillingModule",
         "globalAssetId": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS"
       },
       "derivedFrom": {
@@ -6012,7 +6012,7 @@
                             "keys": [
                               {
                                 "type": "GlobalReference",
-                                "value": "http://www.w3id.org/aau-ra/cssx#Shuttle"
+                                "value": "https://smartproductionlab.aau.dk/Resource/Component/Shuttle"
                               }
                             ],
                             "type": "ExternalReference"
@@ -7029,7 +7029,7 @@
                             "keys": [
                               {
                                 "type": "GlobalReference",
-                                "value": "http://www.w3id.org/aau-ra/cssx#Shuttle"
+                                "value": "https://smartproductionlab.aau.dk/Resource/Component/Shuttle"
                               }
                             ],
                             "type": "ExternalReference"
@@ -8080,7 +8080,7 @@
               "type": "ExternalReference"
             }
           ],
-          "value": "https://smartproductionlab.aau.dk/product/1",
+          "value": "https://smartproductionlab.aau.dk/aas/FillingModuleAAS",
           "valueType": "xs:anyURI"
         },
         {
@@ -8109,7 +8109,7 @@
           "value": [
             {
               "language": "en",
-              "text": "AAU Smart Production Lab"
+              "text": "AP2030 Project"
             }
           ]
         },
@@ -8139,7 +8139,7 @@
           "value": [
             {
               "language": "en",
-              "text": "Filling module"
+              "text": "Filling module of the AP2030 filling line"
             }
           ]
         },
@@ -8266,8 +8266,132 @@
                   "text": "DK"
                 }
               ]
+            },
+            {
+              "idShort": "Company",
+              "modelType": "MultiLanguageProperty",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAW001#001"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "language": "en",
+                  "text": "Aalborg University"
+                }
+              ]
+            },
+            {
+              "idShort": "Department",
+              "modelType": "MultiLanguageProperty",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO127#003"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "language": "en",
+                  "text": "Department of Materials and Production, Robotics & Automation Group"
+                }
+              ]
             }
           ]
+        },
+        {
+          "idShort": "ManufacturerProductRoot",
+          "modelType": "MultiLanguageProperty",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0112/2///61360_7#AAS011#001"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "0173-1#02-AAU732#003"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "language": "en",
+              "text": "Resource"
+            }
+          ]
+        },
+        {
+          "idShort": "ManufacturerProductFamily",
+          "modelType": "MultiLanguageProperty",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0112/2///61987#ABP464#002"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "0173-1#02-AAU731#003"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "language": "en",
+              "text": "Module"
+            }
+          ]
+        },
+        {
+          "idShort": "ManufacturerProductType",
+          "modelType": "Property",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0112/2///61987#ABA300#008"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "0173-1#02-AAO057#004"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": "FillingModule",
+          "valueType": "xs:string"
         },
         {
           "idShort": "OrderCodeOfManufacturer",
@@ -8351,6 +8475,32 @@
           ],
           "value": "DK",
           "valueType": "xs:string"
+        },
+        {
+          "contentType": "image/png",
+          "idShort": "CompanyLogo",
+          "modelType": "File",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0112/2///61987#ABP463#001"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "0173-1#02-ABI776#002"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": "AP2030-logo.png"
         }
       ]
     },

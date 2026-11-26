@@ -3,8 +3,7 @@
 from aas_pydantic import Property
 from aas_model.constants import CSSX, SCHEMA_BASE
 from aas_model.constants import BASE_URL, BROKER, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
-from aas_model.resource_template.modules import LabNameplate
+from aas_model.resource_template.modules import lab_nameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     OperationalMqttSkills, OperationalMqttInterfaces, OperationalMqttMappings, OperationalVariables,
@@ -33,15 +32,14 @@ from aas_pydantic.submodel_templates.asset_interfaces_description import Title
 from aas_model.submodel_templates.hierarchical_structures import ResourceHierarchicalStructures
 
 
-def omron_camera() -> InspectionStation:
-    identity = "omronCameraSystemAAS"
+def inspection_station() -> InspectionStation:
+    identity = "InspectionStationAAS"
     parent = "aauFillingLineAAS"
     resource_id = f"{BASE_URL}/aas/{identity}"
     resource = InspectionStation(
         id_short=identity,
         id=resource_id,
-        nameplate=LabNameplate(
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Inspection station"})),
+        nameplate=lab_nameplate("Inspection station of the AP2030 filling line"),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(

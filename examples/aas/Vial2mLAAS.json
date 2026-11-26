@@ -1622,7 +1622,7 @@
           "value": [
             {
               "language": "en",
-              "text": "AAU Smart Production Lab"
+              "text": "AP2030 Project"
             }
           ]
         },
@@ -1779,8 +1779,102 @@
                   "text": "DK"
                 }
               ]
+            },
+            {
+              "idShort": "Company",
+              "modelType": "MultiLanguageProperty",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAW001#001"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "language": "en",
+                  "text": "Aalborg University"
+                }
+              ]
+            },
+            {
+              "idShort": "Department",
+              "modelType": "MultiLanguageProperty",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "0173-1#02-AAO127#003"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "language": "en",
+                  "text": "Department of Materials and Production, Robotics & Automation Group"
+                }
+              ]
             }
           ]
+        },
+        {
+          "idShort": "ManufacturerProductRoot",
+          "modelType": "MultiLanguageProperty",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0112/2///61360_7#AAS011#001"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "0173-1#02-AAU732#003"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": [
+            {
+              "language": "en",
+              "text": "Product"
+            }
+          ]
+        },
+        {
+          "idShort": "ManufacturerProductType",
+          "modelType": "Property",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0112/2///61987#ABA300#008"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "0173-1#02-AAO057#004"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": "Vial2mL",
+          "valueType": "xs:string"
         },
         {
           "idShort": "OrderCodeOfManufacturer",
@@ -1865,6 +1959,32 @@
           ],
           "value": "DK",
           "valueType": "xs:string"
+        },
+        {
+          "contentType": "image/png",
+          "idShort": "CompanyLogo",
+          "modelType": "File",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "0112/2///61987#ABP463#001"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "supplementalSemanticIds": [
+            {
+              "keys": [
+                {
+                  "type": "GlobalReference",
+                  "value": "0173-1#02-ABI776#002"
+                }
+              ],
+              "type": "ExternalReference"
+            }
+          ],
+          "value": "AP2030-logo.png"
         }
       ]
     },

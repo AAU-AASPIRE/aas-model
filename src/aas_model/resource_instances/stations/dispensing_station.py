@@ -3,8 +3,7 @@ with a configurable volume and the scale's live weight, all over OPC UA."""
 
 from aas_pydantic import Property
 from aas_model.constants import BASE_URL, CSSX, LAB, SCHEMA_BASE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
-from aas_model.resource_template.modules import LabNameplate
+from aas_model.resource_template.modules import lab_nameplate
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_model.resource_template.operational import (
     COMMAND_RESPONSE_SCHEMA, COMMAND_RESPONSE_SCHEMA_URL, OPCUA_STATION, OperationalOpcuaSkills,
@@ -55,15 +54,14 @@ DISPENSE_COMMAND = {
 }
 
 
-def ima_dispensing() -> DispensingStation:
-    identity = "imaDispensingSystemAAS"
+def dispensing_station() -> DispensingStation:
+    identity = "DispensingStationAAS"
     parent = "aauFillingLineAAS"
     resource_id = f"{BASE_URL}/aas/{identity}"
     resource = DispensingStation(
         id_short=identity,
         id=resource_id,
-        nameplate=LabNameplate(
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Dispensing station"})),
+        nameplate=lab_nameplate("Dispensing station of the AP2030 filling line"),
         hierarchical_structures=ResourceHierarchicalStructures(
             ArcheType="OneUp",
             EntryNode=EntryNode(

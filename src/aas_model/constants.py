@@ -56,10 +56,19 @@ EXECUTION_SUBJECT = f"{BASE_URL}/execution/Subject/1/0"
 # meaning): bound when the behaviour tree is built, from the batch's product type.
 EXECUTION_SUBJECT_REQUIREMENT = f"{BASE_URL}/execution/Subject/Requirement/1/0"
 
+# What a resource is, as its asset type says (the ARSO ontology recognises an AAS by the beginning of it): css:Resource,
+# then its ARSO kind (a Module, a Component of one, a System of modules; software has no ARSO kind), then the kind of
+# resource it is (…/Resource/Module/LoadingStation). The lab's nameplates derive their product hierarchy from it.
+RESOURCE_TYPE = f"{BASE_URL}/Resource"
+MODULE_TYPE = f"{RESOURCE_TYPE}/Module"
+COMPONENT_TYPE = f"{RESOURCE_TYPE}/Component"
+SYSTEM_TYPE = f"{RESOURCE_TYPE}/System"
+SOFTWARE_TYPE = f"{RESOURCE_TYPE}/Software"
+
 # What a unit of any product is (the asset type of a product type AAS): what a subject that is a unit stands for.
 PRODUCT_ASSET_TYPE = f"{BASE_URL}/Product"
-# What a shuttle is (the asset type of the shuttles): what a subject that is a carrier stands for.
-SHUTTLE_ASSET_TYPE = f"{CSSX}#Shuttle"
+# What a shuttle is (the asset type of the shuttles begins with it): what a subject that is a carrier stands for.
+SHUTTLE_ASSET_TYPE = f"{COMPONENT_TYPE}/Shuttle"
 
 # How long an action takes, in seconds, where no Rate of an End effect says it.
 EXECUTION_DURATION = f"{BASE_URL}/execution/Duration/1/0"

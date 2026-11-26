@@ -179,7 +179,7 @@ def test_a_template_display_name_labels_the_template_not_its_instances():
     template = _json(convert_model_to_submodel_template(CapabilityDescription, "urn:test:capabilities"))
     assert template["displayName"] == [{"language": "en", "text": "Submodel Template Capability Description"}]
     assert template["submodelElements"][0]["displayName"] == [{"language": "en", "text": "Capability Set"}]
-    store = build_from_model(RESOURCE_FACTORIES["cytivaCapping"]())
+    store = build_from_model(RESOURCE_FACTORIES["cappingStation"]())
     document = json.loads(json_serialization.object_store_to_json(store))
     capabilities = next(s for s in document["submodels"] if s["idShort"] == "CapabilityDescription")
     labels = {name["text"] for element in _walk(capabilities) for name in element.get("displayName", ())}

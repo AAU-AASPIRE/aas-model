@@ -22,8 +22,8 @@ from aas_model.submodel_templates.execution import (
     Outcome, PreTerms, QuantifiedVariable, StateCondition, StateEffect, TermValue, When, WhenCondition, WhenThen,
 )
 
-OPERATIONAL = ("syntegonStoppering", "cytivaCapping", "imaDispensing", "imaLoadingSystem", "optimaUnloading",
-               "omronCamera", "planarShuttle1", "planarShuttle2", "planarShuttle3")
+OPERATIONAL = ("stopperingStation", "cappingStation", "dispensingStation", "loadingStation", "unloadingStation",
+               "inspectionStation", "planarShuttle1", "planarShuttle2", "planarShuttle3")
 
 
 def _capability_description(store):
@@ -77,7 +77,7 @@ def test_every_reference_of_a_capability_resolves_in_the_built_resource(name):
 
 
 def test_module_control_states_what_it_needs_and_changes_in_its_relations():
-    store = build_from_model(RESOURCE_FACTORIES["imaDispensing"]())
+    store = build_from_model(RESOURCE_FACTORIES["dispensingStation"]())
     relations = _capability_description(store).get_referable([MODULE_CONTROL, "Occupying", "CapabilityRelations"])
     pre = {t.display_name["en"]: t for t in relations.get_referable(["ConditionSet", "Pre"]).value}
     assert set(pre) == {"Shuttle at the transfer point", "Unit on the shuttle"}         # the queue arbitrates
@@ -93,7 +93,7 @@ def test_module_control_states_what_it_needs_and_changes_in_its_relations():
     end = {t.display_name["en"]: t for t in releasing.get_referable(["EffectSet", "End"]).value}
     assert end["Free again"].get_referable("Operator").value == "clear"
     # The skill's Operation is the device's command and nothing more; the Translation builds it from the subjects.
-    occupy = RESOURCE_FACTORIES["imaDispensing"]().skills.Skill["Occupy"].Start.SkillOperation["Start"]
+    occupy = RESOURCE_FACTORIES["dispensingStation"]().skills.Skill["Occupy"].Start.SkillOperation["Start"]
     assert not occupy.input_variable and [v.id_short for v in occupy.in_output_variable] == ["Uuid"]
     assert [v.id_short for v in occupy.output_variable] == ["State"]
     translation = relations.get_referable("Translation")
@@ -102,7 +102,7 @@ def test_module_control_states_what_it_needs_and_changes_in_its_relations():
 
 
 def test_dispensing_binds_the_unit_and_the_volume_of_its_operation():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
     relations = resource.capability_description.CapabilitySet["OfferedCapabilities"].CapabilityContainer[
         "Dispensing"].CapabilityRelations
     unit = relations.Subjects.value[1]
@@ -188,7 +188,7 @@ def test_term_kinds_nest_survive_json_and_are_told_apart_by_semantic_id_in_aas()
     end = EffectSet.model_validate_json(effects.model_dump_json()).End.term
     assert (type(end["Term_00"]), type(end["Term_01"])) == (When, OneOfEffects)
 
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
     relations = resource.capability_description.CapabilitySet["OfferedCapabilities"].CapabilityContainer[
         "Dispensing"].CapabilityRelations
     relations.ConditionSet, relations.EffectSet = conditions, effects

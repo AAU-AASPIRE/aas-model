@@ -104,6 +104,12 @@ class Product(AAS):
     variables: Optional[Variables] = None
 
     @model_validator(mode="after")
+    def _nameplate_says_what_it_is(self):
+        if getattr(self.nameplate, "DERIVES_PRODUCT_HIERARCHY", False):
+            self.nameplate.derive_from(self.asset_type)
+        return self
+
+    @model_validator(mode="after")
     def the_recipe_has_the_planners_identifier(self):
         recipe = self.production_sequence
         if recipe is not None and recipe.id == recipe.id_short:          # no identifier given

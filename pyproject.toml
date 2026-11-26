@@ -18,6 +18,10 @@ dev = ["pytest>=8", "rdflib>=7"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+# The AP2030 logo the lab's nameplates name (CompanyLogo), uploaded by registration.
+aas_model = ["assets/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "tests"]

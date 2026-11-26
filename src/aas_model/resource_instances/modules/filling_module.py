@@ -46,12 +46,11 @@ from aas_pydantic.submodel_templates.capability_description import (
     CapabilityComposedOf, CapabilityGeneralizedBy, ComposedOfContainer, ComposedOfSet, GeneralizedBySet,
     PropertyProperty, PropertyRange, PropertySubmodelList,
 )
-from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
 from aas_pydantic.submodel_templates.time_series import Name
 
-from aas_model.constants import BASE_URL, LAB
+from aas_model.constants import BASE_URL, COMPONENT_TYPE, LAB, MODULE_TYPE
 from aas_model.resource_template.modules import (
-    Component, LabNameplate, LocatedEntryNode, LocatedNode, LocatedStructures, Module, ModuleSkill, ModuleSkills,
+    Component, LocatedEntryNode, LocatedNode, LocatedStructures, Module, ModuleSkill, ModuleSkills, lab_nameplate,
 )
 from aas_model.submodel_templates.arso import skills as s
 from aas_model.submodel_templates.capability_description import (
@@ -205,7 +204,7 @@ def filling_linear_axis() -> Component:
     """The needle lift: a stepper motor with a limit switch at the top. Its position is observed: the module
     records it (``Variables/Measurements/LinearAxis``)."""
     return Component(
-        id_short="FillingLinearAxisAAS", id=LINEAR_AXIS, asset_type=f"{BASE_URL}/Resource/Component/LinearAxis",
+        id_short="FillingLinearAxisAAS", id=LINEAR_AXIS, asset_type=f"{COMPONENT_TYPE}/LinearAxis",
         skills=ModuleSkills(Skill={
             "Home": ModuleSkill(
                 supplemental_semantic_ids=[f"{SKILL}/Primitive"],
@@ -269,7 +268,7 @@ def filling_linear_axis() -> Component:
 def filling_pump() -> Component:
     """The filling pump. None is wired yet: dispensing is a time at the flow rate (After)."""
     return Component(
-        id_short="FillingPumpAAS", id=PUMP, asset_type=f"{BASE_URL}/Resource/Component/FillingPump",
+        id_short="FillingPumpAAS", id=PUMP, asset_type=f"{COMPONENT_TYPE}/FillingPump",
         skills=ModuleSkills(Skill={
             "Dispense": ModuleSkill(
                 supplemental_semantic_ids=[f"{SKILL}/Primitive"],
@@ -326,7 +325,7 @@ def filling_pump() -> Component:
 def filling_scale() -> Component:
     """The scale under the nest (simulated: the hardware has none)."""
     return Component(
-        id_short="FillingScaleAAS", id=SCALE, asset_type=f"{BASE_URL}/Resource/Component/Scale",
+        id_short="FillingScaleAAS", id=SCALE, asset_type=f"{COMPONENT_TYPE}/Scale",
         skills=ModuleSkills(Skill={
             "Tare": ModuleSkill(
                 supplemental_semantic_ids=[f"{SKILL}/Primitive"],
@@ -675,10 +674,8 @@ def filling_module() -> Module:
     )
 
     return Module(
-        id_short="FillingModuleAAS", id=MODULE,
-        nameplate=LabNameplate(
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Filling module"}),
-        ),
+        id_short="FillingModuleAAS", id=MODULE, asset_type=f"{MODULE_TYPE}/FillingModule",
+        nameplate=lab_nameplate("Filling module of the AP2030 filling line"),
         # The transfer point's position in the line's frame, into the state store: the coordinate and the base it is
         # relative to are the mapping's sources (static elements, read again when one changes), composed in its Lua.
         asset_interfaces_mapping_configuration=Aimc(

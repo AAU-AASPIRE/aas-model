@@ -11,7 +11,7 @@ from aas_model import Resource, ResourceTypeAAS, build_from_model, inject_ids
 from aas_model.constants import BASE_URL
 from aas_model.submodel_templates.parameters import Position
 from aas_model.resource_template import MqttOperationalStation as Station
-from aas_model.resource_instances import syntegon_stoppering
+from aas_model.resource_instances import stoppering_station
 from aas_model.submodel_templates.control_component_instance import SkillOperation
 from aas_model.submodel_templates.skills import ModuleSkill
 from aas_model.submodel_templates.time_series import TimeSeriesCollection
@@ -91,7 +91,7 @@ def test_resolving_one_resource_does_not_change_reference_defaults_for_the_next(
     assert mapping.Sinks.value[0].Sink.value.key[0].value == "{aas_id}/submodels/Variables"
 
 
-@pytest.mark.parametrize("factory", [lambda: Station(id_short="Generic"), syntegon_stoppering])
+@pytest.mark.parametrize("factory", [lambda: Station(id_short="Generic"), stoppering_station])
 def test_complete_resource_json_round_trip(factory):
     resource = factory()
     resource.parameters.parameter["Location"].x.parameter.value = 123.5
@@ -113,14 +113,14 @@ def test_complete_resource_json_round_trip(factory):
 
 
 def test_python_resource_and_restored_config_build_the_same_aas():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     restored = Resource.model_validate_json(resource.model_dump_json())
 
     assert _document(build_from_model(resource)) == _document(build_from_model(restored))
 
 
 def test_build_from_model_resolves_references_without_mutating_resource():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     before = resource.model_dump_json()
     store = build_from_model(resource)
     shell = next(obj for obj in store if isinstance(obj, model.AssetAdministrationShell))
@@ -153,7 +153,7 @@ def test_json_import_and_model_build_preserve_authored_container_structure():
 
 
 def test_pydantic_dict_and_json_loading_build_the_same_aas():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     encoded = resource.model_dump_json()
     expected = _document(build_from_model(resource))
 
@@ -163,7 +163,7 @@ def test_pydantic_dict_and_json_loading_build_the_same_aas():
 
 @pytest.mark.parametrize("source", ["dict", "file"])
 def test_pydantic_loading_preserves_empty_containers_without_default_overlay(source, tmp_path):
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     resource.variables.State = None
     resource.variables.Log = None
     resource.variables.Knowledge = None
@@ -203,7 +203,7 @@ def test_pydantic_rejects_invalid_exported_field_types():
 
 
 def test_pydantic_import_preserves_explicitly_empty_invocation_qualifiers():
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
     data = json.loads(resource.model_dump_json())
     data["skills"]["Skill"]["Halt"]["Start"]["SkillOperation"]["Start"]["qualifiers"] = []
 
@@ -229,17 +229,17 @@ def test_build_from_model_keeps_resource_subclass_fields():
 
 
 def test_concrete_resources_are_fresh_instances():
-    first = syntegon_stoppering()
+    first = stoppering_station()
     first.nameplate.ManufacturerProductDesignation.value = {"en": "changed"}
     first.skills.Skill.clear()
-    second = syntegon_stoppering()
+    second = stoppering_station()
 
-    assert second.nameplate.ManufacturerProductDesignation.value == {"en": "Stoppering station"}
+    assert second.nameplate.ManufacturerProductDesignation.value == {"en": "Stoppering station of the AP2030 filling line"}
     assert set(second.skills.Skill) == {"Halt", "Occupy", "Release", "Stoppering"}
 
 
 def test_build_from_model_does_not_revalidate_or_serialize_the_model(monkeypatch):
-    resource = syntegon_stoppering()
+    resource = stoppering_station()
 
     def unexpected_validation(*args, **kwargs):
         raise AssertionError("Building a typed model must not serialize or revalidate it")

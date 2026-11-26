@@ -1,13 +1,13 @@
 """Concrete station resources."""
 
-from .cytiva_capping import cytiva_capping
-from .ima_dispensing import ima_dispensing
-from .ima_loading import ima_loading
-from .omron_camera import omron_camera
-from .optima_unloading import optima_unloading
-from .syntegon_stoppering import syntegon_stoppering
+from .capping_station import capping_station
+from .dispensing_station import dispensing_station
+from .loading_station import loading_station
+from .inspection_station import inspection_station
+from .unloading_station import unloading_station
+from .stoppering_station import stoppering_station
 
 __all__ = [
-    "cytiva_capping", "ima_dispensing", "ima_loading", "omron_camera",
-    "optima_unloading", "syntegon_stoppering",
+    "capping_station", "dispensing_station", "loading_station", "inspection_station",
+    "unloading_station", "stoppering_station",
 ]

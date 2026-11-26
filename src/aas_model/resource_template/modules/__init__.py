@@ -5,7 +5,7 @@
 
 from .asset import RESOURCE, ArsoResource, Component, Module, ProductionSystem
 from .submodels import (
-    BasicConstraintContainer, LabNameplate, LocatedEntryNode, LocatedNode, LocatedStructures, ModuleCapabilityContainer,
+    BasicConstraintContainer, LabNameplate, lab_nameplate, LocatedEntryNode, LocatedNode, LocatedStructures, ModuleCapabilityContainer,
     ModuleCapabilityDescription, ModuleCapabilityRelations, ModuleCapabilitySet, ModuleConstraintSet,
     ModuleControlConfiguration, ModuleInterfaces, ModuleSkill, ModuleSkills, RealizedBySkill, SameAs,
     StatedProperty, StatedPropertySet,
@@ -13,7 +13,7 @@ from .submodels import (
 
 __all__ = [
     "RESOURCE", "ArsoResource", "Component", "Module", "ProductionSystem",
-    "BasicConstraintContainer", "LabNameplate", "LocatedEntryNode", "LocatedNode", "LocatedStructures",
+    "BasicConstraintContainer", "LabNameplate", "lab_nameplate", "LocatedEntryNode", "LocatedNode", "LocatedStructures",
     "ModuleCapabilityContainer", "ModuleCapabilityDescription", "ModuleCapabilityRelations",
     "ModuleCapabilitySet", "ModuleConstraintSet", "ModuleControlConfiguration", "ModuleInterfaces",
     "ModuleSkill", "ModuleSkills", "RealizedBySkill", "SameAs", "StatedProperty", "StatedPropertySet",

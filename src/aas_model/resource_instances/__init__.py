@@ -2,20 +2,20 @@
 
 from .software import orchestrator, production_planner
 from .stations import (
-    cytiva_capping, ima_dispensing, ima_loading, omron_camera,
-    optima_unloading, syntegon_stoppering,
+    capping_station, dispensing_station, loading_station, inspection_station,
+    unloading_station, stoppering_station,
 )
 from .systems import aau_filling_line, planar_table
 from .transport import planar_shuttle_1, planar_shuttle_2, planar_shuttle_3
 
 
 RESOURCE_FACTORIES = {
-    "syntegonStoppering": syntegon_stoppering,
-    "cytivaCapping": cytiva_capping,
-    "imaDispensing": ima_dispensing,
-    "imaLoadingSystem": ima_loading,
-    "optimaUnloading": optima_unloading,
-    "omronCamera": omron_camera,
+    "stopperingStation": stoppering_station,
+    "cappingStation": capping_station,
+    "dispensingStation": dispensing_station,
+    "loadingStation": loading_station,
+    "unloadingStation": unloading_station,
+    "inspectionStation": inspection_station,
     "planarShuttle1": planar_shuttle_1,
     "planarShuttle2": planar_shuttle_2,
     "planarShuttle3": planar_shuttle_3,
@@ -26,8 +26,8 @@ RESOURCE_FACTORIES = {
 }
 
 __all__ = [
-    "syntegon_stoppering", "cytiva_capping", "ima_dispensing", "ima_loading",
-    "optima_unloading", "omron_camera", "planar_shuttle_1", "planar_shuttle_2",
+    "stoppering_station", "capping_station", "dispensing_station", "loading_station",
+    "unloading_station", "inspection_station", "planar_shuttle_1", "planar_shuttle_2",
     "planar_shuttle_3", "planar_table", "orchestrator", "production_planner",
     "aau_filling_line", "RESOURCE_FACTORIES",
 ]

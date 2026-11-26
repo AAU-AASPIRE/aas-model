@@ -1,8 +1,7 @@
 """AAU production planner instance."""
 
-from aas_model.constants import BASE_URL, BROKER, CSSX, SCHEMA_BASE, SITE
-from aas_pydantic.submodel_templates.nameplate import ManufacturerProductDesignation
-from aas_model.resource_template.modules import LabNameplate
+from aas_model.constants import BASE_URL, BROKER, CSSX, SCHEMA_BASE, SITE, SOFTWARE_TYPE
+from aas_model.resource_template.modules import lab_nameplate
 from aas_model.resource_template.resources import MqttSoftwareResource
 from aas_model.resource_template.references import (
     MQTT_INTERFACE, action_member_ref, affordance_ref, capability_ref, operation_variable_ref, series_segment_ref,
@@ -32,9 +31,8 @@ def production_planner() -> MqttSoftwareResource:
     identity = "productionPlannerAAS"
     resource = MqttSoftwareResource(
         id_short=identity, id=f"{BASE_URL}/aas/{identity}",
-        asset_type=f"{CSSX}#ProductionPlanner",
-        nameplate=LabNameplate(
-            ManufacturerProductDesignation=ManufacturerProductDesignation(value={"en": "Production planner"})),
+        asset_type=f"{SOFTWARE_TYPE}/ProductionPlanner",
+        nameplate=lab_nameplate("Production planner of the AP2030 filling line"),
     )
     input_url = f"{SCHEMA_BASE}/planningCommand.schema.json"
     output_url = f"{SCHEMA_BASE}/planningResponse.schema.json"

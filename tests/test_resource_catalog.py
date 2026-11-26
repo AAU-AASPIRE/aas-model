@@ -28,10 +28,10 @@ from test_resource import _document
 
 
 CATALOG_NAMES = {
-    "aauFillingLine", "cytivaCapping", "imaDispensing", "imaLoadingSystem",
-    "omronCamera", "optimaUnloading", "orchestrator", "planarShuttle1",
+    "aauFillingLine", "cappingStation", "dispensingStation", "loadingStation",
+    "inspectionStation", "unloadingStation", "orchestrator", "planarShuttle1",
     "planarShuttle2", "planarShuttle3", "planarTable", "productionPlanner",
-    "syntegonStoppering",
+    "stopperingStation",
 }
 
 
@@ -153,8 +153,8 @@ def test_filling_line_and_table_topology_matches_catalog_identities():
     line = RESOURCE_FACTORIES["aauFillingLine"]()
     table = RESOURCE_FACTORIES["planarTable"]()
     station_names = (
-        "syntegonStoppering", "cytivaCapping", "imaDispensing", "imaLoadingSystem",
-        "optimaUnloading", "omronCamera",
+        "stopperingStation", "cappingStation", "dispensingStation", "loadingStation",
+        "unloadingStation", "inspectionStation",
     )
     stations = [RESOURCE_FACTORIES[name]() for name in station_names]
     assert set(line.hierarchical_structures.EntryNode.Node) == {
@@ -211,8 +211,8 @@ def test_motion_schema_operation_and_mapping_describe_the_same_payload():
 
 
 def test_extra_station_telemetry_has_variables_and_live_mappings():
-    dispensing = RESOURCE_FACTORIES["imaDispensing"]()
-    camera = RESOURCE_FACTORIES["omronCamera"]()
+    dispensing = RESOURCE_FACTORIES["dispensingStation"]()
+    camera = RESOURCE_FACTORIES["inspectionStation"]()
     for resource, kinds in ((dispensing, {"Weight": "TimeSeriesCollection"}),
                             (camera, {"Image": "VariableProp", "QualityResult": "TimeSeriesCollection"})):
         assert {k: type(v).__name__ for k, v in resource.variables.Measurements.value.items()} == kinds
@@ -299,7 +299,7 @@ def test_dispensing_type_declares_capability_but_not_vendor_skill_or_weight():
     assert station.variables.Measurements is None
     assert "Dispensing" not in station.skills.Skill
     assert _interfaces(station) == {}
-    concrete = RESOURCE_FACTORIES["imaDispensing"]()
+    concrete = RESOURCE_FACTORIES["dispensingStation"]()
     assert "Dispensing" in concrete.skills.Skill
     action = _interfaces(concrete)["interface_opcua"].InteractionMetadata.actions.property_name["Dispensing"]
     assert set(action.input.properties.property_name) == {"Uuid", "Volume"}
@@ -313,8 +313,8 @@ def test_no_protocol_is_a_default_interface():
 
 
 @pytest.mark.parametrize("name,interface", [
-    ("syntegonStoppering", "interface_mqtt"),
-    ("imaDispensing", "interface_opcua"),
+    ("stopperingStation", "interface_mqtt"),
+    ("dispensingStation", "interface_opcua"),
 ])
 def test_station_bindings_use_one_protocol_only(name, interface):
     resource = RESOURCE_FACTORIES[name]()
@@ -327,7 +327,7 @@ def test_station_bindings_use_one_protocol_only(name, interface):
 
 
 def test_dispensing_observes_the_weight_at_a_fast_sampling_interval():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
     weight = next(
         m for m in resource.asset_interfaces_mapping_configuration.MappingConfigurations.value
         if m.id_short == "Weight"
@@ -359,7 +359,7 @@ def test_direct_typed_defaults_are_independent_across_resources():
 
 
 def test_graph_validation_rejects_invalid_direct_dict_insertions_before_aas_export():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
     resource.skills.Skill["Invalid"] = 42
     with pytest.warns(UserWarning, match="Pydantic serializer warnings"):
         with pytest.raises(ValidationError):
@@ -401,8 +401,8 @@ def test_factory_authored_skills_resolve_their_invocations_and_empty_imports_sta
 
 
 @pytest.mark.parametrize("names, template, group", [
-    (("syntegonStoppering", "cytivaCapping", "imaDispensing"), ProcessingStation, "OfferedCapabilities"),
-    (("imaLoadingSystem", "optimaUnloading"), HandlingStation, "AuxiliaryCapabilities"),
+    (("stopperingStation", "cappingStation", "dispensingStation"), ProcessingStation, "OfferedCapabilities"),
+    (("loadingStation", "unloadingStation"), HandlingStation, "OfferedCapabilities"),
 ])
 def test_related_stations_share_their_type_and_capability_group(names, template, group):
     for name in names:
@@ -412,7 +412,7 @@ def test_related_stations_share_their_type_and_capability_group(names, template,
 
 
 def test_capability_realization_is_explicit_and_not_a_skill_naming_rule():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
     relations = resource.capability_description.CapabilitySet[
         "OfferedCapabilities"
     ].CapabilityContainer["Dispensing"].CapabilityRelations.CapabilityRealizedBy
@@ -431,13 +431,13 @@ def test_capability_realization_is_explicit_and_not_a_skill_naming_rule():
 
 
 @pytest.mark.parametrize("name, group, capability, skill", [
-    ("syntegonStoppering", "OfferedCapabilities", "Stoppering", "Stoppering"),
-    ("cytivaCapping", "OfferedCapabilities", "Capping", "Capping"),
-    ("imaDispensing", "OfferedCapabilities", "Dispensing", "Dispensing"),
-    ("imaLoadingSystem", "AuxiliaryCapabilities", "Loading", "Loading"),
-    ("optimaUnloading", "AuxiliaryCapabilities", "Unloading", "Unloading"),
-    ("optimaUnloading", "AuxiliaryCapabilities", "Scrap", "Scrap"),
-    ("omronCamera", "OfferedCapabilities", "Capture", "Capture"),
+    ("stopperingStation", "OfferedCapabilities", "Stoppering", "Stoppering"),
+    ("cappingStation", "OfferedCapabilities", "Capping", "Capping"),
+    ("dispensingStation", "OfferedCapabilities", "Dispensing", "Dispensing"),
+    ("loadingStation", "OfferedCapabilities", "Loading", "Loading"),
+    ("unloadingStation", "OfferedCapabilities", "Unloading", "Unloading"),
+    ("unloadingStation", "OfferedCapabilities", "Scrap", "Scrap"),
+    ("inspectionStation", "OfferedCapabilities", "Capture", "Capture"),
     ("planarShuttle1", "AuxiliaryCapabilities", "MoveToPosition", "MoveToPosition"),
     ("orchestrator", "AuxiliaryCapabilities", "Orchestrate", "Start"),
     ("productionPlanner", "AuxiliaryCapabilities", "Plan", "Plan"),
@@ -466,7 +466,7 @@ def test_optional_operation_outputs_carry_the_dmp_qualifier_through_export():
     from aas_model.builder import build_from_model
     from aas_model.submodel_templates.control_component_instance import OPERATION_VARIABLE_OPTIONAL
 
-    doc = json.loads(json_serialization.object_store_to_json(build_from_model(RESOURCE_FACTORIES["imaDispensing"]())))
+    doc = json.loads(json_serialization.object_store_to_json(build_from_model(RESOURCE_FACTORIES["dispensingStation"]())))
     skills = next(s for s in doc["submodels"] if s["idShort"] == "Skills")
     skill = next(s for s in skills["submodelElements"] if s["idShort"] == "Dispensing")
     start = next(e for e in skill["value"] if e["idShort"] == "Start")

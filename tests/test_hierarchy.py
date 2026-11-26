@@ -56,7 +56,7 @@ def test_every_relationship_references_an_entity_that_exists():
 
 def test_a_node_is_the_entry_node_of_the_related_resource():
     submodels = _submodels()
-    capping = next(s for s in submodels.values() if s["id"].endswith("cytivaCappingSystemAAS/submodels/"
+    capping = next(s for s in submodels.values() if s["id"].endswith("CappingStationAAS/submodels/"
                                                                        "HierarchicalStructures"))
     [same_as] = [r for r in _relationships(capping) if r["idShort"] == "SameAs"]
     line = _resolve(submodels, same_as["second"])

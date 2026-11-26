@@ -64,7 +64,7 @@ def _stores():
         for identifiable in build_from_model(factory()):
             module.add(identifiable)
     yield "fillingModule", module
-    for name in ("imaDispensing", "syntegonStoppering", "planarShuttle1"):
+    for name in ("dispensingStation", "stopperingStation", "planarShuttle1"):
         store = model.DictIdentifiableStore()
         for identifiable in build_from_model(RESOURCE_FACTORIES[name]()):
             store.add(identifiable)
@@ -175,8 +175,8 @@ TRANSLATED = _translated()
 def test_the_capabilities_the_behaviour_tree_runs_have_translations():
     named = {(name, container.id_short) for name, container, *_ in TRANSLATED}
     assert {("fillingModule", "Filling"), ("fillingModule", "Occupying"), ("fillingModule", "Releasing"),
-            ("imaDispensing", "Dispensing"), ("imaDispensing", "Occupying"), ("imaDispensing", "Releasing"),
-            ("syntegonStoppering", "Occupying"), ("planarShuttle1", "MoveToPosition"),
+            ("dispensingStation", "Dispensing"), ("dispensingStation", "Occupying"), ("dispensingStation", "Releasing"),
+            ("stopperingStation", "Occupying"), ("planarShuttle1", "MoveToPosition"),
             ("planarShuttle1", "Occupying")} <= named
 
 
@@ -214,9 +214,9 @@ def test_filling_classifies_the_weight_against_what_the_product_requires():
 
 
 def test_a_station_command_carries_the_units_uuid_its_queue_holds():
-    (occupying,) = [r for n, c, r, *_ in TRANSLATED if (n, c.id_short) == ("imaDispensing", "Occupying")]
+    (occupying,) = [r for n, c, r, *_ in TRANSLATED if (n, c.id_short) == ("dispensingStation", "Occupying")]
     assert _call(occupying) == {"Uuid": UNIT[len("urn:uuid:"):]}
-    (dispensing,) = [r for n, c, r, *_ in TRANSLATED if (n, c.id_short) == ("imaDispensing", "Dispensing")]
+    (dispensing,) = [r for n, c, r, *_ in TRANSLATED if (n, c.id_short) == ("dispensingStation", "Dispensing")]
     assert _call(dispensing) == {"Uuid": UNIT[len("urn:uuid:"):], "Volume": 2.0}
 
 
@@ -247,7 +247,7 @@ def _transform(mapping, sources: dict) -> dict:
 
 def test_a_station_sinks_the_head_of_its_queue_as_who_it_serves():
     """The station-state mapping writes the series row and, into the state store, the unit at the queue's head."""
-    store = dict(_stores())["imaDispensing"]
+    store = dict(_stores())["dispensingStation"]
     mapping = _mapping(store, "OccupiedBy")
     out = _transform(mapping, {"State": "EXECUTE", "ProcessQueue": ["7f3a9c2e", "0b1d"]})
     assert out["OccupiedBy"] == "urn:uuid:7f3a9c2e"

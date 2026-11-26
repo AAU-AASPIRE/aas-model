@@ -25,7 +25,7 @@ def _state_properties() -> set:
     from aas_model.resource_instances.modules import MODULE_FACTORIES
 
     factories = [*MODULE_FACTORIES.values(), *PRODUCT_FACTORIES.values(), *BATCH_FACTORIES.values(),
-                 RESOURCE_FACTORIES["planarShuttle1"], RESOURCE_FACTORIES["imaDispensing"]]
+                 RESOURCE_FACTORIES["planarShuttle1"], RESOURCE_FACTORIES["dispensingStation"]]
     kinds = {EXECUTION_CONDITION, EXECUTION_EFFECT, EXECUTION_FORMULA_USE, STATE_VARIABLE}
     found = set()
 

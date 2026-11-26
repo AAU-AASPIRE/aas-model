@@ -1,6 +1,6 @@
 """Planar table instance."""
 
-from aas_model.constants import BASE_URL, BROKER, CSSX, SITE
+from aas_model.constants import BASE_URL, BROKER, SITE, SYSTEM_TYPE
 from aas_pydantic.submodel_templates.hierarchical_structures import EntryNode, Node
 from aas_pydantic.submodel_templates.nameplate import ManufacturerName, ManufacturerProductDesignation
 from aas_model.resource_template import ResourceNameplate
@@ -33,7 +33,7 @@ def planar_table() -> CompositeResource:
     table = CompositeResource(
         id_short=identity,
         id=resource_id,
-        asset_type=f"{CSSX}#PlanarTable",
+        asset_type=f"{SYSTEM_TYPE}/PlanarTable",
         specific_asset_ids={"serialNumber": serial},
         nameplate=ResourceNameplate(
             URIOfTheProduct=resource_id,

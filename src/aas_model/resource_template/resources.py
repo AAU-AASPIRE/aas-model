@@ -21,7 +21,9 @@ from aas_pydantic.submodel_templates.nameplate import (
     NationalCode, OrderCodeOfManufacturer, Street, URIOfTheProduct, Zipcode,
 )
 
-from aas_model.constants import BASE_URL, CSSX, LAB, SHUTTLE_ASSET_TYPE
+from aas_model.constants import (
+    BASE_URL, CSSX, LAB, MODULE_TYPE, RESOURCE_TYPE, SHUTTLE_ASSET_TYPE, SOFTWARE_TYPE, SYSTEM_TYPE,
+)
 from aas_model.submodel_templates import Aimc, AimcMappingConfigurations
 from aas_model.submodel_templates.capability_description import (
     AUXILIARY_CAPABILITIES, OFFERED_CAPABILITIES,
@@ -120,6 +122,14 @@ class Resource(AAS):
         """The state variables a resource of this type declares in its Variables/Knowledge: none unless its type says."""
         return {}
 
+    # A nameplate that derives its product hierarchy (the lab's) reads it from the asset type.
+    @model_validator(mode="after")
+    def _nameplate_says_what_it_is(self):
+        nameplate = getattr(self, "nameplate", None)
+        if getattr(nameplate, "DERIVES_PRODUCT_HIERARCHY", False):
+            nameplate.derive_from(self.asset_type)
+        return self
+
     # The Knowledge is added unless authored, not a class default, as a station's series are (``OperationalVariables``):
     # the resource restored from JSON holds what was authored.
     @model_validator(mode="after")
@@ -161,7 +171,7 @@ class OperationalResource(PhysicalResource):
 class Station(OperationalResource):
     """Physical workstation, independent of the native interface protocol."""
 
-    asset_type: str = f"{CSSX}#Station"
+    asset_type: str = MODULE_TYPE
 
 
 class MqttOperationalStation(Station):
@@ -193,17 +203,17 @@ class OpcuaOperationalStation(Station):
 class ProcessingStation(Station):
     """A station that changes a product; concrete stations declare their skills."""
 
-    asset_type: str = f"{CSSX}#ProcessingStation"
+    asset_type: str = MODULE_TYPE
 
 
 class HandlingStation(Station):
     """A station that loads, unloads, or otherwise handles a product."""
 
-    asset_type: str = f"{CSSX}#HandlingStation"
+    asset_type: str = MODULE_TYPE
 
 
 class StopperingStation(ProcessingStation):
-    asset_type: str = f"{CSSX}#StopperingSystem"
+    asset_type: str = f"{MODULE_TYPE}/StopperingStation"
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
@@ -217,7 +227,7 @@ class StopperingStation(ProcessingStation):
 
 
 class CappingStation(ProcessingStation):
-    asset_type: str = f"{CSSX}#CappingSystem"
+    asset_type: str = f"{MODULE_TYPE}/CappingStation"
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
@@ -233,7 +243,7 @@ class CappingStation(ProcessingStation):
 class DispensingStation(ProcessingStation):
     """Fills a unit (the lab's Filling): it needs the unit empty. What the unit ends holding, and how a call is built
     (the Translation), is the instance's, whose Operation it is; the volume is what the unit's product requires."""
-    asset_type: str = f"{CSSX}#DispensingSystem"
+    asset_type: str = f"{MODULE_TYPE}/DispensingStation"
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
@@ -262,11 +272,11 @@ class DispensingStation(ProcessingStation):
 
 
 class LoadingStation(HandlingStation):
-    asset_type: str = f"{CSSX}#LoadingSystem"
+    asset_type: str = f"{MODULE_TYPE}/LoadingStation"
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            AUXILIARY_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
+            OFFERED_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Loading": ModuleCapabilityContainer(Capability=Capability(
                     semantic_id=f"{CSSX}#Loading", supplemental_semantic_ids=[f"{LAB}Loading"],
                 )),
@@ -276,12 +286,12 @@ class LoadingStation(HandlingStation):
 
 
 class UnloadingStation(HandlingStation):
-    asset_type: str = f"{CSSX}#UnloadingSystem"
+    asset_type: str = f"{MODULE_TYPE}/UnloadingStation"
     # Scrap has no meaning in the lab vocabulary yet.
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
-            AUXILIARY_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
+            OFFERED_CAPABILITIES: ModuleCapabilitySet(CapabilityContainer={
                 "Unloading": ModuleCapabilityContainer(Capability=Capability(
                     semantic_id=f"{CSSX}#Unloading", supplemental_semantic_ids=[f"{LAB}Unloading"],
                 )),
@@ -292,7 +302,7 @@ class UnloadingStation(HandlingStation):
 
 
 class InspectionStation(Station):
-    asset_type: str = f"{CSSX}#QualityControlSystem"
+    asset_type: str = f"{MODULE_TYPE}/InspectionStation"
     capability_description: ModuleCapabilityDescription = OperationalCapabilityDescription(
         id_short="CapabilityDescription",
         CapabilitySet={
@@ -309,7 +319,7 @@ class InspectionStation(Station):
 
 class TransportResource(PhysicalResource):
     """Protocol-neutral physical transport resource."""
-    asset_type: str = f"{CSSX}#TransportSystem"
+    asset_type: str = RESOURCE_TYPE
 
 
 class Shuttle(TransportResource):
@@ -337,7 +347,7 @@ class PlanarShuttle(Shuttle):
 
     Native Position arrays and operation X/Y/Theta use millimetres and radians.
     """
-    asset_type: str = f"{CSSX}#PlanarTableShuttle"
+    asset_type: str = f"{SHUTTLE_ASSET_TYPE}/PlanarShuttle"
     # Who the shuttle serves (the head of its process queue), and where it is: its reported position, sunk into the
     # state store by the mapping that writes its Location series (observed, mm in the table's frame), and the
     # place that position is at (Location: derived by query from the places' projected positions, never stored; D36).
@@ -396,7 +406,7 @@ class PlanarShuttle(Shuttle):
 # ── Software ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 class SoftwareResource(Resource):
-    asset_type: str = f"{CSSX}#SoftwareResource"
+    asset_type: str = SOFTWARE_TYPE
 
 
 class MqttSoftwareResource(SoftwareResource):
@@ -412,5 +422,5 @@ class MqttSoftwareResource(SoftwareResource):
 class CompositeResource(Resource):
     """A composed resource explicitly declares its members in IDTA hierarchy."""
 
-    asset_type: str = f"{CSSX}#CompositeResource"
+    asset_type: str = SYSTEM_TYPE
     hierarchical_structures: HierarchicalStructures

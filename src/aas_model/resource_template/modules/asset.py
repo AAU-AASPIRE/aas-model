@@ -15,7 +15,7 @@ from typing import Optional
 
 from aas_pydantic.submodel_templates.nameplate import Nameplate
 
-from aas_model.constants import BASE_URL
+from aas_model.constants import COMPONENT_TYPE, MODULE_TYPE, RESOURCE_TYPE, SYSTEM_TYPE
 from aas_model.resource_template.resources import Resource
 from aas_model.submodel_templates.parameters import ResourceParameters
 from aas_model.submodel_templates import Aimc, AimcMappingConfigurations
@@ -28,7 +28,7 @@ from .submodels import (
     ModuleSkills,
 )
 
-RESOURCE = f"{BASE_URL}/Resource"
+RESOURCE = RESOURCE_TYPE
 
 
 class ArsoResource(Resource):
@@ -50,7 +50,7 @@ class Module(ArsoResource):
     (Skills), offers the capabilities they realize (Capability Description), is called over OPC UA
     (Asset Interfaces Description and Mapping Configuration) and shows its live values and where it
     is (Variables)."""
-    asset_type: str = f"{RESOURCE}/Module"
+    asset_type: str = MODULE_TYPE
     nameplate: Nameplate = LabNameplate()
     hierarchical_structures: LocatedStructures = LocatedStructures()
     asset_interfaces_description: ModuleInterfaces = ModuleInterfaces(id_short="AssetInterfacesDescription")
@@ -69,12 +69,12 @@ class Component(ArsoResource):
     """A part of a module that acts (an axis, a pump, a scale): its primitive skills. The module it
     is built into carries them out, so their commands refer to actions of the module's interface
     description. Its asset type ends in its kind (``.../Resource/Component/LinearAxis``)."""
-    asset_type: str = f"{RESOURCE}/Component"
+    asset_type: str = COMPONENT_TYPE
     skills: ModuleSkills = ModuleSkills(id_short="Skills")
 
 
 class ProductionSystem(ArsoResource):
     """A production system (a line): the modules it is made of, each found by its asset id, and the
     coordinates of its own points (where its robots place and pick)."""
-    asset_type: str = f"{RESOURCE}/System"
+    asset_type: str = SYSTEM_TYPE
     hierarchical_structures: LocatedStructures = LocatedStructures()

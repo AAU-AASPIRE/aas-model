@@ -48,7 +48,7 @@ def test_a_variable_is_marked_optional_by_its_qualifier():
 
 
 def test_collection_and_list_variables_export_with_their_optional_marks():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
     operation = resource.skills.Skill["Dispensing"].Start.SkillOperation["Start"]
     operation.output_variable = [*operation.output_variable, Result(id_short="Result"),
                                  SubmodelElementList(id_short="Samples", type_value_list_element="Property",
@@ -63,7 +63,7 @@ def test_collection_and_list_variables_export_with_their_optional_marks():
 
 
 def test_operation_aimc_uses_explicit_input_and_output_variable_references():
-    resource = RESOURCE_FACTORIES["imaDispensing"]()
+    resource = RESOURCE_FACTORIES["dispensingStation"]()
     operation = resource.skills.Skill["Dispensing"].Start.SkillOperation["Start"]
     mapping = next(mc for mc in resource.asset_interfaces_mapping_configuration
                    .MappingConfigurations.value if mc.id_short == "Dispensing")
