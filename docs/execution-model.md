@@ -281,8 +281,9 @@ for every input it sends, by the Operation's idShorts (or `{reference = …}` in
 D27); `reply(outputs, subjects, properties)` returns `{ok = true, outcome = <Outcome idShort>}` (`outcome` only
 where the End effects hold a OneOf) or `{ok = false, error = <SkillError idShort>}`. Scripts are pure: they never
 read or write state themselves. `call` must cover exactly the Operation's inputs and `reply` may only name declared
-outcomes and errors [`translation.coverage`]; this is checked on the shared test vectors (group F), and
-statically by the line planner's compiler. A capability run only as a step of a composite skill has no Translation.
+outcomes and errors [`translation.coverage`]; this is checked by the line planner's compiler, where it copies the
+Translation into the tree, and on the shared test vectors (group F) by the hosts that run them; not by modreg's check,
+as nothing else in the tools runs a Translation. A capability run only as a step of a composite skill has no Translation.
 aas-model's `submodel_templates/execution.py` documents the tables the host fills.
 
 ## 10. Levels and specialization (Provisional, open question 13)
@@ -339,7 +340,7 @@ path of the element. Fixture group D holds one invalid model per code.
 | `declaration.missing` | error | every (subject, property) resolves to a declaration | 7 |
 | `constraint.state` | error | no BasicConstraint names a state property | 7 |
 | `translation.realized-by` | error | a capability with a Translation is realized by exactly one Operation | 9 |
-| `translation.coverage` | error | Call covers the inputs; Reply names declared outcomes and errors | 9 |
+| `translation.coverage` | error | Call covers the inputs; Reply names declared outcomes and errors (the line planner's compiler) | 9 |
 | `level.widening` | error | a specialization only narrows and adds | 10 |
 | `level.incomplete` | warning (error from Phase 13) | a specialization carries every general term | 10 |
 | `level.derived` | error (from Phase 5) | a derived capability re-derives | 10 |
