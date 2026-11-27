@@ -56,13 +56,15 @@ effect does: a nominal value, or a formula over the capability's properties and 
 **Terms.** A term is an SMC whose semantic id says what it is:
 
 - ``Condition`` / ``Effect``: one property of one subject. The property rides as a supplemental semantic id
-  (the lab vocabulary); ``Subject`` references an item of Subjects; ``Operator`` is one of the operators
+  (the lab vocabulary); ``Subject`` references an item of Subjects, or the Variable of an enclosing quantifier; ``Operator`` is one of the operators
   below; the operand is exactly one of ``Value`` (a literal), ``ValueReference`` (a parameter, a property of
   the capability, a subject) or ``Formula`` with its ``Uses``. An End effect may carry a ``Rate``: the change
   runs continuously at that rate until the end.
 - ``And``, ``Or``, ``Not``, ``Exists``, ``ForAll`` combine conditions; ``And``, ``ForAll``, ``When`` and
   ``OneOf`` combine effects; they nest freely. Several terms directly under Pre, End, ... all hold (an implicit
-  And). A quantifier's ``Variable`` references the Subject it ranges over; its ``Body`` holds the terms.
+  And). A quantifier declares its own ``Variable``: a ReferenceElement inside it whose value is the semantic id of
+  what it ranges over, with a display name; atoms in its ``Body`` name it as their ``Subject`` (or in a Use) by a
+  model reference to that element, and nowhere outside the quantifier.
 
 The classes are named apart from other templates' (``StateCondition``, ``PreTerms``): aas_pydantic reads an
 element back as the class its dump names. The idShorts of terms (``Term_00``) carry no meaning and keep them in
@@ -286,9 +288,18 @@ class Not(SubmodelElementCollection):
 
 
 class QuantifiedVariable(ReferenceElement):
+    """What a quantifier ranges over, declared by the quantifier itself: an ExternalReference to the semantic id of
+    the objects of that kind (as a run-time subject's), with a display name saying which ("Any vial on the tray").
+    Atoms in the Body name this element as their Subject, or in a Use, by a ModelReference to it; it is out of scope
+    outside the quantifier. It ranges over the objects of that kind in the problem; the behaviour tree never binds it."""
     id_short: str = "Variable"
     semantic_id: str = EXECUTION_QUANTIFIED_VARIABLE
-    description: str = "The Subject the quantifier ranges over (its value: the semantic id of what it ranges over)."
+    description: str = "What the quantifier ranges over: the semantic id of the objects of that kind."
+    value: ExternalReference = ExternalReference()
+
+    @classmethod
+    def over(cls, meaning: str, **kwargs) -> "QuantifiedVariable":
+        return cls(value=ExternalReference(key=(Key(type_="GlobalReference", value=meaning),)), **kwargs)
 
 QuantifiedVariable_t: TypeAlias = QuantifiedVariable  # a field may share the class's id_short
 

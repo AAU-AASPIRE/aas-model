@@ -174,7 +174,8 @@ def test_term_kinds_nest_survive_json_and_are_told_apart_by_semantic_id_in_aas()
     effect = StateEffect(Operator=EffectOperator(value="assign"), Value=TermValue(value="1", value_type="xs:int"))
     conditions = ConditionSet(Pre=PreTerms(term={
         "Term_00": And(term={"Term_00": condition, "Term_01": Or(term={"Term_00": condition})}),
-        "Term_01": ForAll(Variable=QuantifiedVariable(), Body=Body(term={"Term_00": condition})),
+        "Term_01": ForAll(Variable=QuantifiedVariable.over(PRODUCT_ASSET_TYPE, display_name={"en": "Any unit"}),
+                          Body=Body(term={"Term_00": condition})),
     }))
     effects = EffectSet(End=EndTerms(term={
         "Term_00": When(Condition=WhenCondition(term={"Term_00": condition}), Then=WhenThen(term={"Term_00": effect})),
@@ -185,6 +186,9 @@ def test_term_kinds_nest_survive_json_and_are_told_apart_by_semantic_id_in_aas()
         assert json.loads(restored.model_dump_json()) == json.loads(made.model_dump_json())
     pre = ConditionSet.model_validate_json(conditions.model_dump_json()).Pre.term
     assert (type(pre["Term_00"]), type(pre["Term_00"].term["Term_01"]), type(pre["Term_01"])) == (And, Or, ForAll)
+    variable = pre["Term_01"].Variable                      # the quantifier declares what it ranges over
+    assert variable.value.type_ == "ExternalReference" and variable.value.key[0].value == PRODUCT_ASSET_TYPE
+    assert variable.display_name == {"en": "Any unit"}
     end = EffectSet.model_validate_json(effects.model_dump_json()).End.term
     assert (type(end["Term_00"]), type(end["Term_01"])) == (When, OneOfEffects)
 
