@@ -30,5 +30,8 @@ STATE_PROPERTIES: dict[str, tuple[str, str]] = {
         ("InnerDiameter", "number", "single"),
         ("InnerBottomHeight", "number", "single"),
         ("RimHeight", "number", "single"),
+        ("Referenced", "boolean", "single"),
+        ("Tared", "boolean", "single"),
+        ("Weight", "number", "single"),
     )
 }
