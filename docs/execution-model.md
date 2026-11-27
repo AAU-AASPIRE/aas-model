@@ -504,13 +504,15 @@ these paths unique across its AASs (a reader of a whole line keys by AAS id and 
   for an effect, `rate` (an operand, or absent). Connectives: `{"and": [terms]}`, `{"or": […]}`, `{"not": term}`,
   `{"exists": {"variable": V, "body": […]}}`, `{"forall": {…}}`, `{"when": {"if": […], "then": […]}}`,
   `{"oneOf": {"meaning": IRI, "outcomes": [{"id": idShort, "meaning": IRI, "effects": […]}]}}`. A quantifier's
-  `V` is `{"id": "v0", "name": "…", "standsFor": IRI}`, numbered in document order across the capability.
+  `V` is `{"id": "v0", "name": "…", "standsFor": IRI}`, numbered in the reading's order across the capability
+  (phases Pre to End, terms by idShort, depth first).
 - **Operands:** `{"number": 2.0}`, `{"boolean": true}`, `{"string": "…"}`, `{"iri": "lab:InTolerance"}` (literals);
   `{"subject": i}` or `{"variable": "v0"}` (an identity); `{"parameter": {"operation": "<idShort path>", "variable":
   "<idShort>"}}` (an Operation variable, its path from the Skills submodel's idShort through the Operation:
   `Skills/Dispense/Start/Start`, the command's collection, then its Operation); `{"element": "<idShort path>"}` (a constant of the same AAS, its path from the
   submodel's idShort; of another AAS `{"element": "<submodel id>#<idShortPath>"}`, the form of section 13); `{"state": {"subject": i,
-  "property": IRI}}` (a subject's property, in Uses only); `{"formula": AST, "uses": {"Alias": operand}}` with AST
+  "property": IRI}}` or `{"state": {"variable": "v0", "property": IRI}}` (a subject's or a quantifier variable's
+  property, in Uses only); `{"formula": AST, "uses": {"Alias": operand}}` with AST
   `{"number": x}`, `{"pi": true}`, `{"alias": "X"}`, `{"neg": AST}`, `{"+": [AST, AST]}` (also `-`, `*`, `/`),
   left-associative as parsed.
 - **Duration:** an operand, or `null` where none is stated (5.7's rule 2 is an evaluator's, not the reader's).
@@ -524,11 +526,17 @@ these paths unique across its AASs (a reader of a whole line keys by AAS id and 
 - **Knowledge:** `[{"aas": id, "subject": IRI or null, "property": IRI, "valueType": …, "cardinality": …, "initial":
   operand or null, "kind": "observed" | "asserted" | "derived"}]` for every StateVariable of the environment, sorted by
   aas, subject, property.
-- **Goal:** `{"aas": id, "subjects": […], "condition": [terms]}`.
+- **Goal:** `{"aas": id, "subjects": […], "condition": [terms]}`; a list of them where the environment holds
+  several. Capabilities are keyed `<AAS id>#<path>` where two AASs share a path.
 - **Findings:** `[{"code": "…", "severity": "error" | "warning", "path": "<idShort path of the element>"}]`, sorted
   by path, then code. The path is that of the smallest element the rule is about (the `Operator`, the `Subject`,
   the term); `effect.conflict` names the later term, `level.incomplete` the specialization's phase. `effect.target`
-  is reported for an effect without a declaration, `declaration.missing` for a read. A valid fixture has none; an invalid fixture (group D) states exactly its one finding and
+  is reported for an effect without a declaration, `declaration.missing` for a read. What breaks a kind's shape and has
+  no code of its own (a missing `Operator`, `Variable`, `Body`, `Condition` or `Then`; an operator outside the kind's
+  list; an `Or` or a `OneOf` with fewer than two members; an unknown term semanticId) is `structure.kind`; a missing
+  `Subject` is `reference.subject`; `formula.alias` is reported once per formula, at its `Formula`.
+- **Whose findings.** The reader reports the `structure.*`, `reference.*` and `formula.syntax`, `formula.alias` and
+  `formula.unused` codes as it reads, and never raises; the other codes are the validator's, over the reading. A valid fixture has none; an invalid fixture (group D) states exactly its one finding and
   may leave the rest of the reading out.
 
 ## 16. Where aas-model differs, and what Phase 1 changes
