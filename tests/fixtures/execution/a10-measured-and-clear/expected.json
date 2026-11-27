@@ -1,0 +1,39 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Weighing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a10-measured-and-clear",
+      "meaning": "lab:Weighing",
+      "subjects": [
+        {
+          "name": "This device",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a10-measured-and-clear"
+        },
+        {"name": "Unit on the scale", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {"effect": {"subject": {"subject": 1}, "property": "lab:FillWeight", "op": "measured"}},
+        {"effect": {"subject": {"subject": 0}, "property": "lab:OccupiedBy", "op": "clear"}}
+      ],
+      "duration": null,
+      "features": ["non-deterministic"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a10-measured-and-clear",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a10-measured-and-clear",
+      "property": "lab:OccupiedBy",
+      "valueType": "reference",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

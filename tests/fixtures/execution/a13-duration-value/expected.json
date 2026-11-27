@@ -1,0 +1,37 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/MoveToPosition": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a13-duration-value",
+      "meaning": "lab:Transporting",
+      "subjects": [
+        {"name": "This shuttle", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a13-duration-value"},
+        {"name": "Target place", "standsFor": "lab:TransferPoint"}
+      ],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {"subject": {"subject": 0}, "property": "lab:Location", "op": "assign", "operand": {"subject": 1}}
+        }
+      ],
+      "duration": {"number": 3.0},
+      "features": ["durative"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a13-duration-value",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a13-duration-value",
+      "property": "lab:Location",
+      "valueType": "reference",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "derived"
+    }
+  ],
+  "findings": []
+}

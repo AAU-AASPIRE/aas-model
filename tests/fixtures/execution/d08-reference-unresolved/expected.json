@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "reference.unresolved",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/EffectSet/End/Term_00/ValueReference"
+    }
+  ]
+}

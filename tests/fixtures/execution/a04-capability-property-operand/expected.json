@@ -1,0 +1,44 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a04-capability-property-operand",
+      "meaning": "lab:Dosing",
+      "subjects": [
+        {
+          "name": "This axis",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a04-capability-property-operand"
+        }
+      ],
+      "pre": [
+        {
+          "condition": {
+            "subject": {"subject": 0},
+            "property": "lab:Position",
+            "op": "greaterOrEqual",
+            "operand": {"element": "CapabilityDescription/AuxiliaryCapabilities/Dosing/PropertySet/FillPosition/Value"}
+          }
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [],
+      "duration": null,
+      "features": ["numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a04-capability-property-operand",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a04-capability-property-operand",
+      "property": "lab:Position",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

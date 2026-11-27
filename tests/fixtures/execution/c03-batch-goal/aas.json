@@ -1,0 +1,630 @@
+{
+  "assetAdministrationShells": [
+    {
+      "assetInformation": {
+        "assetKind": "Instance",
+        "assetType": "https://smartproductionlab.aau.dk/Batch",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch",
+      "idShort": "c03_batch_goal_batch",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch/submodels/BatchInformation"
+            }
+          ],
+          "type": "ModelReference"
+        },
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch/submodels/Goal"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    },
+    {
+      "assetInformation": {
+        "assetKind": "Type",
+        "assetType": "https://smartproductionlab.aau.dk/Product",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/product"
+      },
+      "derivedFrom": {
+        "keys": [
+          {
+            "type": "AssetAdministrationShell",
+            "value": "https://smartproductionlab.aau.dk/aas/templates/resource"
+          }
+        ],
+        "type": "ModelReference"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/product",
+      "idShort": "c03_batch_goal_product",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/product/submodels/CapabilityDescription"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "What the batch makes and how many."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch/submodels/BatchInformation",
+      "idShort": "BatchInformation",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/submodels/BatchInformation/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "The product type AAS the batch makes units of."
+            }
+          ],
+          "idShort": "ProductType",
+          "modelType": "ReferenceElement",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/batch/ProductType/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": {
+            "keys": [
+              {
+                "type": "AssetAdministrationShell",
+                "value": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/product"
+              }
+            ],
+            "type": "ModelReference"
+          }
+        },
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "How many units the batch is to make."
+            }
+          ],
+          "idShort": "Quantity",
+          "modelType": "Property",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/batch/Quantity/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": "3",
+          "valueType": "xs:int"
+        }
+      ]
+    },
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "What every unit of the batch is to reach."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch/submodels/Goal",
+      "idShort": "Goal",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/submodels/Goal/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "Who takes part, in order."
+            }
+          ],
+          "idShort": "Subjects",
+          "modelType": "SubmodelElementList",
+          "orderRelevant": true,
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/execution/Subjects/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "semanticIdListElement": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "typeValueListElement": "ReferenceElement",
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "A unit of a product."
+                }
+              ],
+              "displayName": [
+                {
+                  "language": "en",
+                  "text": "The unit"
+                }
+              ],
+              "modelType": "ReferenceElement",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/Product"
+                  }
+                ],
+                "type": "ExternalReference"
+              }
+            }
+          ]
+        },
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "What is to hold of every unit at the end: all of its terms."
+            }
+          ],
+          "idShort": "Condition",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/goal/Condition/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "displayName": [
+                {
+                  "language": "en",
+                  "text": "Filled with the required volume"
+                }
+              ],
+              "idShort": "Term_00",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/ContentVolume"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The subject whose property the term is about: an item of Subjects."
+                    }
+                  ],
+                  "idShort": "Subject",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "Submodel",
+                        "value": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch/submodels/Goal"
+                      },
+                      {
+                        "type": "SubmodelElementList",
+                        "value": "Subjects"
+                      },
+                      {
+                        "type": "ReferenceElement",
+                        "value": "0"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                },
+                {
+                  "idShort": "Operator",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "equal",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "ValueReference",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/execution/Term/ValueReference/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "Submodel",
+                        "value": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/product/submodels/CapabilityDescription"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "RequiredCapabilities"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "Filling"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "PropertySet"
+                      },
+                      {
+                        "type": "SubmodelElementCollection",
+                        "value": "FillVolume"
+                      },
+                      {
+                        "type": "Property",
+                        "value": "Value"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                }
+              ]
+            },
+            {
+              "displayName": [
+                {
+                  "language": "en",
+                  "text": "Weighed"
+                }
+              ],
+              "idShort": "Term_01",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/Weighed"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "The subject whose property the term is about: an item of Subjects."
+                    }
+                  ],
+                  "idShort": "Subject",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "Submodel",
+                        "value": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch/submodels/Goal"
+                      },
+                      {
+                        "type": "SubmodelElementList",
+                        "value": "Subjects"
+                      },
+                      {
+                        "type": "ReferenceElement",
+                        "value": "0"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                },
+                {
+                  "idShort": "Operator",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "equal",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Value",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "true",
+                  "valueType": "xs:boolean"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "Definition of the Submodel CapabilityDescription identified by its semanticId. The Submodel idShort can be picked freely."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/product/submodels/CapabilityDescription",
+      "idShort": "CapabilityDescription",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A Set of CapabilityContainer for a Use Case for the asset."
+            }
+          ],
+          "idShort": "RequiredCapabilities",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilitySet/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "A Container for one capability and all its additional descriptive elements."
+                }
+              ],
+              "idShort": "Filling",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilityContainer/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "idShort": "Capability",
+                  "modelType": "Capability",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/Capability/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "https://smartproductionlab.aau.dk/semantics/Filling"
+                        }
+                      ],
+                      "type": "ExternalReference"
+                    }
+                  ]
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Set of properties describing the capability in more detail, if existing."
+                    }
+                  ],
+                  "idShort": "PropertySet",
+                  "modelType": "SubmodelElementCollection",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/PropertySet/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": [
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "Information for a certain property as defined by CapabilityPropertyType and its descriptive elements."
+                        }
+                      ],
+                      "idShort": "FillVolume",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/CapabilityDescription/PropertyContainer/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "Property with a value describing an information data point. A valueId shall be set to define the semantic for the value."
+                            }
+                          ],
+                          "idShort": "Value",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/CapabilityPropertyType/Property/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://smartproductionlab.aau.dk/semantics/FillVolume"
+                                }
+                              ],
+                              "type": "ExternalReference"
+                            }
+                          ],
+                          "value": "2.0",
+                          "valueType": "xs:double"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

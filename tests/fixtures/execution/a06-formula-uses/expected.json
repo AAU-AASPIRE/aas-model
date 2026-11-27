@@ -1,0 +1,55 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a06-formula-uses",
+      "meaning": "lab:Dosing",
+      "subjects": [
+        {"name": "This axis", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a06-formula-uses"},
+        {"name": "Container in the nest", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [],
+      "invariant": [
+        {
+          "condition": {
+            "subject": {"subject": 0},
+            "property": "lab:Position",
+            "op": "greaterOrEqual",
+            "operand": {
+              "formula": {
+                "+": [
+                  {"-": [{"alias": "NestPosition"}, {"alias": "RimHeight"}]},
+                  {"*": [{"number": 2.0}, {"pi": true}]}
+                ]
+              },
+              "uses": {
+                "NestPosition": {
+                  "element": "CapabilityDescription/AuxiliaryCapabilities/Dosing/PropertySet/NestPosition/Value"
+                },
+                "RimHeight": {"state": {"subject": 1, "property": "lab:RimHeight"}}
+              }
+            }
+          }
+        }
+      ],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [],
+      "duration": null,
+      "features": ["durative", "numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a06-formula-uses",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a06-formula-uses",
+      "property": "lab:Position",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

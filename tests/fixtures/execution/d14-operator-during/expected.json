@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "operator.during",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/EffectSet/During/Term_00/Operator"
+    }
+  ]
+}

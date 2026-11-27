@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "constraint.state",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/ConstraintSet/Limit/BasicConstraint"
+    }
+  ]
+}

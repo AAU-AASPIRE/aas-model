@@ -1,0 +1,27 @@
+{
+  "capabilities": {
+    "CapabilityDescription/ModuleControl/Occupying": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a05-subject-operand",
+      "meaning": "lab:Occupying",
+      "subjects": [
+        {"name": "This module", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a05-subject-operand"},
+        {"name": "Unit received", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {"subject": {"subject": 1}, "property": "lab:HeldBy", "op": "assign", "operand": {"subject": 0}}
+        }
+      ],
+      "duration": null,
+      "features": []
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

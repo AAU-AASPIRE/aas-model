@@ -1,0 +1,73 @@
+{
+  "capabilities": {
+    "CapabilityDescription/OfferedCapabilities/Inspection": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not",
+      "meaning": "lab:Inspection",
+      "subjects": [{"name": "Unit inspected", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [
+        {
+          "or": [
+            {
+              "condition": {
+                "subject": {"subject": 0},
+                "property": "lab:Weighed",
+                "op": "equal",
+                "operand": {"boolean": true}
+              }
+            },
+            {
+              "condition": {
+                "subject": {"subject": 0},
+                "property": "lab:Stoppered",
+                "op": "equal",
+                "operand": {"boolean": true}
+              }
+            }
+          ]
+        },
+        {
+          "not": {
+            "condition": {
+              "subject": {"subject": 0},
+              "property": "lab:Inspected",
+              "op": "equal",
+              "operand": {"boolean": true}
+            }
+          }
+        },
+        {
+          "and": [
+            {
+              "condition": {
+                "subject": {"subject": 0},
+                "property": "lab:Stoppered",
+                "op": "equal",
+                "operand": {"boolean": true}
+              }
+            },
+            {
+              "not": {
+                "condition": {
+                  "subject": {"subject": 0},
+                  "property": "lab:Capped",
+                  "op": "equal",
+                  "operand": {"boolean": true}
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [],
+      "duration": null,
+      "features": ["disjunctive-conditions", "negative-conditions"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

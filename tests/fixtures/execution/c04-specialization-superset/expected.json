@@ -1,0 +1,103 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/NeedlePositioning": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c04-specialization-superset/module",
+      "meaning": "lab:Positioning",
+      "subjects": [
+        {
+          "name": "This module",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/c04-specialization-superset/module"
+        },
+        {
+          "name": "Needle axis",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/c04-specialization-superset/component"
+        },
+        {"name": "Unit moved", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [
+        {
+          "condition": {
+            "subject": {"subject": 1},
+            "property": "lab:Position",
+            "op": "greaterOrEqual",
+            "operand": {"number": 5.0}
+          }
+        },
+        {
+          "condition": {
+            "subject": {"subject": 2},
+            "property": "lab:ContentVolume",
+            "op": "equal",
+            "operand": {"number": 0.0}
+          }
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {
+            "subject": {"subject": 2},
+            "property": "lab:Weighed",
+            "op": "assign",
+            "operand": {"boolean": false}
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["numeric"]
+    },
+    "CapabilityDescription/AuxiliaryCapabilities/Positioning": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c04-specialization-superset/component",
+      "meaning": "lab:Positioning",
+      "subjects": [
+        {
+          "name": "This axis",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/c04-specialization-superset/component"
+        },
+        {"name": "Unit moved", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [
+        {
+          "condition": {
+            "subject": {"subject": 0},
+            "property": "lab:Position",
+            "op": "greaterOrEqual",
+            "operand": {"number": 3.0}
+          }
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {
+            "subject": {"subject": 1},
+            "property": "lab:Weighed",
+            "op": "assign",
+            "operand": {"boolean": false}
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c04-specialization-superset/component",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/c04-specialization-superset/component",
+      "property": "lab:Position",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

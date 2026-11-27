@@ -1,0 +1,3 @@
+{
+  "findings": [{"code": "declaration.kind", "severity": "error", "path": "Variables/Knowledge/TransferPointX"}]
+}

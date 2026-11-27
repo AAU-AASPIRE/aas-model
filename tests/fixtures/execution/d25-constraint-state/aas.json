@@ -1,0 +1,491 @@
+{
+  "assetAdministrationShells": [
+    {
+      "assetInformation": {
+        "assetKind": "Instance",
+        "assetType": "https://smartproductionlab.aau.dk/Resource/Fixture",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/fixtures/d25-constraint-state"
+      },
+      "derivedFrom": {
+        "keys": [
+          {
+            "type": "AssetAdministrationShell",
+            "value": "https://smartproductionlab.aau.dk/aas/templates/resource"
+          }
+        ],
+        "type": "ModelReference"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/d25-constraint-state",
+      "idShort": "d25_constraint_state",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/fixtures/d25-constraint-state/submodels/CapabilityDescription"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "Definition of the Submodel CapabilityDescription identified by its semanticId. The Submodel idShort can be picked freely."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/d25-constraint-state/submodels/CapabilityDescription",
+      "idShort": "CapabilityDescription",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A Set of CapabilityContainer for a Use Case for the asset."
+            }
+          ],
+          "idShort": "AuxiliaryCapabilities",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilitySet/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "A Container for one capability and all its additional descriptive elements."
+                }
+              ],
+              "idShort": "Dosing",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilityContainer/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "idShort": "Capability",
+                  "modelType": "Capability",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/Capability/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "https://smartproductionlab.aau.dk/semantics/Dosing"
+                        }
+                      ],
+                      "type": "ExternalReference"
+                    }
+                  ]
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Set of properties describing the capability in more detail, if existing."
+                    }
+                  ],
+                  "idShort": "PropertySet",
+                  "modelType": "SubmodelElementCollection",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/PropertySet/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": [
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "Information for a certain property as defined by CapabilityPropertyType and its descriptive elements."
+                        }
+                      ],
+                      "idShort": "ContentVolume",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/CapabilityDescription/PropertyContainer/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "Property with a value describing an information data point. A valueId shall be set to define the semantic for the value."
+                            }
+                          ],
+                          "idShort": "Value",
+                          "modelType": "Property",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/CapabilityPropertyType/Property/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "supplementalSemanticIds": [
+                            {
+                              "keys": [
+                                {
+                                  "type": "GlobalReference",
+                                  "value": "https://smartproductionlab.aau.dk/semantics/ContentVolume"
+                                }
+                              ],
+                              "type": "ExternalReference"
+                            }
+                          ],
+                          "value": "10.0",
+                          "valueType": "xs:double"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Collection of relationships for the capability, if existing."
+                    }
+                  ],
+                  "idShort": "CapabilityRelations",
+                  "modelType": "SubmodelElementCollection",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilityRelations/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": [
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "If constraint(s) for the Capability element in the CapabilityContainer exists, this set has to be created."
+                        }
+                      ],
+                      "idShort": "ConstraintSet",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://admin-shell.io/idta/CapabilityDescription/ConstraintSet/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "If one or more constraints exist for a Capability Property, then for every constraint a PropertyConstraintContainer has to be created."
+                            }
+                          ],
+                          "idShort": "Limit",
+                          "modelType": "SubmodelElementCollection",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://admin-shell.io/idta/CapabilityDescription/PropertyConstraintContainer/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": [
+                            {
+                              "description": [
+                                {
+                                  "language": "en",
+                                  "text": "Property element which can be used to validate the constraint for the considered Properties in this PropertyConstraintContainer against other properties."
+                                }
+                              ],
+                              "idShort": "BasicConstraint",
+                              "modelType": "Property",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/idta/CapabilityDescription/PropertyConstraintType/BasicConstraint/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": "ContentVolume <= 10.0",
+                              "valueType": "xs:string"
+                            },
+                            {
+                              "description": [
+                                {
+                                  "language": "en",
+                                  "text": "Abstract Enum type of allowed SubmodelElements for these Properties constraints. Exactly one of the SubmodelElements below must be instanciated, e.g., similar to SubmodelElementList with exactly one element."
+                                }
+                              ],
+                              "idShort": "ConstraintType",
+                              "modelType": "Property",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/idta/CapabilityDescription/ConstraintType/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": "BasicConstraint",
+                              "valueType": "xs:string"
+                            },
+                            {
+                              "description": [
+                                {
+                                  "language": "en",
+                                  "text": "Defines the type of the property conditions as defined in the ConceptDescription with the same name (PropertyConditionalType)."
+                                }
+                              ],
+                              "idShort": "PropertyConditionalType",
+                              "modelType": "Property",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/idta/CapabilityDescription/PropertyConditionalType/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": "Condition",
+                              "valueType": "xs:string"
+                            },
+                            {
+                              "description": [
+                                {
+                                  "language": "en",
+                                  "text": "Contains all relationships for the constraint in the PropertyConstraintContainer."
+                                }
+                              ],
+                              "idShort": "ConstraintPropertyRelations",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://admin-shell.io/idta/CapabilityDescription/ConstraintPropertyRelations/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": [
+                                {
+                                  "description": [
+                                    {
+                                      "language": "en",
+                                      "text": "Relates the PropertyConstraint as first element to a Property from a PropertyContainer as second element."
+                                    }
+                                  ],
+                                  "first": {
+                                    "keys": [
+                                      {
+                                        "type": "Submodel",
+                                        "value": "https://smartproductionlab.aau.dk/aas/fixtures/d25-constraint-state/submodels/CapabilityDescription"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "AuxiliaryCapabilities"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Dosing"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "CapabilityRelations"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "ConstraintSet"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Limit"
+                                      },
+                                      {
+                                        "type": "Property",
+                                        "value": "BasicConstraint"
+                                      }
+                                    ],
+                                    "type": "ModelReference"
+                                  },
+                                  "idShort": "ConstraintHasProperty",
+                                  "modelType": "RelationshipElement",
+                                  "second": {
+                                    "keys": [
+                                      {
+                                        "type": "Submodel",
+                                        "value": "https://smartproductionlab.aau.dk/aas/fixtures/d25-constraint-state/submodels/CapabilityDescription"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "AuxiliaryCapabilities"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "Dosing"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "PropertySet"
+                                      },
+                                      {
+                                        "type": "SubmodelElementCollection",
+                                        "value": "ContentVolume"
+                                      },
+                                      {
+                                        "type": "Property",
+                                        "value": "Value"
+                                      }
+                                    ],
+                                    "type": "ModelReference"
+                                  },
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://admin-shell.io/idta/CapabilityDescription/ConstraintHasProperty/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "Who takes part, in order."
+                        }
+                      ],
+                      "idShort": "Subjects",
+                      "modelType": "SubmodelElementList",
+                      "orderRelevant": true,
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Subjects/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "semanticIdListElement": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "typeValueListElement": "ReferenceElement",
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "A unit of a product."
+                            }
+                          ],
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Unit"
+                            }
+                          ],
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/Product"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

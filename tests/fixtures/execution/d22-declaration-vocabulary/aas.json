@@ -1,0 +1,208 @@
+{
+  "assetAdministrationShells": [
+    {
+      "assetInformation": {
+        "assetKind": "Instance",
+        "assetType": "https://smartproductionlab.aau.dk/Resource/Fixture",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/fixtures/d22-declaration-vocabulary"
+      },
+      "derivedFrom": {
+        "keys": [
+          {
+            "type": "AssetAdministrationShell",
+            "value": "https://smartproductionlab.aau.dk/aas/templates/resource"
+          }
+        ],
+        "type": "ModelReference"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/d22-declaration-vocabulary",
+      "idShort": "d22_declaration_vocabulary",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/fixtures/d22-declaration-vocabulary/submodels/Variables"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "An asset's runtime data: time series of its state, measurements and logs, and its state as the knowledge graph keeps it."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/d22-declaration-vocabulary/submodels/Variables",
+      "idShort": "Variables",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://smartproductionlab.aau.dk/submodels/Variables/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "The state kept about this asset in the knowledge graph: its variables, and the store they are kept in."
+            }
+          ],
+          "idShort": "Knowledge",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://smartproductionlab.aau.dk/variables/Knowledge/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "idShort": "ContentVolume",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/StateVariable/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "supplementalSemanticIds": [
+                {
+                  "keys": [
+                    {
+                      "type": "GlobalReference",
+                      "value": "https://smartproductionlab.aau.dk/semantics/ContentVolume"
+                    }
+                  ],
+                  "type": "ExternalReference"
+                }
+              ],
+              "value": [
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Who the variable is about: the resource's own AAS, or an element of it (a place). A product type's variables are about each of its units and have none."
+                    }
+                  ],
+                  "idShort": "Subject",
+                  "modelType": "ReferenceElement",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Subject/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": {
+                    "keys": [
+                      {
+                        "type": "AssetAdministrationShell",
+                        "value": "https://smartproductionlab.aau.dk/aas/fixtures/d22-declaration-vocabulary"
+                      }
+                    ],
+                    "type": "ModelReference"
+                  }
+                },
+                {
+                  "idShort": "ValueType",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/ValueType/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "boolean",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Cardinality",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/StateVariable/Cardinality/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "single",
+                  "valueType": "xs:string"
+                }
+              ]
+            },
+            {
+              "idShort": "Target",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "idShort": "Endpoint",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Endpoint/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "http://state-store:7878",
+                  "valueType": "xs:string"
+                },
+                {
+                  "idShort": "Graph",
+                  "modelType": "Property",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://smartproductionlab.aau.dk/state/SparqlTarget/Graph/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": "https://smartproductionlab.aau.dk/state",
+                  "valueType": "xs:string"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

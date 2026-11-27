@@ -1,0 +1,50 @@
+{
+  "capabilities": {
+    "CapabilityDescription/OfferedCapabilities/Filling": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a01-literal-number",
+      "meaning": "lab:Filling",
+      "subjects": [
+        {"name": "This axis", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a01-literal-number"},
+        {"name": "Unit being filled", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [
+        {
+          "condition": {
+            "subject": {"subject": 1},
+            "property": "lab:ContentVolume",
+            "op": "equal",
+            "operand": {"number": 0.0}
+          }
+        },
+        {
+          "condition": {
+            "subject": {"subject": 0},
+            "property": "lab:Position",
+            "op": "greaterOrEqual",
+            "operand": {"number": 40.0}
+          }
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [],
+      "duration": null,
+      "features": ["numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a01-literal-number",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a01-literal-number",
+      "property": "lab:Position",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

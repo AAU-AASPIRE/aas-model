@@ -1,0 +1,11 @@
+@prefix fixture: <urn:fixture:> .
+@prefix lab:     <https://smartproductionlab.aau.dk/semantics/> .
+@prefix css:     <http://www.w3id.org/hsu-aut/css#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+
+# What the lab vocabulary has none of: a state property with a set of values.
+fixture:Carrying rdf:type owl:Class ; rdfs:subClassOf css:Property ;
+  rdfs:label "Carrying" ; lab:valueType "reference" ; lab:cardinality "set" ;
+  rdfs:comment "The units a tray carries: a set of references, one per unit." .

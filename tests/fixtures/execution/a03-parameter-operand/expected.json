@@ -1,0 +1,29 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a03-parameter-operand",
+      "meaning": "lab:Dosing",
+      "subjects": [{"name": "Unit dosed into", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {
+            "subject": {"subject": 0},
+            "property": "lab:ContentVolume",
+            "op": "increase",
+            "operand": {"parameter": {"operation": "Skills/Dispense/Start/Start", "variable": "Volume"}}
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

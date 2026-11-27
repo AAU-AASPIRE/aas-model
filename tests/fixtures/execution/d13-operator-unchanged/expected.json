@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "operator.unchanged",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/ConditionSet/Pre/Term_00/Operator"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "translation.realized-by",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/Translation"
+    }
+  ]
+}

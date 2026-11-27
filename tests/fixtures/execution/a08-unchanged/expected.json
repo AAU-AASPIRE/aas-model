@@ -1,0 +1,30 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Weighing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a08-unchanged",
+      "meaning": "lab:Weighing",
+      "subjects": [{"name": "This axis", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a08-unchanged"}],
+      "pre": [],
+      "invariant": [{"condition": {"subject": {"subject": 0}, "property": "lab:Position", "op": "unchanged"}}],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [],
+      "duration": null,
+      "features": ["durative", "locks"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a08-unchanged",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a08-unchanged",
+      "property": "lab:Position",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

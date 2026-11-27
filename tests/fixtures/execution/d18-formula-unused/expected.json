@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "formula.unused",
+      "severity": "warning",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/ConditionSet/Pre/Term_00/Uses/Spare"
+    }
+  ]
+}

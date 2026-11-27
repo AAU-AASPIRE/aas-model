@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "effect.conflict",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/EffectSet/End/Term_01"
+    }
+  ]
+}

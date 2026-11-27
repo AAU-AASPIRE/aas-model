@@ -1,0 +1,273 @@
+{
+  "assetAdministrationShells": [
+    {
+      "assetInformation": {
+        "assetKind": "Instance",
+        "assetType": "https://smartproductionlab.aau.dk/Resource/Fixture",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/fixtures/d26-translation-realized-by"
+      },
+      "derivedFrom": {
+        "keys": [
+          {
+            "type": "AssetAdministrationShell",
+            "value": "https://smartproductionlab.aau.dk/aas/templates/resource"
+          }
+        ],
+        "type": "ModelReference"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/d26-translation-realized-by",
+      "idShort": "d26_translation_realized_by",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/fixtures/d26-translation-realized-by/submodels/CapabilityDescription"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "Definition of the Submodel CapabilityDescription identified by its semanticId. The Submodel idShort can be picked freely."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/d26-translation-realized-by/submodels/CapabilityDescription",
+      "idShort": "CapabilityDescription",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A Set of CapabilityContainer for a Use Case for the asset."
+            }
+          ],
+          "idShort": "AuxiliaryCapabilities",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilitySet/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "A Container for one capability and all its additional descriptive elements."
+                }
+              ],
+              "idShort": "Dosing",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilityContainer/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "idShort": "Capability",
+                  "modelType": "Capability",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/Capability/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "https://smartproductionlab.aau.dk/semantics/Dosing"
+                        }
+                      ],
+                      "type": "ExternalReference"
+                    }
+                  ]
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Collection of relationships for the capability, if existing."
+                    }
+                  ],
+                  "idShort": "CapabilityRelations",
+                  "modelType": "SubmodelElementCollection",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilityRelations/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": [
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "Who takes part, in order."
+                        }
+                      ],
+                      "idShort": "Subjects",
+                      "modelType": "SubmodelElementList",
+                      "orderRelevant": true,
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Subjects/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "semanticIdListElement": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "typeValueListElement": "ReferenceElement",
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "A unit of a product."
+                            }
+                          ],
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Unit"
+                            }
+                          ],
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/Product"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "How the behaviour tree calls the realizing skill and reads its answer."
+                        }
+                      ],
+                      "idShort": "Translation",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Translation/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree builds the inputs of the realizing Operation from the subjects and the capability's properties. Must contain a \"call(subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Call",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Call/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ZnVuY3Rpb24gY2FsbChzdWJqZWN0cywgcHJvcGVydGllcykKICByZXR1cm4geyBWb2x1bWUgPSAxLjAgfQplbmQK"
+                        },
+                        {
+                          "contentType": "text/plain",
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "How the behaviour tree reads the realizing Operation's outputs: whether the action succeeded, which of its outcomes happened, or which of the skill's errors it failed with. Must contain a \"reply(outputs, subjects, properties)\" function in Lua."
+                            }
+                          ],
+                          "idShort": "Reply",
+                          "modelType": "Blob",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Translation/Reply/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": "ZnVuY3Rpb24gcmVwbHkob3V0cHV0cywgc3ViamVjdHMsIHByb3BlcnRpZXMpCiAgcmV0dXJuIHsgb2sgPSB0cnVlIH0KZW5kCg=="
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

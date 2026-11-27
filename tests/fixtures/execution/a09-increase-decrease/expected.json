@@ -1,0 +1,40 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a09-increase-decrease",
+      "meaning": "lab:Dosing",
+      "subjects": [
+        {"name": "Unit dosed into", "standsFor": "https://smartproductionlab.aau.dk/Product"},
+        {"name": "Source container", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {
+            "subject": {"subject": 0},
+            "property": "lab:ContentVolume",
+            "op": "increase",
+            "operand": {"number": 2.0}
+          }
+        },
+        {
+          "effect": {
+            "subject": {"subject": 1},
+            "property": "lab:ContentVolume",
+            "op": "decrease",
+            "operand": {"number": 2.0}
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

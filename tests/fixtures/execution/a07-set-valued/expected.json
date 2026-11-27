@@ -1,0 +1,55 @@
+{
+  "capabilities": {
+    "CapabilityDescription/ModuleControl/Handover": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a07-set-valued",
+      "meaning": "lab:Releasing",
+      "subjects": [
+        {"name": "This tray", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a07-set-valued"},
+        {"name": "Unit leaving", "standsFor": "https://smartproductionlab.aau.dk/Product"},
+        {"name": "Unit arriving", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [
+        {
+          "condition": {
+            "subject": {"subject": 0},
+            "property": "fixture:Carrying",
+            "op": "contains",
+            "operand": {"subject": 1}
+          }
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {
+            "subject": {"subject": 0},
+            "property": "fixture:Carrying",
+            "op": "remove",
+            "operand": {"subject": 1}
+          }
+        },
+        {
+          "effect": {"subject": {"subject": 0}, "property": "fixture:Carrying", "op": "add", "operand": {"subject": 2}}
+        }
+      ],
+      "duration": null,
+      "features": ["set-valued"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a07-set-valued",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a07-set-valued",
+      "property": "fixture:Carrying",
+      "valueType": "reference",
+      "cardinality": "set",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

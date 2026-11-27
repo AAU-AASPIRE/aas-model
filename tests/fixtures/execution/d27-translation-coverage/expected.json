@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "translation.coverage",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/Translation/Reply"
+    }
+  ]
+}

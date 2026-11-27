@@ -1,0 +1,34 @@
+{
+  "capabilities": {},
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c02-knowledge",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/c02-knowledge",
+      "property": "lab:ContentVolume",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": {"number": 0.0},
+      "kind": "asserted"
+    },
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c02-knowledge",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/c02-knowledge",
+      "property": "lab:Location",
+      "valueType": "reference",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "derived"
+    },
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c02-knowledge",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/c02-knowledge/submodels/Variables#Measurements/Coordinates/TransferPoint",
+      "property": "lab:AbsoluteX",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "observed"
+    }
+  ],
+  "findings": []
+}

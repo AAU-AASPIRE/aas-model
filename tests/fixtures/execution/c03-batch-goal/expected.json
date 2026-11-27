@@ -1,0 +1,24 @@
+{
+  "capabilities": {},
+  "goal": {
+    "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/batch",
+    "subjects": [{"name": "The unit", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+    "condition": [
+      {
+        "condition": {
+          "subject": {"subject": 0},
+          "property": "lab:ContentVolume",
+          "op": "equal",
+          "operand": {
+            "element": "https://smartproductionlab.aau.dk/aas/fixtures/c03-batch-goal/product/submodels/CapabilityDescription#RequiredCapabilities/Filling/PropertySet/FillVolume/Value"
+          }
+        }
+      },
+      {
+        "condition": {"subject": {"subject": 0}, "property": "lab:Weighed", "op": "equal", "operand": {"boolean": true}}
+      }
+    ]
+  },
+  "knowledge": [],
+  "findings": []
+}

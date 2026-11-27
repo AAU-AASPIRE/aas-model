@@ -1,0 +1,53 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a12-during",
+      "meaning": "lab:Dosing",
+      "subjects": [
+        {"name": "This axis", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/a12-during"},
+        {"name": "Container in the nest", "standsFor": "https://smartproductionlab.aau.dk/Product"}
+      ],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [
+        {
+          "effect": {
+            "subject": {"subject": 1},
+            "property": "lab:OutletImmersion",
+            "op": "assign",
+            "operand": {
+              "formula": {
+                "+": [{"-": [{"alias": "Position"}, {"alias": "NestPosition"}]}, {"alias": "InnerBottomHeight"}]
+              },
+              "uses": {
+                "Position": {"state": {"subject": 0, "property": "lab:Position"}},
+                "NestPosition": {
+                  "element": "CapabilityDescription/AuxiliaryCapabilities/Dosing/PropertySet/NestPosition/Value"
+                },
+                "InnerBottomHeight": {"state": {"subject": 1, "property": "lab:InnerBottomHeight"}}
+              }
+            }
+          }
+        }
+      ],
+      "end": [],
+      "duration": null,
+      "features": ["durative", "numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [
+    {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a12-during",
+      "subject": "https://smartproductionlab.aau.dk/aas/fixtures/a12-during",
+      "property": "lab:Position",
+      "valueType": "number",
+      "cardinality": "single",
+      "initial": null,
+      "kind": "asserted"
+    }
+  ],
+  "findings": []
+}

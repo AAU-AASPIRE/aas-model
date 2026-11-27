@@ -1,0 +1,35 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a14-duration-formula",
+      "meaning": "lab:Dosing",
+      "subjects": [{"name": "Unit dosed into", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {
+            "subject": {"subject": 0},
+            "property": "lab:ContentVolume",
+            "op": "increase",
+            "operand": {"parameter": {"operation": "Skills/Dispense/Start/Start", "variable": "Volume"}}
+          }
+        }
+      ],
+      "duration": {
+        "formula": {"/": [{"alias": "Volume"}, {"alias": "FlowRate"}]},
+        "uses": {
+          "Volume": {"parameter": {"operation": "Skills/Dispense/Start/Start", "variable": "Volume"}},
+          "FlowRate": {"element": "CapabilityDescription/AuxiliaryCapabilities/Dosing/PropertySet/FlowRate/Value"}
+        }
+      },
+      "features": ["durative", "numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

@@ -1,0 +1,30 @@
+{
+  "capabilities": {
+    "CapabilityDescription/AuxiliaryCapabilities/Dosing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a11-end-rate",
+      "meaning": "lab:Dosing",
+      "subjects": [{"name": "Unit dosed into", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {
+            "subject": {"subject": 0},
+            "property": "lab:ContentVolume",
+            "op": "increase",
+            "operand": {"parameter": {"operation": "Skills/Dispense/Start/Start", "variable": "Volume"}},
+            "rate": {"parameter": {"operation": "Skills/Dispense/Start/Start", "variable": "FlowRate"}}
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["continuous", "numeric"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

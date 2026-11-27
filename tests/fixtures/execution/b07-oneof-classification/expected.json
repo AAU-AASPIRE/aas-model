@@ -1,0 +1,57 @@
+{
+  "capabilities": {
+    "CapabilityDescription/OfferedCapabilities/Filling": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/b07-oneof-classification",
+      "meaning": "lab:Filling",
+      "subjects": [{"name": "Unit being filled", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {"effect": {"subject": {"subject": 0}, "property": "lab:FillWeight", "op": "measured"}},
+        {
+          "oneOf": {
+            "meaning": "lab:FillResult",
+            "outcomes": [
+              {
+                "id": "InTolerance",
+                "meaning": "lab:InTolerance",
+                "effects": [
+                  {
+                    "effect": {
+                      "subject": {"subject": 0},
+                      "property": "lab:FillResult",
+                      "op": "assign",
+                      "operand": {"iri": "lab:InTolerance"}
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "OutOfTolerance",
+                "meaning": "lab:OutOfTolerance",
+                "effects": [
+                  {
+                    "effect": {
+                      "subject": {"subject": 0},
+                      "property": "lab:FillResult",
+                      "op": "assign",
+                      "operand": {"iri": "lab:OutOfTolerance"}
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["non-deterministic"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

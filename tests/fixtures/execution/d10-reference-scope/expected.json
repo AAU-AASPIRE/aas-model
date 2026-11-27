@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "reference.scope",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/ConditionSet/Pre/Term_01/Subject"
+    }
+  ]
+}

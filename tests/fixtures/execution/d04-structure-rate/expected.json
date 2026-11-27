@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "structure.rate",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/EffectSet/Start/Term_00/Rate"
+    }
+  ]
+}

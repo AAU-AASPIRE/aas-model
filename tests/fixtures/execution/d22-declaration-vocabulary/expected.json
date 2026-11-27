@@ -1,0 +1,3 @@
+{
+  "findings": [{"code": "declaration.vocabulary", "severity": "error", "path": "Variables/Knowledge/ContentVolume"}]
+}

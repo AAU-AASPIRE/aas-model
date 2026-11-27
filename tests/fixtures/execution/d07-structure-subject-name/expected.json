@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "structure.subject-name",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/Subjects/0"
+    }
+  ]
+}

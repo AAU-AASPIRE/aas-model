@@ -1,0 +1,32 @@
+{
+  "capabilities": {
+    "CapabilityDescription/OfferedCapabilities/Filling": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/a02-literal-boolean-and-iri",
+      "meaning": "lab:Filling",
+      "subjects": [{"name": "Unit being filled", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "effect": {"subject": {"subject": 0}, "property": "lab:Weighed", "op": "assign", "operand": {"boolean": true}}
+        },
+        {
+          "effect": {
+            "subject": {"subject": 0},
+            "property": "lab:FillResult",
+            "op": "assign",
+            "operand": {"iri": "lab:InTolerance"}
+          }
+        }
+      ],
+      "duration": null,
+      "features": []
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

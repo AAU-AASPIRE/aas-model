@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "structure.meaning",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/ConditionSet/Pre/Term_00"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "structure.placement",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/EffectSet/Start/Term_00"
+    }
+  ]
+}

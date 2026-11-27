@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "level.widening",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/NeedlePositioning/CapabilityRelations/ConditionSet/Pre/Term_00"
+    }
+  ]
+}

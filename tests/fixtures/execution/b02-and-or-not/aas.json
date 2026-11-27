@@ -1,0 +1,910 @@
+{
+  "assetAdministrationShells": [
+    {
+      "assetInformation": {
+        "assetKind": "Instance",
+        "assetType": "https://smartproductionlab.aau.dk/Resource/Fixture",
+        "globalAssetId": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not"
+      },
+      "derivedFrom": {
+        "keys": [
+          {
+            "type": "AssetAdministrationShell",
+            "value": "https://smartproductionlab.aau.dk/aas/templates/resource"
+          }
+        ],
+        "type": "ModelReference"
+      },
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not",
+      "idShort": "b02_and_or_not",
+      "modelType": "AssetAdministrationShell",
+      "submodels": [
+        {
+          "keys": [
+            {
+              "type": "Submodel",
+              "value": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not/submodels/CapabilityDescription"
+            }
+          ],
+          "type": "ModelReference"
+        }
+      ]
+    }
+  ],
+  "submodels": [
+    {
+      "description": [
+        {
+          "language": "en",
+          "text": "Definition of the Submodel CapabilityDescription identified by its semanticId. The Submodel idShort can be picked freely."
+        }
+      ],
+      "id": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not/submodels/CapabilityDescription",
+      "idShort": "CapabilityDescription",
+      "modelType": "Submodel",
+      "semanticId": {
+        "keys": [
+          {
+            "type": "GlobalReference",
+            "value": "https://admin-shell.io/idta/SubmodelTemplate/CapabilityDescription/1/0"
+          }
+        ],
+        "type": "ExternalReference"
+      },
+      "submodelElements": [
+        {
+          "description": [
+            {
+              "language": "en",
+              "text": "A Set of CapabilityContainer for a Use Case for the asset."
+            }
+          ],
+          "idShort": "OfferedCapabilities",
+          "modelType": "SubmodelElementCollection",
+          "semanticId": {
+            "keys": [
+              {
+                "type": "GlobalReference",
+                "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilitySet/1/0"
+              }
+            ],
+            "type": "ExternalReference"
+          },
+          "value": [
+            {
+              "description": [
+                {
+                  "language": "en",
+                  "text": "A Container for one capability and all its additional descriptive elements."
+                }
+              ],
+              "idShort": "Inspection",
+              "modelType": "SubmodelElementCollection",
+              "semanticId": {
+                "keys": [
+                  {
+                    "type": "GlobalReference",
+                    "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilityContainer/1/0"
+                  }
+                ],
+                "type": "ExternalReference"
+              },
+              "value": [
+                {
+                  "idShort": "Capability",
+                  "modelType": "Capability",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/Capability/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "supplementalSemanticIds": [
+                    {
+                      "keys": [
+                        {
+                          "type": "GlobalReference",
+                          "value": "https://smartproductionlab.aau.dk/semantics/Inspection"
+                        }
+                      ],
+                      "type": "ExternalReference"
+                    }
+                  ]
+                },
+                {
+                  "description": [
+                    {
+                      "language": "en",
+                      "text": "Collection of relationships for the capability, if existing."
+                    }
+                  ],
+                  "idShort": "CapabilityRelations",
+                  "modelType": "SubmodelElementCollection",
+                  "semanticId": {
+                    "keys": [
+                      {
+                        "type": "GlobalReference",
+                        "value": "https://admin-shell.io/idta/CapabilityDescription/CapabilityRelations/1/0"
+                      }
+                    ],
+                    "type": "ExternalReference"
+                  },
+                  "value": [
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "Who takes part, in order."
+                        }
+                      ],
+                      "idShort": "Subjects",
+                      "modelType": "SubmodelElementList",
+                      "orderRelevant": true,
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Subjects/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "semanticIdListElement": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "typeValueListElement": "ReferenceElement",
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "A unit of a product."
+                            }
+                          ],
+                          "displayName": [
+                            {
+                              "language": "en",
+                              "text": "Unit inspected"
+                            }
+                          ],
+                          "modelType": "ReferenceElement",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/Subject/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/Product"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "description": [
+                        {
+                          "language": "en",
+                          "text": "What must hold of the subjects: at the start, throughout, at the end."
+                        }
+                      ],
+                      "idShort": "ConditionSet",
+                      "modelType": "SubmodelElementCollection",
+                      "semanticId": {
+                        "keys": [
+                          {
+                            "type": "GlobalReference",
+                            "value": "https://smartproductionlab.aau.dk/execution/ConditionSet/1/0"
+                          }
+                        ],
+                        "type": "ExternalReference"
+                      },
+                      "value": [
+                        {
+                          "description": [
+                            {
+                              "language": "en",
+                              "text": "What holds when the action starts."
+                            }
+                          ],
+                          "idShort": "Pre",
+                          "modelType": "SubmodelElementCollection",
+                          "semanticId": {
+                            "keys": [
+                              {
+                                "type": "GlobalReference",
+                                "value": "https://smartproductionlab.aau.dk/execution/ConditionSet/Pre/1/0"
+                              }
+                            ],
+                            "type": "ExternalReference"
+                          },
+                          "value": [
+                            {
+                              "description": [
+                                {
+                                  "language": "en",
+                                  "text": "At least one of its terms holds."
+                                }
+                              ],
+                              "displayName": [
+                                {
+                                  "language": "en",
+                                  "text": "Weighed or stoppered"
+                                }
+                              ],
+                              "idShort": "Term_00",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Or/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": [
+                                {
+                                  "displayName": [
+                                    {
+                                      "language": "en",
+                                      "text": "Unit weighed"
+                                    }
+                                  ],
+                                  "idShort": "Term_00",
+                                  "modelType": "SubmodelElementCollection",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "supplementalSemanticIds": [
+                                    {
+                                      "keys": [
+                                        {
+                                          "type": "GlobalReference",
+                                          "value": "https://smartproductionlab.aau.dk/semantics/Weighed"
+                                        }
+                                      ],
+                                      "type": "ExternalReference"
+                                    }
+                                  ],
+                                  "value": [
+                                    {
+                                      "description": [
+                                        {
+                                          "language": "en",
+                                          "text": "The subject whose property the term is about: an item of Subjects."
+                                        }
+                                      ],
+                                      "idShort": "Subject",
+                                      "modelType": "ReferenceElement",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": {
+                                        "keys": [
+                                          {
+                                            "type": "Submodel",
+                                            "value": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not/submodels/CapabilityDescription"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "OfferedCapabilities"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "Inspection"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "CapabilityRelations"
+                                          },
+                                          {
+                                            "type": "SubmodelElementList",
+                                            "value": "Subjects"
+                                          },
+                                          {
+                                            "type": "ReferenceElement",
+                                            "value": "0"
+                                          }
+                                        ],
+                                        "type": "ModelReference"
+                                      }
+                                    },
+                                    {
+                                      "idShort": "Operator",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "equal",
+                                      "valueType": "xs:string"
+                                    },
+                                    {
+                                      "idShort": "Value",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "true",
+                                      "valueType": "xs:boolean"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "displayName": [
+                                    {
+                                      "language": "en",
+                                      "text": "Unit stoppered"
+                                    }
+                                  ],
+                                  "idShort": "Term_01",
+                                  "modelType": "SubmodelElementCollection",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "supplementalSemanticIds": [
+                                    {
+                                      "keys": [
+                                        {
+                                          "type": "GlobalReference",
+                                          "value": "https://smartproductionlab.aau.dk/semantics/Stoppered"
+                                        }
+                                      ],
+                                      "type": "ExternalReference"
+                                    }
+                                  ],
+                                  "value": [
+                                    {
+                                      "description": [
+                                        {
+                                          "language": "en",
+                                          "text": "The subject whose property the term is about: an item of Subjects."
+                                        }
+                                      ],
+                                      "idShort": "Subject",
+                                      "modelType": "ReferenceElement",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": {
+                                        "keys": [
+                                          {
+                                            "type": "Submodel",
+                                            "value": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not/submodels/CapabilityDescription"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "OfferedCapabilities"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "Inspection"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "CapabilityRelations"
+                                          },
+                                          {
+                                            "type": "SubmodelElementList",
+                                            "value": "Subjects"
+                                          },
+                                          {
+                                            "type": "ReferenceElement",
+                                            "value": "0"
+                                          }
+                                        ],
+                                        "type": "ModelReference"
+                                      }
+                                    },
+                                    {
+                                      "idShort": "Operator",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "equal",
+                                      "valueType": "xs:string"
+                                    },
+                                    {
+                                      "idShort": "Value",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "true",
+                                      "valueType": "xs:boolean"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "description": [
+                                {
+                                  "language": "en",
+                                  "text": "Its one term does not hold."
+                                }
+                              ],
+                              "displayName": [
+                                {
+                                  "language": "en",
+                                  "text": "Not inspected"
+                                }
+                              ],
+                              "idShort": "Term_01",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/Not/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": [
+                                {
+                                  "displayName": [
+                                    {
+                                      "language": "en",
+                                      "text": "Unit inspected"
+                                    }
+                                  ],
+                                  "idShort": "Term_00",
+                                  "modelType": "SubmodelElementCollection",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "supplementalSemanticIds": [
+                                    {
+                                      "keys": [
+                                        {
+                                          "type": "GlobalReference",
+                                          "value": "https://smartproductionlab.aau.dk/semantics/Inspected"
+                                        }
+                                      ],
+                                      "type": "ExternalReference"
+                                    }
+                                  ],
+                                  "value": [
+                                    {
+                                      "description": [
+                                        {
+                                          "language": "en",
+                                          "text": "The subject whose property the term is about: an item of Subjects."
+                                        }
+                                      ],
+                                      "idShort": "Subject",
+                                      "modelType": "ReferenceElement",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": {
+                                        "keys": [
+                                          {
+                                            "type": "Submodel",
+                                            "value": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not/submodels/CapabilityDescription"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "OfferedCapabilities"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "Inspection"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "CapabilityRelations"
+                                          },
+                                          {
+                                            "type": "SubmodelElementList",
+                                            "value": "Subjects"
+                                          },
+                                          {
+                                            "type": "ReferenceElement",
+                                            "value": "0"
+                                          }
+                                        ],
+                                        "type": "ModelReference"
+                                      }
+                                    },
+                                    {
+                                      "idShort": "Operator",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "equal",
+                                      "valueType": "xs:string"
+                                    },
+                                    {
+                                      "idShort": "Value",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "true",
+                                      "valueType": "xs:boolean"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "description": [
+                                {
+                                  "language": "en",
+                                  "text": "All of its terms hold."
+                                }
+                              ],
+                              "displayName": [
+                                {
+                                  "language": "en",
+                                  "text": "Stoppered and not capped"
+                                }
+                              ],
+                              "idShort": "Term_02",
+                              "modelType": "SubmodelElementCollection",
+                              "semanticId": {
+                                "keys": [
+                                  {
+                                    "type": "GlobalReference",
+                                    "value": "https://smartproductionlab.aau.dk/execution/And/1/0"
+                                  }
+                                ],
+                                "type": "ExternalReference"
+                              },
+                              "value": [
+                                {
+                                  "displayName": [
+                                    {
+                                      "language": "en",
+                                      "text": "Unit stoppered"
+                                    }
+                                  ],
+                                  "idShort": "Term_00",
+                                  "modelType": "SubmodelElementCollection",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "supplementalSemanticIds": [
+                                    {
+                                      "keys": [
+                                        {
+                                          "type": "GlobalReference",
+                                          "value": "https://smartproductionlab.aau.dk/semantics/Stoppered"
+                                        }
+                                      ],
+                                      "type": "ExternalReference"
+                                    }
+                                  ],
+                                  "value": [
+                                    {
+                                      "description": [
+                                        {
+                                          "language": "en",
+                                          "text": "The subject whose property the term is about: an item of Subjects."
+                                        }
+                                      ],
+                                      "idShort": "Subject",
+                                      "modelType": "ReferenceElement",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": {
+                                        "keys": [
+                                          {
+                                            "type": "Submodel",
+                                            "value": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not/submodels/CapabilityDescription"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "OfferedCapabilities"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "Inspection"
+                                          },
+                                          {
+                                            "type": "SubmodelElementCollection",
+                                            "value": "CapabilityRelations"
+                                          },
+                                          {
+                                            "type": "SubmodelElementList",
+                                            "value": "Subjects"
+                                          },
+                                          {
+                                            "type": "ReferenceElement",
+                                            "value": "0"
+                                          }
+                                        ],
+                                        "type": "ModelReference"
+                                      }
+                                    },
+                                    {
+                                      "idShort": "Operator",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "equal",
+                                      "valueType": "xs:string"
+                                    },
+                                    {
+                                      "idShort": "Value",
+                                      "modelType": "Property",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "value": "true",
+                                      "valueType": "xs:boolean"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "description": [
+                                    {
+                                      "language": "en",
+                                      "text": "Its one term does not hold."
+                                    }
+                                  ],
+                                  "displayName": [
+                                    {
+                                      "language": "en",
+                                      "text": "Not capped"
+                                    }
+                                  ],
+                                  "idShort": "Term_01",
+                                  "modelType": "SubmodelElementCollection",
+                                  "semanticId": {
+                                    "keys": [
+                                      {
+                                        "type": "GlobalReference",
+                                        "value": "https://smartproductionlab.aau.dk/execution/Not/1/0"
+                                      }
+                                    ],
+                                    "type": "ExternalReference"
+                                  },
+                                  "value": [
+                                    {
+                                      "displayName": [
+                                        {
+                                          "language": "en",
+                                          "text": "Unit capped"
+                                        }
+                                      ],
+                                      "idShort": "Term_00",
+                                      "modelType": "SubmodelElementCollection",
+                                      "semanticId": {
+                                        "keys": [
+                                          {
+                                            "type": "GlobalReference",
+                                            "value": "https://smartproductionlab.aau.dk/execution/Condition/1/0"
+                                          }
+                                        ],
+                                        "type": "ExternalReference"
+                                      },
+                                      "supplementalSemanticIds": [
+                                        {
+                                          "keys": [
+                                            {
+                                              "type": "GlobalReference",
+                                              "value": "https://smartproductionlab.aau.dk/semantics/Capped"
+                                            }
+                                          ],
+                                          "type": "ExternalReference"
+                                        }
+                                      ],
+                                      "value": [
+                                        {
+                                          "description": [
+                                            {
+                                              "language": "en",
+                                              "text": "The subject whose property the term is about: an item of Subjects."
+                                            }
+                                          ],
+                                          "idShort": "Subject",
+                                          "modelType": "ReferenceElement",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Term/Subject/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": {
+                                            "keys": [
+                                              {
+                                                "type": "Submodel",
+                                                "value": "https://smartproductionlab.aau.dk/aas/fixtures/b02-and-or-not/submodels/CapabilityDescription"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "OfferedCapabilities"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "Inspection"
+                                              },
+                                              {
+                                                "type": "SubmodelElementCollection",
+                                                "value": "CapabilityRelations"
+                                              },
+                                              {
+                                                "type": "SubmodelElementList",
+                                                "value": "Subjects"
+                                              },
+                                              {
+                                                "type": "ReferenceElement",
+                                                "value": "0"
+                                              }
+                                            ],
+                                            "type": "ModelReference"
+                                          }
+                                        },
+                                        {
+                                          "idShort": "Operator",
+                                          "modelType": "Property",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Condition/Operator/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": "equal",
+                                          "valueType": "xs:string"
+                                        },
+                                        {
+                                          "idShort": "Value",
+                                          "modelType": "Property",
+                                          "semanticId": {
+                                            "keys": [
+                                              {
+                                                "type": "GlobalReference",
+                                                "value": "https://smartproductionlab.aau.dk/execution/Term/Value/1/0"
+                                              }
+                                            ],
+                                            "type": "ExternalReference"
+                                          },
+                                          "value": "true",
+                                          "valueType": "xs:boolean"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

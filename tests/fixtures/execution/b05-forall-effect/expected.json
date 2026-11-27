@@ -1,0 +1,46 @@
+{
+  "capabilities": {
+    "CapabilityDescription/ModuleControl/Releasing": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/b05-forall-effect",
+      "meaning": "lab:Releasing",
+      "subjects": [
+        {"name": "This module", "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/b05-forall-effect"},
+        {
+          "name": "Collecting shuttle",
+          "standsFor": "https://smartproductionlab.aau.dk/Resource/Component/Shuttle"
+        }
+      ],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "forall": {
+            "variable": {
+              "id": "v0",
+              "name": "Every unit in the module",
+              "standsFor": "https://smartproductionlab.aau.dk/Product"
+            },
+            "body": [
+              {
+                "effect": {
+                  "subject": {"variable": "v0"},
+                  "property": "lab:HeldBy",
+                  "op": "assign",
+                  "operand": {"subject": 1}
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["universal-effects"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

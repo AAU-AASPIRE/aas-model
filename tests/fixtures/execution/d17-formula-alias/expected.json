@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "formula.alias",
+      "severity": "error",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/Dosing/CapabilityRelations/ConditionSet/Pre/Term_00/Formula"
+    }
+  ]
+}

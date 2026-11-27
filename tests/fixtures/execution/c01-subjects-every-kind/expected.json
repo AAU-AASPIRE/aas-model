@@ -1,0 +1,44 @@
+{
+  "capabilities": {
+    "CapabilityDescription/OfferedCapabilities/Filling": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/c01-subjects-every-kind",
+      "meaning": "lab:Filling",
+      "subjects": [
+        {
+          "name": "This module",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/c01-subjects-every-kind"
+        },
+        {
+          "name": "Needle axis",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/c01-subjects-every-kind/axis"
+        },
+        {
+          "name": "Own transfer point",
+          "fixed": "https://smartproductionlab.aau.dk/aas/fixtures/c01-subjects-every-kind/submodels/Variables#Measurements/Coordinates/TransferPoint"
+        },
+        {"name": "Unit being filled", "standsFor": "https://smartproductionlab.aau.dk/Product"},
+        {
+          "name": "Delivering shuttle",
+          "standsFor": "https://smartproductionlab.aau.dk/Resource/Component/Shuttle"
+        },
+        {"name": "Target place", "standsFor": "lab:TransferPoint"},
+        {"name": "Required fill volume", "requirement": "lab:FillVolume"}
+      ],
+      "pre": [
+        {
+          "condition": {"subject": {"subject": 3}, "property": "lab:HeldBy", "op": "equal", "operand": {"subject": 4}}
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [],
+      "duration": null,
+      "features": []
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

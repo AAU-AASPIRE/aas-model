@@ -1,0 +1,52 @@
+{
+  "capabilities": {
+    "CapabilityDescription/OfferedCapabilities/Filling": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/b01-implicit-and",
+      "meaning": "lab:Filling",
+      "subjects": [{"name": "Unit being filled", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [
+        {
+          "condition": {
+            "subject": {"subject": 0},
+            "property": "lab:ContentVolume",
+            "op": "equal",
+            "operand": {"number": 0.0}
+          }
+        },
+        {
+          "condition": {"subject": {"subject": 0}, "property": "lab:Weighed", "op": "equal", "operand": {"boolean": false}}
+        },
+        {
+          "and": [
+            {
+              "condition": {
+                "subject": {"subject": 0},
+                "property": "lab:Stoppered",
+                "op": "equal",
+                "operand": {"boolean": false}
+              }
+            },
+            {
+              "condition": {
+                "subject": {"subject": 0},
+                "property": "lab:Capped",
+                "op": "equal",
+                "operand": {"boolean": false}
+              }
+            }
+          ]
+        }
+      ],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [],
+      "duration": null,
+      "features": []
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

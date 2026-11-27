@@ -1,0 +1,45 @@
+{
+  "capabilities": {
+    "CapabilityDescription/OfferedCapabilities/Filling": {
+      "aas": "https://smartproductionlab.aau.dk/aas/fixtures/b06-when",
+      "meaning": "lab:Filling",
+      "subjects": [{"name": "Unit being filled", "standsFor": "https://smartproductionlab.aau.dk/Product"}],
+      "pre": [],
+      "invariant": [],
+      "post": [],
+      "start": [],
+      "during": [],
+      "end": [
+        {
+          "when": {
+            "if": [
+              {
+                "condition": {
+                  "subject": {"subject": 0},
+                  "property": "lab:FillResult",
+                  "op": "equal",
+                  "operand": {"iri": "lab:InTolerance"}
+                }
+              }
+            ],
+            "then": [
+              {
+                "effect": {
+                  "subject": {"subject": 0},
+                  "property": "lab:Weighed",
+                  "op": "assign",
+                  "operand": {"boolean": true}
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "duration": null,
+      "features": ["conditional-effects"]
+    }
+  },
+  "goal": null,
+  "knowledge": [],
+  "findings": []
+}

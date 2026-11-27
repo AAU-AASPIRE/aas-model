@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "code": "level.incomplete",
+      "severity": "warning",
+      "path": "CapabilityDescription/AuxiliaryCapabilities/NeedlePositioning/CapabilityRelations/EffectSet/End"
+    }
+  ]
+}
