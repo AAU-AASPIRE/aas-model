@@ -1,8 +1,8 @@
 # The execution model: specification
 
 > **Draft 1, 26 Nov 2026.** Phase 0 of the execution plan (`aaspire-internal/docs/execution-plan.md`, section 5):
-> the contract the shared package (reader, formula parser, validator, evaluators), modplan, the line planner and the
-> behaviour tree's compiler build against. It restates decisions D1 to D38 and section 4.2 of the plan as rules, and
+> the contract every consumer's reader (modplan's, the line planner's), modreg's validator and the behaviour tree's
+> compiler build against. It restates decisions D1 to D38 and section 4.2 of the plan as rules, and
 > states what the plan left open where Phase 1 needs an answer. Answers marked **Provisional** are this draft's (open
 > questions 6, 13 and 16); they hold until the ARSO owners agree or change them. aas-model's templates
 > (`submodel_templates/execution.py`, `knowledge.py`, `batch.py`) implement the structure; where this text and
@@ -19,7 +19,7 @@ D22) and execution (the behaviour tree, through what the planner compiles).
 
 | Reads the term trees | Does not |
 |---|---|
-| The shared package (reader, validator, evaluators); modplan; the line planner and its compilers (PDDL, FOND, SPARQL, call nodes) | The DMP (D2): it maps skills and writes observed state. The BT controller (D24): it runs the queries, updates and Translations the planner compiled |
+| modreg's check (the validator); modplan and the line planner, each with a reader of its own; the line planner's compilers (PDDL, FOND, SPARQL, call nodes) | The DMP (D2): it maps skills and writes observed state. The BT controller (D24): it runs the queries, updates and Translations the planner compiled |
 
 Out of scope: the device contract (Skills `Conditions`, `Completion`; D21), 02020's `ConstraintSet` (D5, used for
 matching only), and how the tree is built (Phases 6 and 7).
@@ -34,9 +34,12 @@ matching only), and how the tree is built (Phases 6 and 7).
   vocabulary (`lab:` = `https://smartproductionlab.aau.dk/semantics/`, AAU-AASPIRE/ontologies). Nothing is
   matched by idShort or display name, with one exception: the idShorts in `Uses` are the names a formula uses.
 - **Provisional (open question 6).** The `exec:` IRIs stay as they are until the ARSO owners decide between
-  `arso:` and `pprl:`; a rename is then a one-to-one table in the reader, not a change of the model. The shared
-  package lives in aas-model as `aas_model.execution`, with no dependency on the rest of aas-model beyond its
-  constants, so it can move to its own package if the lab wants one.
+  `arso:` and `pprl:`; a rename is then a one-to-one table in each reader, not a change of the model.
+- **Where the code lives (27 Nov; plan D24, revised).** Each consumer reads the model with a reader of its own, into
+  the types its algorithm needs: modplan (`modplan.execution` in aaspire-tools) and the line planner (pddl-planner).
+  Code may be copied between them; what keeps them in agreement is that every reader passes the shared fixtures
+  (section 15). The validator (section 11) is modreg's check. This document and the fixtures stay in aas-model,
+  beside the templates that write the structure they describe.
 
 ## 3. Where the model lives
 
@@ -462,7 +465,7 @@ other than the module's parts (the line, and the class), and the module's specia
 ## 15. The canonical reading (fixtures)
 
 The shared fixtures (`aas-model/tests/fixtures/execution/<nn-name>/`) state what a reader must read from an AAS, in a
-form no language owns, so the Python package now and other readers later are tested against the same files. Each
+form no language owns, so every consumer's reader is tested against the same files. Each
 fixture holds:
 
 | File | Content |
